@@ -1,0 +1,85 @@
+---
+title: Randomly select papers for review
+output:
+  html_document: default
+  pdf_document: default
+---
+
+***
+
+## Summary
+This document contains code for randomising paper ranks for the review on Dynamic Occupancy Models. For each of four search parameters, papers are stratified into 5 year time periods and randomly ranked. The top 25% of papers in each ranking category will be reviewed; papers which do not qualify for review will be replaced with the next highest rank. 
+
+
+
+***
+ 
+```{r setup, echo = FALSE, message = FALSE}
+library("knitr")
+library("tidyverse")
+library("readxl")
+
+opts_knit$set(root.dir = "/Users/kelleherj/Documents/Research/QAEco/ODM_Review/")
+```
+
+
+```{r Read-in excel sheets, echo = FALSE, message = FALSE, warning = FALSE}
+# From the excel review spreadsheet, read in only the identifying characteristics 
+identifierSheet <- readxl::read_xlsx("Review Spreadsheet.xlsx", 
+                                     sheet = "Identifying", skip = 1) %>%
+  # Drop rows prior to start of data
+  slice(4:nrow(.)) %>%
+  # Only need google search query and the ID reference
+  select(Review_ID, Query = `Google Scholar search terms`) 
+# Repeat with the study metadata
+studyDataSheet <- readxl::read_xlsx("Review Spreadsheet.xlsx", 
+                                    sheet = "Study data", skip = 1) %>%
+  slice(4:nrow(.)) %>%
+  # Only need year data and ID reference
+  select(Review_ID, Year) 
+```
+
+
+```{r Combine and merge, echo = FALSE, message = FALSE}
+# Merge paper queries and metadata
+paperList <- full_join(identifierSheet, studyDataSheet, 
+                       by = "Review_ID") %>% 
+  # Drop empty rows, excluded, and incidental papers
+  filter(!is.na(Query) & Query != "INCIDENTAL" & Year != "EXCLUDE") %>%
+  # Break into time periods 
+  mutate(YearPeriod = case_when(Year %in% as.character(2000:2005) ~ "2000:2005",
+                                Year %in% as.character(2005:2010) ~ "2005:2010",
+                                Year %in% as.character(2010:2015) ~ "2010:2015",
+                                Year %in% as.character(2015:2021) ~ "2015:2021"))
+```
+
+
+```{r Randomly rank papers within strata}
+rankedPapers <- paperList %>%
+  # Add random ranks for all papers
+  mutate(randRank = sample(x = 1:nrow(.), size = nrow(.))) %>%
+  # Re-rank within strata
+  group_by(Query, YearPeriod) %>%
+  arrange(Query, YearPeriod, randRank) %>%
+  mutate(groupRank = row_number())
+
+
+ 
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

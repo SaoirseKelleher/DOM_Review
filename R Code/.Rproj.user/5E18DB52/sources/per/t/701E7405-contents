@@ -1,0 +1,14 @@
+---
+title: "UoM Library literature scraping"
+output: html_notebook
+---
+
+This notebook contains simple HTML scraping code for the University of Melbourne Library's result pages. Search results are read page by page with 'rvest', and information including titles, sources, and abstracts of journal articles is parsed via regex. In this case, a set of alternative search terms for Occupancy Dynamics Models are used and the resulting papers for each search are compared.
+
+```{r, Setup, echo = FALSE, warning = FALSE}
+library(tidyverse)
+library(knitr)
+library(rvest)
+
+opts_knit$set(root.dir = "/Users/jkelleher/Documents/Research/QAEco/ODM_Review/R Code/")
+```
