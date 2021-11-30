@@ -19,7 +19,7 @@ library("knitr")
 library("tidyverse")
 library("readxl")
 
-opts_knit$set(root.dir = "/Users/kelleherj/Documents/Research/QAEco/ODM_Review/")
+opts_knit$set(root.dir = "/Users/kelleherj/Documents/Research/QAEco/ODM_Review/dynamic-occupancy-model-review/")
 ```
 
 
@@ -61,12 +61,39 @@ rankedPapers <- paperList %>%
   # Re-rank within strata
   group_by(Query, YearPeriod) %>%
   arrange(Query, YearPeriod, randRank) %>%
-  mutate(groupRank = row_number())
-
-
- 
-
+  mutate(GroupRank = row_number()) 
 ```
+
+```{r Highlight papers to read}
+# Identify which papers qualify to be read
+highlightedPapers <- rankedPapers %>%
+  group_by(Query, YearPeriod) %>%
+  mutate(PercentRank =  GroupRank/max(GroupRank)) %>%
+  mutate(ToRead = case_when(
+    # If there are fewer than 5, read them all
+    max(GroupRank) <= 5 ~ "YES",
+    # If there are 20 or fewer, read the top 5
+    max(GroupRank) <= 20 & GroupRank <= 5 ~ "YES",
+    max(GroupRank) <= 20 & GroupRank >= 5 ~ "NO",
+    # If there are 21 or more, read the top 25%
+    max(GroupRank) >= 21 & PercentRank <= 0.25  ~ "YES",
+    max(GroupRank) >= 21 & PercentRank > 0.25 ~ "NO")) %>%
+  ungroup() %>%
+  # Get Review_ID, GroupRank, and ToRead
+  select(Review_ID, GroupRank, ToRead)
+  
+# Write to disk
+write_csv(highlightedPapers, file = "RankedPapers.csv")
+```
+
+
+
+
+
+
+
+
+
 
 
 
