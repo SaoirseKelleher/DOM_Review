@@ -19,21 +19,19 @@ library("readxl")
 
 # Need seed set for reproducibility
 set.seed(5378)
-
-opts_knit$set(root.dir = "/Users/kelleherj/Documents/Research/QAEco/ODM_Review/dynamic-occupancy-model-review/")
 ```
 
 Read in the excel sheets and process out the header
 ```{r Read-in excel sheets, echo = FALSE, message = FALSE, warning = FALSE}
 # From the excel review spreadsheet, read in only the identifying characteristics 
-identifierSheet <- readxl::read_xlsx("Review Spreadsheet.xlsx", 
+identifierSheet <- readxl::read_xlsx("Data/Review Spreadsheet.xlsx", 
                                      sheet = "Metadata", skip = 1) %>%
   # Drop rows prior to start of data
   slice(4:nrow(.)) %>%
   # Only need google search query and the ID reference
   select(Review_ID, Query = `Search terms`) 
 # Repeat with the study metadata
-studyDataSheet <- readxl::read_xlsx("Review Spreadsheet.xlsx", 
+studyDataSheet <- readxl::read_xlsx("Data/Review Spreadsheet.xlsx", 
                                     sheet = "Study data", skip = 1) %>%
   # Cut out non-data rows
   slice(4:nrow(.)) %>%
