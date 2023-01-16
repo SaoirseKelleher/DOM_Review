@@ -16,7 +16,7 @@ library("sf")
 
 
 ```{r readin}
-reviewTable <- read_xlsx("Data/ConfirmationTable.xlsx")
+reviewTable <- read_xlsx("Spreadsheets/Preliminary_Spreadsheet.xlsx")
 
 nonSPOM <- reviewTable %>%
   filter(SearchTerm %in% c("Dynamic occupancy model", "Multi-season occupancy model"))
