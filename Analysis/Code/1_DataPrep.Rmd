@@ -110,26 +110,77 @@ taxa_location_sheet <- spreadsheet[["Species and Location"]] %>%
          Threat_Invasives = str_detect(`Threat categories`, "Invasives"),
          Threat_Disease = str_detect(`Threat categories`, "Disease"),
          Threat_Disaster = str_detect(`Threat categories`, "Disturbance")) %>%
-  # Select only necessary files
+  # Split 'taxa keywords' column by commas
+  separate_rows(`Taxa keywords`, sep = ", ") %>%
+  # Split country column by commas
+  separate_rows(Country, sep = ", ") %>%
+  # Select only necessary fields
   select(`Review ID`, Title, Taxa, `Taxa keywords`, Number, 
          Threat_HabitatLoss, Threat_Exploitation, Threat_ClimateChange,
          Threat_Invasives, Threat_Disease, Threat_Disaster,
          Country, Continent, Realm, `Study Size`)
 ```
 
-This section includes several fields which require checks
+This section includes a few fields which require checks
 ```{r Check Species/Location, echo = FALSE}
+# Are all taxa names appropriate?
+unique(taxa_location_sheet$Taxa)
 
+# Should any taxa categories be condensed or removed?
+unique(taxa_location_sheet$`Taxa keywords`)
 
+# Are all country names correct?
+taxa_location_sheet %>% count(Country) %>% arrange(-n)
 ```
 
 
+## Data collection
+This sheet includes information on survey and sampling techniques
+```{r Process Data Collection, echo = FALSE}
+survey_sheet <- spreadsheet[["Data collection"]] %>%
+  # Filter to included papers
+  filter(Status == "Complete") %>% 
+  # Split capture method and sampling method fields
+  separate_rows(`Capture method`, sep = ", ") %>%
+  separate_rows(`Sampling method`, sep = ", ") %>%
+  # 
+  
+  mutate(MinPrimary = `Number of primary occasions`,
+         MaxPrimary = `Number of primary occasions`) %>%
+  map_dfr(.f = function(.x){
+    if (str_detect(.x$MinPrimary, "-")){
+      .x$MinPrimary <- str_split(.x$MinPrimary[[1]])
+      .x$MaxPrimary <- str_split(.x$MaxPrimary[[2]])
+    }
+  })
+  
+  
+  
+  mutate(MinPrimary = case_when(str_detect(`Number of primary occasions`, "-") ~
+                                  str_split(`Number of primary occasions`, "-")[[1]],
+                                !str_detect(`Number of primary occasions`, "-") ~
+                                  `Number of primary occasions`),
+         MaxPrimary = case_when(str_detect(`Number of primary occasions`, "-") ~
+                                  str_split(`Number of primary occasions`, "-")[[2]],
+                                !str_detect(`Number of primary occasions`, "-") ~
+                                  `Number of primary occasions`))
+                                
+        function(test){}
+  
+  
+
+  # Select important fields
+  select(`Review ID`, Title, `Study duration`, `Capture method`, 
+         `Num primary` = `Number of primary occasions`,
+         `Num secondary` = `Number of secondary occasions`,
+         `Type secondary` = `Type of secondary occasions`,
+         `Type site` = `Type of site`, `Num sites` = `Number of sites`,
+         `Sampling method`)
+  
 
 
 
-
-
-
+```
 
 
 
