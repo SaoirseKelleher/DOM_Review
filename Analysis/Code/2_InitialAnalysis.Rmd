@@ -1,0 +1,110 @@
+---
+title: "DOM Review: Initial analysis"
+output: html_document
+---
+
+
+
+```{r Setup, include = FALSE}
+library(tidyverse)
+```
+
+
+```{r Readin, echo = FALSE}
+reviewResults <- read_rds("Analysis/Outputs/ReviewResults.rds")
+```
+
+
+```{r Study, echo = FALSE}
+
+
+```
+
+
+
+```{r Objectives, echo = FALSE}
+
+reviewResults$Objectives %>%
+  pivot_longer(c("Obj_Methods","Obj_Projections","Obj_Spatial","Obj_Trends","Obj_Hypothesis"),
+               "Objective") %>%
+  mutate(value = as.numeric(value)) %>%
+  group_by(Objective) %>%
+  summarise(n=sum(value)) %>%
+  
+  ggplot(aes(x = Objective, y = n/54)) +
+  geom_col() +
+  ylim(0,1)
+```
+
+
+
+
+```{r Taxa, echo = FALSE}
+
+
+```
+
+
+```{r Survey, echo = FALSE}
+hist(as.numeric(reviewResults$Survey$`Study duration`))
+
+reviewResults$Survey %>%
+  group_by(`Capture method`) %>%
+  summarize(n = n()) %>%
+  
+  ggplot(aes(x = reorder(`Capture method`, -n), y = n)) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle=90, vjust = 0.5,hjust=1))
+  
+  
+```
+
+
+```{r Covariates, echo = FALSE}
+nrow(reviewResults$Covariates)
+
+reviewResults$Covariates %>%
+  filter(!is.na(Category)) %>%
+  group_by(Category, Scale) %>%
+  summarize(Count = n()) %>%
+  arrange(Count) %>%
+  
+  ggplot(aes(x = reorder(Category, -Count), y = Count, fill = Scale)) +
+  geom_col() + 
+  scale_fill_discrete(limits = c("a","p","d","g","u", NA), 
+                    labels = c("area","point","distance","global", "Unclear", "NA")) +
+  theme(axis.text.x = element_text(angle=90, vjust = 0.5,hjust=1))
+
+reviewResults$Covariates %>%
+  filter(!is.na(Category)) %>%
+  group_by(Category, Dynanimity) %>%
+  summarize(Count = n()) %>%
+  arrange(Count) %>%
+  
+  ggplot(aes(x = reorder(Category, -Count), y = Count, fill = Dynanimity)) +
+  geom_col() + 
+  scale_fill_discrete(limits = c("d","s","u"), 
+                    labels = c("Dynamic", "Static", "Unclear")) +
+  theme(axis.text.x = element_text(angle=90, vjust = 0.5,hjust=1))
+
+```
+
+
+```{r Modelling, echo = FALSE}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
