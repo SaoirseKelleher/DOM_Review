@@ -119,6 +119,7 @@ taxa_location_sheet <- spreadsheet[["Species and Location"]] %>%
          Threat_HabitatLoss, Threat_Exploitation, Threat_ClimateChange,
          Threat_Invasives, Threat_Disease, Threat_Disaster,
          Country, Continent, Realm, `Study Size`)
+kable(head(taxa_location_sheet))
 ```
 
 This section includes a few fields which require checks
@@ -143,64 +144,98 @@ survey_sheet <- spreadsheet[["Data collection"]] %>%
   # Split capture method and sampling method fields
   separate_rows(`Capture method`, sep = ", ") %>%
   separate_rows(`Sampling method`, sep = ", ") %>%
-  # 
-  
-  mutate(MinPrimary = `Number of primary occasions`,
-         MaxPrimary = `Number of primary occasions`) %>%
-  map_dfr(.f = function(.x){
-    if (str_detect(.x$MinPrimary, "-")){
-      .x$MinPrimary <- str_split(.x$MinPrimary[[1]])
-      .x$MaxPrimary <- str_split(.x$MaxPrimary[[2]])
-    }
-  })
-  
-  
-  
-  mutate(MinPrimary = case_when(str_detect(`Number of primary occasions`, "-") ~
-                                  str_split(`Number of primary occasions`, "-")[[1]],
-                                !str_detect(`Number of primary occasions`, "-") ~
-                                  `Number of primary occasions`),
-         MaxPrimary = case_when(str_detect(`Number of primary occasions`, "-") ~
-                                  str_split(`Number of primary occasions`, "-")[[2]],
-                                !str_detect(`Number of primary occasions`, "-") ~
-                                  `Number of primary occasions`))
-                                
-        function(test){}
-  
-  
-
+  # Split min/max number of primary occasions if present
+  mutate(MinPrimary = str_split(`Number of primary occasions`, "-", simplify = TRUE)[,1],
+         MaxPrimary = str_split(`Number of primary occasions`, "-", simplify = TRUE)[,2]) %>%
+  mutate(MaxPrimary = case_when(MaxPrimary == "" ~ MinPrimary,
+                                MaxPrimary != "" ~ MaxPrimary)) %>%
+  # Repeat for secondary occasions
+  mutate(MinSecondary = str_split(`Number of secondary occasions`, "-", simplify = TRUE)[,1],
+         MaxSecondary = str_split(`Number of secondary occasions`, "-", simplify = TRUE)[,2]) %>%
+  mutate(MaxSecondary = case_when(MaxSecondary == "" ~ MinSecondary,
+                                  MaxSecondary != "" ~ MaxSecondary)) %>%
+  # Coerce columns to numeric
+  mutate(MinPrimary = as.numeric(MinPrimary),
+         MaxPrimary = as.numeric(MaxPrimary),
+         MinSecondary = as.numeric(MinSecondary),
+         MaxSecondary = as.numeric(MaxSecondary),
+         NumSites = as.numeric(`Number of sites`)) %>%
   # Select important fields
   select(`Review ID`, Title, `Study duration`, `Capture method`, 
-         `Num primary` = `Number of primary occasions`,
-         `Num secondary` = `Number of secondary occasions`,
-         `Type secondary` = `Type of secondary occasions`,
-         `Type site` = `Type of site`, `Num sites` = `Number of sites`,
+         MinPrimary, MaxPrimary, MinSecondary, MaxSecondary,
+         `Type site` = `Type of site`, NumSites,
          `Sampling method`)
-  
+
+kable(head(survey_sheet))
+```
+
+This section still needs to be checked for any input errors.
+```{r Check Data Collection, echo = FALSE}
+
+```
 
 
+## Covariates
+This section includes estimated parameters and covariates considered for inclusion
 
+```{r Process covariates, echo = FALSE}
+covariates_sheet <- spreadsheet[["Covariates"]] %>%
+  # Filter down to only included papers
+  filter(Status == "Complete") %>%
+  # Note modifiers for parameters, then split them off from parameters
+  mutate(MultiSpecies = case_when(str_detect(Parameter,"MS") ~ TRUE,
+                                  !str_detect(Parameter, "MS") ~ FALSE),
+         FalsePositive = case_when(str_detect(Parameter, "FP") & str_detect(Parameter, "Detection") ~ TRUE)) %>%
+  mutate(Parameter = str_split(Parameter, "_", simplify = TRUE)[,1]) %>%
+  # Split out each covariate
+  separate_rows(`Categories`, sep =  ", ") %>%
+  # Convert 'none' to NA
+  separate(`Categories`, c("Category", "Scale", "Dynanimity"), sep = "_") %>%
+  select(`Review ID`, Title, `Total covariates`, Parameter, Category, Scale, 
+         Dynanimity, `Higher order`, `Interactive terms`,
+         MultiSpecies, FalsePositive)
+
+covariates_sheet$Category[covariates_sheet$Category %in% c("None", "NA")] <- NA
+covariates_sheet$Category[covariates_sheet$Category == c("Topography")] <- "Topographic"
+covariates_sheet$Category[covariates_sheet$Category == c("Hydrology")] <- "Hydrologic"
+
+kable(head(covariates_sheet))
 ```
 
 
 
 
 
+```{r Check covariates, echo = FALSE}
+```
+
+## Modelling
+This contains information about the model selection and evaluation process
+```{r Process modelling, echo = FALSE}
+modelling_sheet <- spreadsheet[["Modelling"]] %>%
+  filter(Status == "Complete") %>%
+  separate_rows(`Selection category`, sep = ", ") %>%
+  separate(`Selection category`, into = c("Select_Category", "Select_Type"), sep = "_") %>%
+  select(`Review ID`, Title, Bayesian, Select_Category, Select_Type)
+
+modelling_sheet$Select_Category[modelling_sheet$Select_Category == "APriori"] <- "Apriori"
+
+```
 
 
 
 
+```{r Save output, echo = FALSE}
 
+reviewResults <- list(Study = study_sheet,
+                      Objectives = objectives_sheet,
+                      Taxa = taxa_location_sheet,
+                      Survey = survey_sheet,
+                      Covariates = covariates_sheet,
+                      Modelling = modelling_sheet)
 
-
-
-
-
-
-
-
-
-
+write_rds(reviewResults, "Analysis/Outputs/ReviewResults.rds")
+```
 
 
 
