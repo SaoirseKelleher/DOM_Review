@@ -3,37 +3,86 @@ title: "DOM Review: Initial analysis"
 output: html_document
 ---
 
-
-
 ```{r Setup, include = FALSE}
 library(tidyverse)
+library(sf)
+library(knitr)
 ```
 
+## Summary
+This document includes some preliminary analyses of the review results, arranged by the six categories included in the review:
 
-```{r Readin, echo = FALSE}
+* Study
+* Objectives
+* Taxa and location
+* Survey methods
+* Parameters and covariates
+* Modelling methods
+
+```{r Read-in, echo = FALSE}
 reviewResults <- read_rds("Analysis/Outputs/ReviewResults.rds")
 ```
 
+## Study 
+Basic information on the locations and affiliations of authors involved with each paper was collected. Two thirds of papers (36/54) were by authors from U.S. institutions; the next greatest total was 3 papers from Australia.
 
 ```{r Study, echo = FALSE}
-
-
+studyData <- reviewResults[["Study"]]
 ```
 
 
+```{r Study authorship countries, echo = FALSE, message = FALSE}
+countriesShapefile <- st_read("Analysis/SpatialData/Countries/World_Countries__Generalized_.shp")
+
+## Map of authorship countries by # of papers
+studyData %>%
+  # Get count of 
+  group_by(`First author country`) %>%
+  summarise(Count = n()) %>%
+  arrange(-Count) %>% 
+  mutate(`First author country` = case_when(`First author country` == "United States of America" ~ "United States",
+                                            `First author country` != "United States of America" ~ `First author country`)) %>%
+  # Merge by country name
+  right_join(countriesShapefile, by = c('First author country' = 'COUNTRY')) %>%
+  # Plot map
+  ggplot() +
+  geom_sf(aes(geometry = geometry, fill = log(Count))) +
+  labs(title = "Log paper count by country") +
+  theme_void() + 
+  scale_fill_continuous(name = "Log counts", low="thistle2", high="darkred",na.value="white")
+  
+# Table with the same data
+studyData %>%
+  group_by(`First author country`) %>%
+  summarise(`Total papers` = n()) %>%
+  arrange(-`Total papers`) %>%
+  kable()
+```
+
+Affiliated institutions were split into four categories: Academic, Non-governmental organisations, Governmental agencies, and private sector groups. These were fairly varied, with academic groups participating in the vast majority of papers but with substantial representation from governmental and NGO groups.
+
+```{r Affiliation types, echo = FALSE}
+studyData %>%
+  summarise(NGO = sum(Author_NGO)/n()*100,
+            Academic = sum(Author_Academic)/n()*100,
+            Government = sum(Author_Government/n()*100),
+            Private = sum(Author_Private)/n()*100) %>% 
+  pivot_longer(cols = c(NGO, Academic, Government, Private), names_to = 'Affiliation', values_to = "% of papers") %>%
+  arrange(-`% of papers`) %>%
+  kable(digits = 1)
+```
+
+
+## Objectives
+Five categories of objectives and goals were assessed for each paper:
+* Assessing trends - interested in the trajector of estimated or derived parameters
+* Testing hypotheses - evaluating attributes of a **specific** covariate on parameters
+* Spatial mapping - Extrapolating estimates of papameter values beyond surveyed sites
+* Future projections - Making predictions of parameters into the future
+* Methods - introducing, testing, or demonstrating a new extension to these models
 
 ```{r Objectives, echo = FALSE}
-
-reviewResults$Objectives %>%
-  pivot_longer(c("Obj_Methods","Obj_Projections","Obj_Spatial","Obj_Trends","Obj_Hypothesis"),
-               "Objective") %>%
-  mutate(value = as.numeric(value)) %>%
-  group_by(Objective) %>%
-  summarise(n=sum(value)) %>%
-  
-  ggplot(aes(x = Objective, y = n/54)) +
-  geom_col() +
-  ylim(0,1)
+objData <- reviewResults[["Objectives"]]
 ```
 
 
@@ -46,46 +95,11 @@ reviewResults$Objectives %>%
 
 
 ```{r Survey, echo = FALSE}
-hist(as.numeric(reviewResults$Survey$`Study duration`))
 
-reviewResults$Survey %>%
-  group_by(`Capture method`) %>%
-  summarize(n = n()) %>%
-  
-  ggplot(aes(x = reorder(`Capture method`, -n), y = n)) +
-  geom_col() +
-  theme(axis.text.x = element_text(angle=90, vjust = 0.5,hjust=1))
-  
-  
 ```
 
 
 ```{r Covariates, echo = FALSE}
-nrow(reviewResults$Covariates)
-
-reviewResults$Covariates %>%
-  filter(!is.na(Category)) %>%
-  group_by(Category, Scale) %>%
-  summarize(Count = n()) %>%
-  arrange(Count) %>%
-  
-  ggplot(aes(x = reorder(Category, -Count), y = Count, fill = Scale)) +
-  geom_col() + 
-  scale_fill_discrete(limits = c("a","p","d","g","u", NA), 
-                    labels = c("area","point","distance","global", "Unclear", "NA")) +
-  theme(axis.text.x = element_text(angle=90, vjust = 0.5,hjust=1))
-
-reviewResults$Covariates %>%
-  filter(!is.na(Category)) %>%
-  group_by(Category, Dynanimity) %>%
-  summarize(Count = n()) %>%
-  arrange(Count) %>%
-  
-  ggplot(aes(x = reorder(Category, -Count), y = Count, fill = Dynanimity)) +
-  geom_col() + 
-  scale_fill_discrete(limits = c("d","s","u"), 
-                    labels = c("Dynamic", "Static", "Unclear")) +
-  theme(axis.text.x = element_text(angle=90, vjust = 0.5,hjust=1))
 
 ```
 
