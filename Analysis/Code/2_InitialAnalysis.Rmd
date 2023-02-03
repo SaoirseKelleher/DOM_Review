@@ -36,7 +36,7 @@ countriesShapefile <- st_read("Analysis/SpatialData/Countries/World_Countries__G
 
 ## Map of authorship countries by # of papers
 studyData %>%
-  # Get count of 
+  # Get count of papers by author's first country
   group_by(`First author country`) %>%
   summarise(Count = n()) %>%
   arrange(-Count) %>% 
@@ -62,19 +62,23 @@ studyData %>%
 Affiliated institutions were split into four categories: Academic, Non-governmental organisations, Governmental agencies, and private sector groups. These were fairly varied, with academic groups participating in the vast majority of papers but with substantial representation from governmental and NGO groups.
 
 ```{r Affiliation types, echo = FALSE}
+# Calc % of each type
 studyData %>%
   summarise(NGO = sum(Author_NGO)/n()*100,
             Academic = sum(Author_Academic)/n()*100,
             Government = sum(Author_Government/n()*100),
             Private = sum(Author_Private)/n()*100) %>% 
+  # Make legible for table
   pivot_longer(cols = c(NGO, Academic, Government, Private), names_to = 'Affiliation', values_to = "% of papers") %>%
   arrange(-`% of papers`) %>%
   kable(digits = 1)
 ```
 
 
+
 ## Objectives
 Five categories of objectives and goals were assessed for each paper:
+
 * Assessing trends - interested in the trajector of estimated or derived parameters
 * Testing hypotheses - evaluating attributes of a **specific** covariate on parameters
 * Spatial mapping - Extrapolating estimates of papameter values beyond surveyed sites
@@ -85,34 +89,232 @@ Five categories of objectives and goals were assessed for each paper:
 objData <- reviewResults[["Objectives"]]
 ```
 
+Monitoring trends and testing hypotheses were the most popular objectives; making predictions (spatial or temporal) were quite rare.
+```{r Objectives table, echo = FALSE}
+# Make table 
+objData %>% 
+  pivot_longer(cols = c(Obj_Methods, Obj_Projections, Obj_Hypothesis, Obj_Spatial, Obj_Trends),
+               names_to = "Objective", values_to = "TF") %>%
+  # Drop obj_ prefix
+  mutate(Objective = str_replace(Objective, "Obj_","")) %>%
+  # Tally up and make table
+  group_by(Objective) %>%
+  summarise(`Percent of papers` = 100*sum(TF)/54) %>%
+  arrange(-`Percent of papers`) %>%
+  kable(digits = 1)
+```
 
 
+```{r Obj by Authorship group, echo = FALSe}
+objByAuth <- full_join(objData, studyData, by = c("Review ID", "Title")) %>%
+  # Pivot authorship column and adjust  
+  pivot_longer(cols = c(Author_NGO, Author_Academic, Author_Government, Author_Private), 
+               names_to = 'Authorship', values_to = "Auth_TF") %>%
+  mutate(Authorship = str_replace(Authorship, "Author_","")) %>%
+  # Get count of # of papers by authorship for the plot later
+  filter(Auth_TF == TRUE) %>%
+  group_by(Authorship) %>%
+  mutate(nAuth = n()) %>% 
+  # Pivot objectives column and adjust
+  pivot_longer(cols = c(Obj_Methods, Obj_Projections, Obj_Hypothesis, Obj_Spatial, Obj_Trends),
+               names_to = "Objective", values_to = "Obj_TF") %>%
+  mutate(Objective = str_replace(Objective, "Obj_","")) %>%
+  filter(Obj_TF == TRUE)
 
-```{r Taxa, echo = FALSE}
+objByAuth %>%
+  filter(Obj_TF == TRUE & Auth_TF == TRUE) %>%
+  group_by(Authorship) %>%
+  mutate(TotalAuth = length(unique(Title))) %>%
+  group_by(Authorship, Objective, nAuth) %>%
+  summarise(Count = n()/nAuth) %>%
+  ungroup() %>%
+  complete(Authorship, Objective) %>%
+  mutate(Count = case_when(is.na(Count) ~ 0.01,
+                           !is.na(Count) ~ Count)) %>%
+  
+  ggplot(aes(x = Authorship, y = Count, fill = Objective)) +
+  geom_col(position = "dodge") +
+  ylim(0, 1) + 
+  labs(title = "Percent of papers by affiliation pursuing each objective")
+```
+
+
+```{r Covs by obj, echo = FALSE}
+covData <- reviewResults[["Covariates"]] %>%
+  mutate(`Review ID` = as.numeric(str_replace(`Review ID`, "[:alpha:]", "")))
+
+objData %>%
+   pivot_longer(cols = c(Obj_Methods, Obj_Projections, Obj_Hypothesis, Obj_Spatial, Obj_Trends),
+               names_to = "Objective", values_to = "Obj_TF") %>%
+  mutate(Objective = str_replace(Objective, "Obj_","")) %>%
+  filter(Obj_TF == TRUE) %>%
+  select(`Review ID`, Objective) %>%
+  full_join(covData, by = 'Review ID') %>%
+  
+  group_by(`Review ID`, Objective, Parameter) %>%
+  summarise(Count = n()) %>%
+  filter(Parameter %in% c("Colonisation", "Extinction", "InitialOccupancy", "Detection"),
+         Count < 20) %>%
+  
+  ggplot(aes(x = Objective, y = Count, colour = Parameter)) +
+  geom_boxplot()
+
+
 
 
 ```
 
+
+## Taxa and location
+Details on the study organism was collected for each study to assess any trends in the types of species these models are applied to, with a particular focus on those that are vulnerable to conservation threats. The locations where surveys were conducted was also noted.
+
+```{r Taxa, echo = FALSE}
+taxaData <- reviewResults[["Taxa"]]
+```
+
+As with authorship, the United States dominated the countries where surveys took place.
+
+### Study site maps {.tabset}
+#### Country
+```{r Site country map, echo = FALSE}
+taxaData %>%
+  # Divide by unique title/country
+  group_by(Country, Title) %>%
+  summarise() %>%
+  # Get count of papers by site country
+  group_by(Country) %>%
+  summarise(Count = n()) %>%
+  arrange(-Count) %>% 
+  mutate(Country = case_when(Country == "United States of America" ~ "United States",
+                             Country != "United States of America" ~ Country)) %>%
+  # Merge by country name
+  right_join(countriesShapefile, by = c('Country' = 'COUNTRY')) %>%
+  # Plot map
+  ggplot() +
+  geom_sf(aes(geometry = geometry, fill = log(Count))) +
+  labs(title = "Log paper count by country") +
+  theme_void() + 
+  scale_fill_continuous(name = "Log counts", 
+                        low = "thistle2", 
+                        high = "darkred",
+                        na.value = "white")
+
+# Table with the same data
+taxaData %>%
+  # Divide by unique title/country
+  group_by(Country, Title) %>%
+  summarise() %>%
+  # Get count of papers by site country
+  group_by(Country) %>%
+  summarise(`Total papers` = n()) %>%
+  arrange(-`Total papers`) %>% 
+  kable()
+```
+
+
+#### Continent
+```{r Site continent map, echo = FALSE}
+continentShapefile <- st_read("Analysis/SpatialData/Continents/World_Continents.shp")
+
+taxaData %>%
+  # Divide by unique title/country
+  group_by(Country, Continent, Title) %>%
+  summarise() %>%
+  # Get count of papers by site continent
+  group_by(Continent) %>%
+  summarise(Count = n()) %>%
+  arrange(-Count) %>% 
+  mutate(Continent = case_when(Continent == "Oceania" ~ "Australia",
+                               Continent != "Oceania" ~ Continent)) %>%
+  
+  # Merge by continent name
+  right_join(continentShapefile, by = c('Continent' = 'CONTINENT')) %>%
+  # Plot map
+  ggplot() +
+  geom_sf(aes(geometry = geometry, fill = Count)) +
+  labs(title = "Paper count by continent") +
+  theme_void() + 
+  scale_fill_continuous(name = "Log counts", 
+                        low = "thistle2", 
+                        high = "darkred",
+                        na.value = "white")
+
+
+# Table with the same data
+taxaData %>%
+  # Divide by unique title/country
+  group_by(Country, Title, Continent) %>%
+  summarise() %>%
+  # Get count of papers by continent
+  group_by(Continent) %>%
+  summarise(`Total papers` = n()) %>%
+  arrange(-`Total papers`) %>% 
+  kable()
+
+```
+
+#### Realm
+```{r Site realm map, echo = FALSE}
+#ecoregionsShapefile <- st_read("Analysis/SpatialData/Ecoregions/Terrestrial_Ecoregions.shp") %>%
+#  st_make_valid() 
+#
+#t <- ecoregionsShapefile %>%
+#  group_by(WWF_REALM2) %>%
+#  summarise(geometry = st_combine(geometry))
+#
+#taxaData %>%
+#  # Divide by unique title/country
+#  group_by(Country, Realm, Title) %>%
+#  summarise() %>%
+#  # Get count of papers by site continent
+#  group_by(Realm) %>%
+#  summarise(Count = n()) %>%
+#  arrange(-Count) %>% 
+#  
+#  # Merge by realm
+#  right_join(ecoregionsShapefile, by = c('Realm' = 'WWF_REALM2')) %>%
+#  # Plot map
+#  ggplot() +
+#  geom_sf(aes(geometry = geometry, fill = Count)) +
+#  labs(title = "Paper count by Udvardy realm") +
+#  theme_void() + 
+#  scale_fill_continuous(name = "Log counts", 
+#                        low = "thistle2",
+#                        high = "darkred",
+#                        na.value="white")
+#
+# Table with the same data
+taxaData %>%
+  # Divide by unique title/country
+  group_by(Country, Title, Realm) %>%
+  summarise() %>%
+  # Get count of papers by site realm
+  group_by(Realm) %>%
+  summarise(`Total papers` = n()) %>%
+  arrange(-`Total papers`) %>% 
+  kable()
+```
+
+
+
+## Survey methods
 
 ```{r Survey, echo = FALSE}
 
 ```
 
+## Parameters and covariates
 
 ```{r Covariates, echo = FALSE}
 
 ```
 
 
+## Modelling decisions
+
 ```{r Modelling, echo = FALSE}
 
 ```
-
-
-
-
-
-
 
 
 
