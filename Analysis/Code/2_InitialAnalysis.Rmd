@@ -1,16 +1,21 @@
 ---
 title: "DOM Review: Initial analysis"
-output: html_document
+output: 
+  html_document:
+    theme: journal
+    toc: true
+    toc_float: true
+    toc_collapsed: true
 ---
 
 ```{r Setup, include = FALSE}
 library(tidyverse)
 library(sf)
 library(knitr)
+options(dplyr.summarise.inform = FALSE)
 ```
-
 ## Summary
-This document includes some preliminary analyses of the review results, arranged by the six categories included in the review:
+This document includes some preliminary analyses of the dynamic occupancy model review results, arranged by the six categories included in the review:
 
 * Study
 * Objectives
@@ -19,21 +24,39 @@ This document includes some preliminary analyses of the review results, arranged
 * Parameters and covariates
 * Modelling methods
 
-```{r Read-in, echo = FALSE}
+```{r Read-in, echo = FALSE, cache = TRUE}
+# Load in processed spreadsheet
 reviewResults <- read_rds("Analysis/Outputs/ReviewResults.rds")
+
+# Separate out each page of the spreadsheet
+studyData <- reviewResults[["Study"]]
+objData   <- reviewResults[["Objectives"]]
+taxaData  <- reviewResults[["Taxa"]] %>%
+  mutate(`Review ID` = as.numeric(str_replace(`Review ID`, "[:alpha:]", "")))
+surveyData <- reviewResults[["Survey"]] %>% 
+  mutate(`Review ID` = as.numeric(str_replace(`Review ID`, "[:alpha:]", "")))
+covData   <- reviewResults[["Covariates"]] %>%
+  mutate(`Review ID` = as.numeric(str_replace(`Review ID`, "[:alpha:]", "")))
+modelData <- reviewResults[["Modelling"]]
 ```
+
+```{r Load spatial data, echo = FALSE, results = FALSE, cache= TRUE}
+# Silently load and cache all spatial data to suppress annoying messages
+
+# Load shapefiles of countries & continents of the world
+countriesShapefile <- st_read("Analysis/SpatialData/Countries/World_Countries__Generalized_.shp")
+continentShapefile <- st_read("Analysis/SpatialData/Continents/World_Continents.shp")
+```
+
 
 ## Study 
-Basic information on the locations and affiliations of authors involved with each paper was collected. Two thirds of papers (36/54) were by authors from U.S. institutions; the next greatest total was 3 papers from Australia.
+Basic information on the locations and affiliations of authors involved with each paper was collected. 
 
-```{r Study, echo = FALSE}
-studyData <- reviewResults[["Study"]]
-```
+### Authorship countries {.tabset}
+Two thirds of papers (36/54) were by authors from U.S. institutions; the next greatest total was 3 papers from Australia.
 
-
-```{r Study authorship countries, echo = FALSE, message = FALSE}
-countriesShapefile <- st_read("Analysis/SpatialData/Countries/World_Countries__Generalized_.shp")
-
+#### Map
+```{r Authorship countries map, echo = FALSE, results = FALSE, cache = TRUE}
 ## Map of authorship countries by # of papers
 studyData %>%
   # Get count of papers by author's first country
@@ -50,8 +73,11 @@ studyData %>%
   labs(title = "Log paper count by country") +
   theme_void() + 
   scale_fill_continuous(name = "Log counts", low="thistle2", high="darkred",na.value="white")
-  
-# Table with the same data
+```
+
+#### Table
+```{r Authorship countries table, echo = FALSE}
+# Simple able with the same data as map
 studyData %>%
   group_by(`First author country`) %>%
   summarise(`Total papers` = n()) %>%
@@ -59,6 +85,7 @@ studyData %>%
   kable()
 ```
 
+### Authorship affiliations
 Affiliated institutions were split into four categories: Academic, Non-governmental organisations, Governmental agencies, and private sector groups. These were fairly varied, with academic groups participating in the vast majority of papers but with substantial representation from governmental and NGO groups.
 
 ```{r Affiliation types, echo = FALSE}
@@ -75,21 +102,21 @@ studyData %>%
 ```
 
 
+***
+
+
 
 ## Objectives
-Five categories of objectives and goals were assessed for each paper:
+Five categories of objectives and goals were assessed for each paper; these were not mutually exclusive and many papers had multiple objectives.
 
-* Assessing trends - interested in the trajector of estimated or derived parameters
-* Testing hypotheses - evaluating attributes of a **specific** covariate on parameters
-* Spatial mapping - Extrapolating estimates of papameter values beyond surveyed sites
-* Future projections - Making predictions of parameters into the future
-* Methods - introducing, testing, or demonstrating a new extension to these models
+* Assessing trends: interested in the trajectory of estimated or derived parameters
+* Testing hypotheses: evaluating attributes of a **specific** covariate on parameters
+* Spatial mapping: Extrapolating estimates of parameter values beyond surveyed sites
+* Future projections: Making predictions of parameters into the future
+* Methods: introducing, testing, or demonstrating a new extension to these models
 
-```{r Objectives, echo = FALSE}
-objData <- reviewResults[["Objectives"]]
-```
-
-Monitoring trends and testing hypotheses were the most popular objectives; making predictions (spatial or temporal) were quite rare.
+### Papers per objective
+Monitoring trends and testing hypotheses were the most popular objectives; making predictions (spatial or temporal) was quite rare.
 ```{r Objectives table, echo = FALSE}
 # Make table 
 objData %>% 
@@ -104,8 +131,9 @@ objData %>%
   kable(digits = 1)
 ```
 
-
-```{r Obj by Authorship group, echo = FALSe}
+### Objectives by authorship group
+Objectives did appear to vary based on whether certain types of authors worked on the paper. Where government or NGO authors were present, papers tended to assess trends moreso than testing hypotheses.
+```{r Obj by Authorship group, echo = FALSE}
 objByAuth <- full_join(objData, studyData, by = c("Review ID", "Title")) %>%
   # Pivot authorship column and adjust  
   pivot_longer(cols = c(Author_NGO, Author_Academic, Author_Government, Author_Private), 
@@ -121,60 +149,112 @@ objByAuth <- full_join(objData, studyData, by = c("Review ID", "Title")) %>%
   mutate(Objective = str_replace(Objective, "Obj_","")) %>%
   filter(Obj_TF == TRUE)
 
+# Process to format suited for barplot
 objByAuth %>%
+  # Get tallies of papers per objective per affiliation
   filter(Obj_TF == TRUE & Auth_TF == TRUE) %>%
   group_by(Authorship) %>%
   mutate(TotalAuth = length(unique(Title))) %>%
   group_by(Authorship, Objective, nAuth) %>%
   summarise(Count = n()/nAuth) %>%
   ungroup() %>%
+  # Add categories which had 0 representative papers
   complete(Authorship, Objective) %>%
-  mutate(Count = case_when(is.na(Count) ~ 0.01,
+  mutate(Count = case_when(is.na(Count) ~ 0.005,
                            !is.na(Count) ~ Count)) %>%
+  # Reorder factors for barplot
+  mutate(Objective = factor(Objective, levels = c("Trends", "Hypothesis", "Methods", "Projections", "Spatial"))) %>%
   
+  # Generate barplot
   ggplot(aes(x = Authorship, y = Count, fill = Objective)) +
   geom_col(position = "dodge") +
   ylim(0, 1) + 
-  labs(title = "Percent of papers by affiliation pursuing each objective")
+  labs(title = "Percent of papers by affiliation pursuing each objective",
+       x = "Affiliation type", y = "% of papers")
 ```
 
-
+### Covariates by objection
 ```{r Covs by obj, echo = FALSE}
-covData <- reviewResults[["Covariates"]] %>%
-  mutate(`Review ID` = as.numeric(str_replace(`Review ID`, "[:alpha:]", "")))
-
+# Create cross-table of objective, parameter, and # of covariates by merging relavent sheets
 objData %>%
-   pivot_longer(cols = c(Obj_Methods, Obj_Projections, Obj_Hypothesis, Obj_Spatial, Obj_Trends),
+  # Process objective column
+  pivot_longer(cols = c(Obj_Methods, Obj_Projections, Obj_Hypothesis, Obj_Spatial, Obj_Trends),
                names_to = "Objective", values_to = "Obj_TF") %>%
   mutate(Objective = str_replace(Objective, "Obj_","")) %>%
   filter(Obj_TF == TRUE) %>%
   select(`Review ID`, Objective) %>%
+  # Add covariates data
   full_join(covData, by = 'Review ID') %>%
-  
   group_by(`Review ID`, Objective, Parameter) %>%
   summarise(Count = n()) %>%
+  # Filter to key parameters and drop outliers 
   filter(Parameter %in% c("Colonisation", "Extinction", "InitialOccupancy", "Detection"),
          Count < 20) %>%
+  # Reorder factors for barplot 
+  mutate(Parameter = factor(Parameter, 
+                            levels = c("InitialOccupancy", "Colonisation", "Extinction", "Detection"))) %>%
+  mutate(Objective = factor(Objective, 
+                            levels = c("Trends", "Hypothesis", "Methods", "Projections", "Spatial"))) %>%
   
+  # Generate boxplot
   ggplot(aes(x = Objective, y = Count, colour = Parameter)) +
-  geom_boxplot()
-
-
-
-
+  geom_boxplot() + 
+  labs(title = "Number of covariates by objective", 
+       x = "Paper objective", y = "Number of covariates")
 ```
 
+### Selection by objective
+*A priori* model selection was the most popular method for each of the five objective categories, with more complex options quite rare. *Note that the model selection data needs to be cleaned a bit more to fix overlapping categories*
+```{r Obj by selection method, echo = FALSE}
+# Create cross-table of objective, parameter, and # of covariates by merging relevent sheets
+objData %>%
+  # Process objective column
+  pivot_longer(cols = c(Obj_Methods, Obj_Projections, Obj_Hypothesis, Obj_Spatial, Obj_Trends),
+               names_to = "Objective", values_to = "Obj_TF") %>%
+  mutate(Objective = str_replace(Objective, "Obj_","")) %>%
+  filter(Obj_TF == TRUE) %>%
+  select(`Review ID`, Objective) %>% 
+  # Merge with model selection data
+  right_join(modelData, by = "Review ID") %>%
+  # Add total # of papers in each select category
+  group_by(Objective) %>% 
+  mutate(nSelect = n()) %>%
+  
+  # Make crosstable for Objective and model selection category
+  group_by(Objective, Select_Category) %>%
+  summarise(Percent = n()/nSelect) %>%
+  ungroup() %>%
+  distinct() %>%
+  # Add missing combos for plot
+  complete(Objective, Select_Category) %>%
+  mutate(Percent = case_when(is.na(Percent) ~ 0.01,
+                             !is.na(Percent) ~ Percent)) %>%
+  # Rearrange factors for plot
+  mutate(Select_Category = factor(Select_Category, levels = c("Apriori", "Exhaustive", "PbyP", 
+                                                              "Step", "Simple", "Other", "None")),
+         Objective = factor(Objective, levels = c("Trends", "Hypothesis", "Methods", "Projections", "Spatial"))) %>%
+  
+  #Generate bar plot
+  ggplot(aes(x = Objective, y = Percent, fill = Select_Category)) +
+  geom_col(position = "dodge") +
+  ylim(0, 1) +
+  scale_fill_discrete(name = "Selection category", 
+                    labels = c("A priori", "Exhaustive", "Param by param", "Stepwise",
+                               "Simpler models", "Other", "None")) +
+  labs(title = "Selection methods used by objective type",
+       x = "Objective category", y = "Percentage of papers")
+```
+
+*** 
 
 ## Taxa and location
 Details on the study organism was collected for each study to assess any trends in the types of species these models are applied to, with a particular focus on those that are vulnerable to conservation threats. The locations where surveys were conducted was also noted.
 
-```{r Taxa, echo = FALSE}
-taxaData <- reviewResults[["Taxa"]]
-```
-
 As with authorship, the United States dominated the countries where surveys took place.
 
 ### Study site maps {.tabset}
+As with authorship, the United States/North America dominated the countries where surveys took place.
+
 #### Country
 ```{r Site country map, echo = FALSE}
 taxaData %>%
@@ -214,8 +294,6 @@ taxaData %>%
 
 #### Continent
 ```{r Site continent map, echo = FALSE}
-continentShapefile <- st_read("Analysis/SpatialData/Continents/World_Continents.shp")
-
 taxaData %>%
   # Divide by unique title/country
   group_by(Country, Continent, Title) %>%
@@ -295,32 +373,404 @@ taxaData %>%
   kable()
 ```
 
+### Study species
+Taxa were roughly split between mammals, birds, and herptiles; fish and invertebrates were scantly represented. 16 were recognised as threatened species by the authors, and 8 were invasives.
 
+```{r Study species, echo = FALSE}
+taxaData %>% 
+  # Simplify out any repeats
+  group_by(`Review ID`, Taxa, `Taxa keywords`) %>%
+  summarise() %>%
+  # Tally up and table
+  group_by(Taxa = `Taxa keywords`) %>%
+  summarise(Count = n()) %>%
+  arrange(-Count) %>%
+  kable
+```
+
+### Threat categories
+Threats to each species which were mentioned by the author were denoted. Habitat loss was the most common threat mentioned, followed by invasive species.
+```{r Threat categories, echo = FALSE}
+taxaData %>% 
+  pivot_longer(c(Threat_HabitatLoss, Threat_Exploitation, Threat_ClimateChange,
+                 Threat_Invasives, Threat_Disaster, Threat_Disease), 
+               names_to = 'Threat', values_to = 'ThreatTF') %>%
+  mutate(Threat = str_replace(Threat, "Threat_", "")) %>%
+  group_by(Threat) %>%
+  summarise(Percent = 100*sum(ThreatTF)/94) %>%
+  arrange(-Percent) %>%
+  kable(digits = 2)
+```
+
+### Study size
+Study area followed an apparent log-normal distribution centered on the 100-10000km^2 range
+```{r Study size, echo = FALSE}
+taxaData %>% 
+  #Simplify out any repeats
+  group_by(`Review ID`, `Study Size`) %>%
+  summarise() %>%
+  # Tally up
+  group_by(`Study Size`) %>%
+  summarise(Count = n()) %>%
+  filter(!`Study Size` %in% c('Not specified', 'Unspecified')) %>%
+  
+  # Make horizontal bar plot
+  ggplot(aes(x = Count, y = `Study Size`)) +
+  geom_col(fill = "darkred") +
+  labs(title = "Papers by study size",
+       x = "Number of papers", y = "Study area in km^2")
+```
+
+### Covariates by study size
+```{r Covariates by study size, echo = FALSE}
+taxaData %>% 
+  #Simplify out any repeats
+  group_by(`Review ID`, `Study Size`) %>%
+  summarise() %>%
+  # Drop unspecified
+  group_by(`Study Size`) %>%
+  filter(!`Study Size` %in% c('Not specified', 'Unspecified')) %>%
+  # Join to covariate table
+  left_join(covData, by = 'Review ID') %>%
+  # Filter to core parameters
+  filter(Parameter %in% c('InitialOccupancy', 'Colonisation', 'Extinction', 'Detection')) %>%
+  # Tally up
+  group_by(`Review ID`, Parameter) %>%
+  summarise(Count = n(), `Study Size` = `Study Size`) %>%
+  # Reorder factors
+  mutate(Parameter = factor(Parameter,
+                            levels = c('InitialOccupancy', 'Colonisation', 'Extinction', 'Detection'))) %>%
+  
+  # Create boxplot
+  ggplot(aes(x = Count, y = `Study Size`, colour = Parameter)) +
+  geom_boxplot() + 
+  scale_colour_discrete(limits = c('Detection', 'Extinction', 'Colonisation', 'InitialOccupancy')) +
+  labs(title = "Number of covariates by study size",
+       x = "Number of covariates", y = "Study size in km^2")
+```
+
+
+***
 
 ## Survey methods
+Information on the data collection and sampling processes was collected from all papers.
+
+### Study duration
+Average study length from first to last survey was 83 months (~7 years), although they varied from just one month to 40 years in duration.
 
 ```{r Survey, echo = FALSE}
-
+surveyData %>%
+  mutate(`Study duration` = as.numeric(`Study duration`)) %>%
+  # Remove duplicates
+  group_by(`Review ID`, `Study duration`) %>%
+  summarise() %>% 
+  ungroup() %>%
+  mutate(Mean = mean(`Study duration`)) %>%
+  
+  # Basic histogram
+  ggplot(aes(x = `Study duration`)) +
+  geom_vline(aes(xintercept = Mean), colour = "thistle4") +
+  geom_histogram(fill = "darkred", bins = 24) +
+  labs(title = "Duration of studies", 
+       x = "Study duration in months", y = "Number of papers") 
 ```
+
+
+### Sampling occasions {.tabset}
+The primary sampling occasion (season) and secondary occasion (generally 'visit', used to calculate detection) were recorded. Number of secondary occasions per primary occasion sometimes varied within a study, min and max counts are noted.
+
+#### Primary occasions
+The median number of primary occasions from the reviewed studies was *5*, although two outlying studies had over *200* primary occasions. 
+```{r Primary occasions, echo = FALSE, results = FALSE, message = FALSE}
+surveyData %>% 
+  group_by(`Review ID`, MaxPrimary) %>%
+  summarise() %>%
+  ungroup() %>%
+  mutate(Median = median(MaxPrimary)) %>%
+  
+  ggplot(aes(x = MaxPrimary)) +
+  geom_histogram(fill = "darkred") +
+  geom_vline(aes(xintercept = Median), colour = "thistle4") +
+  labs(title = "Number of primary occasions per study",
+       subtitle = "Median Line Indicated", 
+       x = "Number of primary occasions", y = "Number of papers")
+```
+
+#### Secondary occasions
+Studies had a median of *4* secondary occasions, with a maximum of *99*
+```{r Secondary occasions, echo = FALSE, results = FALSE, message = FALSE, warning = FALSE}
+surveyData %>% 
+  group_by(`Review ID`, MaxSecondary) %>%
+  summarise() %>%
+  ungroup() %>%
+  mutate(Median = median(MaxSecondary, na.rm = TRUE)) %>%
+  
+  ggplot(aes(x = MaxSecondary)) +
+  geom_histogram(fill = "darkred") +
+  geom_vline(aes(xintercept = Median), colour = "thistle4") +
+  labs(title = "Number of secondary occasions per study",
+       subtitle = "Median line indicated", 
+       x = "Number of secondary occasions", y = "Number of papers")
+```
+
+
+### Capture method
+The most common method for detections was 'audiovisual,' where human observers visually or acoustically sampled the target taxa in a structured manner (e.g., as a transect or point count). Searches (where the site was preferentially searched for the species) and trapping was also common. Citizen science was involved in 7 papers.
+```{r Capture method table, echo = FALSE}
+surveyData %>% 
+  group_by(`Review ID`, `Capture method`) %>%
+  summarise() %>%
+  group_by(`Capture method`) %>% 
+  summarise(`Number of papers` = n()) %>%
+  arrange(-`Number of papers`) %>%
+  kable()
+```
+
+### Site types
+The definition of a 'site' (the level of occupied and unoccupied states) was variable. Irregular areas (like habitat patches or ponds) were the most common, followed by cartesian points and grid cells.
+```{r Site type, echo = FALSE}
+surveyData %>% 
+  group_by(`Review ID`, `Type site`) %>%
+  summarise() %>%
+  group_by(`Type site`) %>% 
+  summarise(`Number of papers` = n()) %>%
+  arrange(-`Number of papers`) %>%
+  kable()
+```
+
+### Number of sites 
+
+The number of sites ranged from 7 to 9394, with a mean of *377* sites.
+```{r Number of sites, echo = FALSE, message = FALSE, warning = FALSE}
+surveyData %>%
+  group_by(`Review ID`, NumSites) %>%
+  summarise() %>%
+
+  ggplot() +
+  geom_histogram(aes(x = NumSites), fill = "darkred") +
+  scale_x_continuous(trans = "log10") +
+  labs(title = "Number of sites per survey", subtitle = "Log transformed",
+       x = "Number of sites", y = "Number of papers")
+```
+
+### Number of sites by study size
+As would be expected, the number of sites increases with the size of the study area.
+```{r Num sites by study size, echo = FALSE, warning = FALSE}
+surveyData %>%
+  left_join(taxaData, by = "Review ID")  %>%
+  group_by(`Review ID`, NumSites, `Study Size`) %>%
+  summarise() %>%
+  filter(!`Study Size` %in% c("Unspecified", "Not specified")) %>%
+  
+  ggplot() +
+  geom_boxplot(aes(x = `Study Size`, y = NumSites), colour = "darkred") +
+  scale_y_continuous(trans = "log10") + 
+  labs(title = "Number of sites by study size",
+       x = "Study size (km2)", y = "Number of Sites (log transformed)") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+```
+### Covariates by site count
+
+```{r Number of covariates by sites, echo = FALSE, message = FALSE, warning = FALSE}
+surveyData %>%
+  left_join(covData, by = "Review ID")  %>%
+  mutate(`Total covariates` = as.numeric(`Total covariates`)) %>%
+  group_by(`Review ID`, NumSites, Parameter, `Total covariates`) %>%
+  summarise() %>%
+  filter(Parameter %in% c('InitialOccupancy', 'Colonisation', 'Extinction', 'Detection')) %>%
+  group_by(Parameter) %>%
+  
+  ggplot(aes(x = NumSites, y = `Total covariates`, colour = Parameter)) +
+  geom_point(alpha = 0.5, size = 4, position = "jitter") +
+  geom_smooth(method = "lm", se = FALSE) +
+  scale_x_continuous(trans = "log10") + scale_y_continuous(trans = "log10") +
+  labs(title = "Covariate count by number of sites", subtitle = "Log transformed",
+       x = "Number of sites", y = "Total number of covariates")
+```
+
+### Sampling method
+Methods used to select sites were documented - this section needs to be revisited, as some categories can likely be combined. The most interesting question here may in whether selection falls under a broad 'random' or 'preferential' system, and how that relates to objectives or covariates.
+```{r Sampling method table, echo = FALSE}
+surveyData %>%
+  group_by(`Review ID`, `Sampling method`) %>%
+  summarise() %>%
+  group_by(`Sampling method`) %>%
+  summarise(`Number of papers` = n()) %>%
+  arrange(-`Number of papers`) %>%
+  kable()
+```
+
+***
 
 ## Parameters and covariates
+The most complex and in-depth category of data was the covariates, which were organised by parameter and covariate type.
 
-```{r Covariates, echo = FALSE}
+### Parameters estimated
+The vast majority of papers used the four core parameters of the standard DOM: **Initial occupancy**, **colonisation**, **extinction**, and **detection** (although 12 used the reciprocal of **Extinction**, **Persistence**)
 
+```{r Parameter table, echo = FALSE}
+covData %>% 
+  group_by(`Review ID`, Parameter) %>% 
+  summarise() %>%
+  group_by(Parameter) %>%
+  summarise(`Number of papers` = n()) %>%
+  arrange(-`Number of papers`) %>% 
+  mutate(Percentage = `Number of papers` / 54)
+  kable()
 ```
 
+### Multi-species
+*9* models included at least one multi-species parameter.
+```{r Multi-species papers, echo = FALSE}
+covData %>%
+  group_by(`Review ID`, MultiSpecies, Parameter) %>%
+  summarise() %>%
+  group_by(`Review ID`) %>%
+  summarise(MultiSpecies = sum(MultiSpecies)) %>%
+  mutate(MultiSpecies = case_when(MultiSpecies >0 ~ 1,
+                                  MultiSpecies == 0 ~ 0)) %>%
+  summarise(sum(MultiSpecies))
+```
+
+
+### Covariate types by parameter
+```{r Covariates by parameter, echo = FALSE, warning = FALSE}
+covData %>%
+  group_by(`Review ID`, Parameter) %>%
+  summarise() %>%
+  filter(Parameter %in% c('InitialOccupancy', 'Colonisation', 'Extinction', 'Detection')) %>%
+  group_by(Parameter) %>%
+  mutate(ParamTotal = n()) %>%
+  left_join(covData[,c('Review ID', 'Parameter', 'Category')], by = c("Parameter", "Review ID")) %>%
+  group_by(Parameter, Category, ParamTotal) %>%
+  summarise(Percent = n()/ParamTotal) %>%
+  group_by(Parameter, Category, Percent) %>%
+  summarise() %>%
+  ungroup() %>%
+  complete(Parameter,Category) %>%
+  filter(!is.na(Category),
+         !Category %in% c('Other', 'Unspecified')) %>%
+  
+  ggplot() +
+  geom_col(aes(x = Category, y = Percent, fill = Category)) +
+  ylim(c(0,1)) +
+  facet_grid(rows = vars(Parameter)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+```
+
+### Number of covariate by parameter
+```{r Covariate count by parameter, echo = FALSE, warning = FALSE, message = FALSE}
+covData %>%
+  group_by(`Review ID`, Parameter, `Total covariates`) %>%
+  summarise() %>%
+  mutate(`Total covariates` = as.numeric(`Total covariates`)) %>%
+  filter(Parameter %in% c('InitialOccupancy', 'Colonisation', 'Extinction', 'Detection')) %>%
+  
+  ggplot() +
+  geom_histogram(aes(x = `Total covariates`, fill = Parameter), binwidth = 1) +
+  facet_grid(rows = vars(Parameter)) +
+  labs(title = "Number of covariates by parameter type",
+      x = "Number of covariates", y = "Number of papers")
+```
+
+
+### Dynamicity in covariate types
+Covariates varied drastically in whether they were **static** or **dynamic**
+```{r Dynamic covariates, echo = FALSE}
+covData %>%
+  group_by(`Review ID`, Category, Parameter, Dynanimity) %>%
+  summarise() %>%
+  filter(!is.na(Category),
+         !Category %in% c("Other", "Unspecified"),
+         Parameter %in% c("InitialOccupancy", "Colonisation", "Extinction", "Detection")) %>%
+  group_by(Category) %>%
+  mutate(nCategory = n()) %>%
+  group_by(Category, nCategory, Dynanimity) %>%
+  summarise(Percent = n()/nCategory) %>%
+  group_by(Category, Dynanimity, Percent) %>%
+  summarise() %>%
+  
+  ggplot() +
+  geom_col(aes(y = Category, x = Percent, fill = Dynanimity)) +
+  labs(title = 'Dynanimity by covariate type',
+       x = 'Percent of covariates', y = 'Covariate category') +
+  scale_fill_discrete(labels = c("Dynamic", "Static", "Unclear"))
+```
+
+
+### Covariate scale
+'Scale' defined as whether the covariate represents a point, area, distance, etc.
+
+```{r Covariate scale, echo = FALSE}
+covData %>%
+  group_by(`Review ID`, Category, Parameter, Scale) %>%
+  summarise() %>%
+  filter(!is.na(Category),
+         !Category %in% c("Other", "Unspecified"),
+         Parameter %in% c("InitialOccupancy", "Colonisation", "Extinction", "Detection")) %>%
+  group_by(Category) %>%
+  mutate(nCategory = n()) %>%
+  group_by(Category, nCategory, Scale) %>%
+  summarise(Percent = n()/nCategory) %>%
+  group_by(Category, Scale, Percent) %>%
+  summarise() %>%
+  
+  ggplot() +
+  geom_col(aes(y = Category, x = Percent, fill = Scale)) +
+  labs(title = 'Scale by covariate type',
+       x = 'Percent of covariates', y = 'Covariate category') +
+  scale_fill_discrete(labels = c("Area", "Distance", "Global", "Point", "Unspecified/Unclear"))
+```
+
+
+***
 
 ## Modelling decisions
 
-```{r Modelling, echo = FALSE}
+### Selection method
+The majority of papers selected models **a priori** (either single or multiple)
+```{r Selection category, echo = FALSE}
+modelData %>%
+  group_by(`Review ID`, Select_Category) %>%
+  summarise() %>%
+  group_by('Selection category' = Select_Category) %>%
+  summarise(Percent = n()/54) %>%
+  arrange(-Percent) %>%
+  kable()
+```
 
+### Percent bayesian
+*41%* of papers used a bayesian implementation
+```{r Percent bayesian, echo = FALSE, include = FALSE}
+modelData %>%
+  group_by(`Review ID`, Bayesian) %>%
+  summarise() %>%
+  mutate(Bayesian = case_when(Bayesian == "Y" ~ 1,
+                              Bayesian == "N" ~ 0)) %>%
+  group_by(Bayesian) %>%
+  summarise(Bayesian = sum(Bayesian))
+22/54
 ```
 
 
 
+### Bayesian selection methods
 
-
-
-
-
-
+```{r Bayesian selection methods, echo = FALSE}
+modelData %>%
+  group_by(`Review ID`, Select_Category, Bayesian) %>%
+  summarise() %>% 
+  mutate(n = case_when(Bayesian == "Y" ~ 22,
+                       Bayesian == "N" ~ 32)) %>%
+  mutate(Bayesian = case_when(Bayesian == "Y" ~ "Bayesian",
+                              Bayesian == "N" ~ "Frequentist")) %>%
+  group_by('Selection category' = Select_Category, Bayesian) %>%
+  summarise(Percent = n()/n) %>%
+  group_by(`Selection category`, Bayesian, Percent) %>%
+  summarise() %>%
+  
+  ggplot() +
+  geom_col(aes(x = `Selection category`, y = Percent, fill = `Selection category`)) +
+  ylim(c(0,1)) +
+  facet_grid(rows = vars(Bayesian)) 
+```

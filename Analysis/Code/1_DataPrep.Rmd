@@ -218,7 +218,7 @@ modelling_sheet <- spreadsheet[["Modelling"]] %>%
   separate(`Selection category`, into = c("Select_Category", "Select_Type"), sep = "_") %>%
   select(`Review ID`, Title, Bayesian, Select_Category, Select_Type)
 
-modelling_sheet$Select_Category[modelling_sheet$Select_Category == "APriori"] <- "Apriori"
+modelling_sheet$Select_Category[modelling_sheet$Select_Category %in% c("APriori", "Aprioiri")] <- "Apriori"
 
 ```
 
