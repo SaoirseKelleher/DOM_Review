@@ -553,6 +553,7 @@ surveyData %>%
        x = "Number of sites", y = "Number of papers")
 ```
 
+
 ### Number of sites by study size
 As would be expected, the number of sites increases with the size of the study area.
 ```{r Num sites by study size, echo = FALSE, warning = FALSE}
@@ -569,6 +570,7 @@ surveyData %>%
        x = "Study size (km2)", y = "Number of Sites (log transformed)") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
 ```
+
 ### Covariates by site count
 
 ```{r Number of covariates by sites, echo = FALSE, message = FALSE, warning = FALSE}
@@ -615,13 +617,13 @@ covData %>%
   group_by(Parameter) %>%
   summarise(`Number of papers` = n()) %>%
   arrange(-`Number of papers`) %>% 
-  mutate(Percentage = `Number of papers` / 54)
+  mutate(Percentage = `Number of papers` / 54) %>%
   kable()
 ```
 
 ### Multi-species
 *9* models included at least one multi-species parameter.
-```{r Multi-species papers, echo = FALSE}
+```{r Multi-species papers, echo = FALSE, include = FALSE}
 covData %>%
   group_by(`Review ID`, MultiSpecies, Parameter) %>%
   summarise() %>%
@@ -736,7 +738,7 @@ modelData %>%
   group_by('Selection category' = Select_Category) %>%
   summarise(Percent = n()/54) %>%
   arrange(-Percent) %>%
-  kable()
+  kable(digits = 2)
 ```
 
 ### Percent bayesian
