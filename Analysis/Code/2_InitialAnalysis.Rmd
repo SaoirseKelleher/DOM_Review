@@ -117,6 +117,7 @@ Five categories of objectives and goals were assessed for each paper; these were
 
 ### Papers per objective
 Monitoring trends and testing hypotheses were the most popular objectives; making predictions (spatial or temporal) was quite rare.
+
 ```{r Objectives table, echo = FALSE}
 # Make table 
 objData %>% 
