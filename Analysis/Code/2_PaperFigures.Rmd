@@ -1,0 +1,205 @@
+---
+title: "DOM review: Paper figures"
+output: html_document
+---
+
+```{r Packages, include = FALSE}
+library(tidyverse)
+library(readxl)
+library(knitr)
+library(sf)
+library(ggalluvial)
+```
+
+# Read-in data
+```{r read in data, echo = FALSE}
+reviewResults <- read_rds("Analysis/Outputs/ReviewResults.rds")
+```
+
+# Map of study sites
+```{r map of study sites}
+# load world map
+continents <- st_read("Analysis/SpatialData/Continents/World_Continents.shp")
+
+sitePoints <- reviewResults$Taxa %>%
+  select(Title, `Center point`) %>%
+  separate(`Center point`, into = c('Latitude', 'Longitude'), sep = ", ") %>%
+  st_as_sf(coords = c("Longitude", "Latitude"), crs = st_crs(continents)) 
+  
+ggplot() +
+  geom_sf(data = continents, aes(fill = CONTINENT), show.legend = FALSE) +
+  geom_sf(data = sitePoints, colour = "black", shape = 4, size = 4) +
+  theme_void()
+
+
+
+```
+
+
+```{r alluvial plot}
+reviewResults$Modelling %>% 
+  filter(Bayesian %in% c("Y", "N")) %>%
+  mutate(Bayesian = case_when(Bayesian == "Y" ~ "Bayesian",
+                              .default = "Frequentist")) %>%
+  group_by(`Prefiltering category`, `Selection category`, Bayesian) %>%
+  summarise(n = n()) %>%
+  
+  ggplot(aes(y = n, axis1 = `Prefiltering category`, axis2 = `Selection category`)) +
+  geom_alluvium(aes(fill = `Selection category`)) +
+  geom_stratum() +
+  geom_text(stat = "stratum", aes(label = after_stat(stratum)), size = 7) +
+  facet_grid(rows = vars(Bayesian), scales = "free_y") +
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_text(size = 20),
+        strip.text = element_text(size = 20))
+
+
+
+```
+
+
+
+```{r}
+
+vec <-  c("test_a20", "test2_n15", "testing3_p3")
+
+
+str_replace(string = vec, pattern = "(?<=\\_)[:alpha:]{1}", replacement = "s")
+
+
+
+```
+
+
+
+
+
+```{r stacked bar covs}
+simpleCovs <- reviewResults$Covariates %>%
+  select(Title, Parameter, CovCategory, EnvCategory, Scale, CovObsType) %>%
+  left_join(select(reviewResults$Study, Title, Year), by = "Title")
+
+simpleCovs %>%
+  mutate(Parameter = case_when(Parameter == "Persistence" ~ "Extinction",
+                               .default = Parameter)) %>%
+  filter(Parameter %in% c("InitialOccupancy", "Colonisation", "Extinction", "Detection")) %>%
+  filter(CovCategory != "NONE") %>%
+  filter(!CovCategory %in% c('UNCLEAR', 'UNSPECIFIED')) %>%
+  group_by(Parameter, CovCategory) %>% 
+  summarise(avgcount = n()/47) %>%
+  
+  ggplot() +
+  geom_col(aes(x = Parameter, y = avgcount, fill = CovCategory)) +
+  scale_fill_discrete("Covariate Category",
+                      limits = c("E", "CONN", "INT", "SEAS", "SPEC", "SURV", "OTHER"),
+                     labels = c("Environmental", "Connectivity", "Interactions", "Season effect",
+                               "Species effect", "Survey details", "Other")) +
+  scale_x_discrete(limits = c("InitialOccupancy", "Colonisation", "Extinction", "Detection")) +
+  labs(title = "Average number of covariates per parameter", y = "Average number of covariates", x = "Parameter")
+
+
+
+# Total number of covariates by year
+simpleCovs %>%
+  filter(Parameter %in% c("InitialOccupancy", "Colonisation", "Extinction", "Detection")) %>%
+  filter(CovCategory != "NONE") %>%
+  filter(!is.na(CovCategory)) %>%
+  filter(!CovCategory %in% c('UNCLEAR', 'UNSPECIFIED')) %>%
+  filter(!is.na(Year)) %>% 
+  group_by(Year) %>%
+  mutate(npapers = length(unique(Title))) %>%
+  ungroup() %>%
+  group_by(CovCategory, Year, npapers) %>%
+  summarise(count = n()) %>%
+  mutate(avgCount = count/npapers) %>%
+  
+  ggplot() + 
+  geom_col(aes(x = Year, y = avgCount, fill = CovCategory)) +
+  scale_fill_discrete("Covariate Category",
+                      limits = c("E", "CONN", "INT", "SEAS", "SPEC", "SURV", "OTHER"),
+                    labels = c("Environmental", "Connectivity", "Interactions", "Season effect",
+                               "Species effect", "Survey details", "Other")) +
+  labs(title = "Average total number of covariates by year", 
+       y = "Average number of covariates")
+```
+
+```{r covs by objective}
+reviewResults$Objectives %>%
+  select(Title, Obj_Methods, Obj_Projections, Obj_Spatial, Obj_Hypothesis) %>%
+  pivot_longer(cols = c(Obj_Methods, Obj_Spatial, Obj_Hypothesis, Obj_Projections),
+               names_to = "Objective", values_to = "ObjIncluded") %>%
+  filter(ObjIncluded == TRUE) %>%
+  mutate(Objective = case_when(Objective == "Obj_Methods" ~ "Methods",
+                               Objective == "Obj_Spatial" ~ "Spatial Prediction",
+                               Objective == "Obj_Projections" ~ "Future Prediction",
+                               Objective == "Obj_Hypothesis" ~ "Hypothesis Testing")) %>%
+  
+  right_join(simpleCovs, by = "Title") %>%
+  filter(Parameter %in% c("InitialOccupancy", "Colonisation", "Extinction", "Detection")) %>%
+  filter(CovCategory != "NONE") %>%
+  filter(!is.na(CovCategory)) %>%
+  filter(!CovCategory %in% c('UNCLEAR', 'UNSPECIFIED')) %>%
+  group_by(Objective) %>%
+  mutate(npapers = length(unique(Title))) %>%
+  ungroup() %>%
+  group_by(CovCategory, Objective, npapers) %>%
+  summarise(count = n()) %>%
+  mutate(avgCount = count/npapers) %>%  
+  filter(!is.na(Objective)) %>%
+  
+  ggplot() + 
+  geom_col(aes(x = Objective, y = avgCount, fill = CovCategory)) +
+  scale_fill_discrete("Covariate Category",
+                      limits = c("E", "CONN", "INT", "SEAS", "SPEC", "SURV", "OTHER"),
+                    labels = c("Environmental", "Connectivity", "Interactions", "Season effect",
+                               "Species effect", "Survey details", "Other")) +
+  labs(title = "Average total number of covariates by objective", 
+       y = "Average number of covariates")
+
+```
+
+
+```{r stat tables}
+reviewResults$Study %>%
+  group_by(`First author country`) %>%
+  summarise(n = n())
+
+reviewResults$Survey %>%
+  group_by(`Capture method`) %>%
+  summarise(n = n())
+  
+
+reviewResults$Covariates %>%
+  filter(Parameter %in% c("InitialOccupancy", "Colonisation", "Extinction", "Detection")) %>%
+  filter(CovCategory != "NONE") %>%
+  filter(!is.na(CovCategory)) %>%
+  filter(!CovCategory %in% c('UNCLEAR', 'UNSPECIFIED')) %>%
+  group_by(CovCategory, EnvCategory, Title) %>%
+  summarise() %>%
+  group_by(CovCategory, EnvCategory) %>%
+  summarise(n = n()) %>%
+  ungroup() %>%
+  mutate(percent = n/47)
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

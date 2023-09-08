@@ -84,11 +84,13 @@ objectives_sheet <- spreadsheet[["Objectives and Inference"]] %>%
                                      `Future predictions?` == "N" ~ FALSE),
          Obj_Spatial = case_when(`Spatial predictions?` == "Y" ~ TRUE,
                                  `Spatial predictions?` == "N" ~ FALSE),
+         Obj_Trends = case_when(`Observing trends?` == "Y" ~ TRUE,
+                                `Observing trends?` == "N" ~ FALSE),
          Obj_Hypothesis = case_when(`Hypothesis testing?` == "Y" ~ TRUE,
                                     `Hypothesis testing?` == "N" ~ FALSE)) %>%
   # Drop unneeded columns
   select(`Review ID`, Title, Obj_Methods, Obj_Projections, 
-         Obj_Spatial, Obj_Hypothesis)
+         Obj_Spatial, Obj_Trends, Obj_Hypothesis)
 
 # Print first few rows
 kable(head(objectives_sheet))
@@ -113,10 +115,10 @@ taxa_location_sheet <- spreadsheet[["Species and Location"]] %>%
   # Split country column by commas
   separate_rows(Country, sep = ", ") %>%
   # Select only necessary fields
-  select(`Review ID`, Title, Taxa, `Taxa keywords`, `IUCN Status`, Number, 
+  select(`Review ID`, Title, Taxa, `Taxa keywords`, Number, 
          Threat_HabitatLoss, Threat_Exploitation, Threat_ClimateChange,
          Threat_Invasives, Threat_Disease, Threat_Disaster,
-         Country, Continent, Realm, `Study Size`, `Center point`)
+         Country, Continent, Realm, `Study Size`)
 kable(head(taxa_location_sheet))
 ```
 
@@ -180,17 +182,22 @@ This section includes estimated parameters and covariates considered for inclusi
 covariates_sheet <- spreadsheet[["Covariates"]] %>%
   # Filter down to only included papers
   filter(Status == "Complete") %>%
-  # Select parameter prefix
+  # Note modifiers for parameters, then split them off from parameters
+  mutate(MultiSpecies = case_when(str_detect(Parameter,"MS") ~ TRUE,
+                                  !str_detect(Parameter, "MS") ~ FALSE),
+         FalsePositive = case_when(str_detect(Parameter, "FP") & str_detect(Parameter, "Detection") ~ TRUE)) %>%
   mutate(Parameter = str_split(Parameter, "_", simplify = TRUE)[,1]) %>%
   # Split out each covariate
-  separate_rows(`Covariate List`, sep =  ", ") %>%
-  # Convert to uppercase
-  mutate(`Covariate List` = toupper(`Covariate List`)) %>%
+  separate_rows(`Categories`, sep =  ", ") %>%
   # Convert 'none' to NA
-  separate(`Covariate List`, c("Category", "Scale", "CovObsType", "Complexity"), sep = "_") %>%
-  separate(`Category`, c("CovCategory", "EnvCategory"), sep = "-") %>%
-  select(`Review ID`, Title, `Total covariates`, Parameter, CovCategory, EnvCategory, Scale, 
-         CovObsType, Complexity)
+  separate(`Categories`, c("Category", "Scale", "Dynanimity"), sep = "_") %>%
+  select(`Review ID`, Title, `Total covariates`, Parameter, Category, Scale, 
+         Dynanimity, `Higher order`, `Interactive terms`,
+         MultiSpecies, FalsePositive)
+
+covariates_sheet$Category[covariates_sheet$Category %in% c("None", "NA")] <- NA
+covariates_sheet$Category[covariates_sheet$Category == c("Topography")] <- "Topographic"
+covariates_sheet$Category[covariates_sheet$Category == c("Hydrology")] <- "Hydrologic"
 
 kable(head(covariates_sheet))
 ```
@@ -207,10 +214,11 @@ This contains information about the model selection and evaluation process
 ```{r Process modelling, echo = FALSE}
 modelling_sheet <- spreadsheet[["Modelling"]] %>%
   filter(Status == "Complete") %>%
-  mutate(`Prefiltering category` = tolower(`Prefiltering category`),
-         `Selection category` = tolower(`Selection category`)) %>%
-  select(`Review ID`, Title, Bayesian, `Prefiltering category`, `Selection category`, `Evaluation method`,
-         `Multi-species`, Connectivity) 
+  separate_rows(`Selection category`, sep = ", ") %>%
+  separate(`Selection category`, into = c("Select_Category", "Select_Type"), sep = "_") %>%
+  select(`Review ID`, Title, Bayesian, Select_Category, Select_Type)
+
+modelling_sheet$Select_Category[modelling_sheet$Select_Category %in% c("APriori", "Aprioiri")] <- "Apriori"
 
 ```
 
@@ -218,6 +226,7 @@ modelling_sheet <- spreadsheet[["Modelling"]] %>%
 
 
 ```{r Save output, echo = FALSE}
+
 reviewResults <- list(Study = study_sheet,
                       Objectives = objectives_sheet,
                       Taxa = taxa_location_sheet,
