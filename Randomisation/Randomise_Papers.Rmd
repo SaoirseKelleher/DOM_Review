@@ -1,0 +1,137 @@
+---
+title: Randomly select papers for review
+output:
+  html_document: default
+  pdf_document: default
+---
+
+***
+
+## Summary
+This document contains code for randomising paper ranks for the review on Dynamic Occupancy Models. For each of four search parameters, papers are stratified into 5 year time periods and randomly ranked. The top 25% or top 5 papers in each ranking category, whichever is larger, will be evaluated for inclusion; papers which do not qualify for review will be replaced with the next highest rank. 
+
+***
+ 
+```{r setup, echo = FALSE, message = FALSE}
+library("knitr")
+library("tidyverse") 
+library("readxl")
+
+# Need seed set for reproducibility
+set.seed(5378)
+```
+
+Read in the excel sheets and process out the header
+```{r Read-in excel sheets, echo = FALSE, message = FALSE, warning = FALSE}
+# From the excel review spreadsheet, read in only the identifying characteristics 
+identifierSheet <- readxl::read_xlsx("Data/Review Spreadsheet.xlsx", 
+                                     sheet = "Metadata", skip = 1) %>%
+  # Drop rows prior to start of data
+  slice(4:nrow(.)) %>%
+  # Only need google search query and the ID reference
+  select(Review_ID, Query = `Search terms`) 
+# Repeat with the study metadata
+studyDataSheet <- readxl::read_xlsx("Data/Review Spreadsheet.xlsx", 
+                                    sheet = "Study data", skip = 1) %>%
+  # Cut out non-data rows
+  slice(4:nrow(.)) %>%
+  # Only need year data and ID reference
+  select(Review_ID, Year) 
+```
+
+Combine the two sheets, the former containing metadata and the latter containing information on the papers
+```{r Combine and merge, echo = FALSE, message = FALSE}
+# Merge paper queries and metadata
+paperList <- full_join(identifierSheet, studyDataSheet, 
+                       by = "Review_ID")
+
+# Exclude some non-query papers and add year periods to the rest
+includedPapers <- paperList %>%
+  # Drop empty rows, excluded, and incidental papers
+  filter(!is.na(Query) & Query != "INCIDENTAL" & Year != "EXCLUDE") %>%
+  # Break into time periods 
+  mutate(YearPeriod = case_when(Year %in% as.character(2000:2005) ~ "2000:2005",
+                                Year %in% as.character(2005:2010) ~ "2005:2010",
+                                Year %in% as.character(2010:2015) ~ "2010:2015",
+                                Year %in% as.character(2015:2021) ~ "2015:2021"))
+```
+
+
+Assign each paper a random overll rank, then order the papers within their strata by the overall rank
+```{r Randomly rank papers within strata}
+# Randomly rank papers, then rank within the strata
+rankedPapers <- includedPapers %>%
+  # Add random ranks for all papers
+  mutate(randRank = sample(x = 1:nrow(.), size = nrow(.))) %>%
+  # Re-rank within strata
+  group_by(Query, YearPeriod) %>%
+  arrange(Query, YearPeriod, randRank) %>%
+  mutate(GroupRank = row_number()) 
+```
+
+
+Highlight which papers are ranked highly enough to qualify for evaluation 
+```{r Highlight papers to read}
+# Identify which papers qualify to be read
+highlightedPapers <- rankedPapers %>%
+  group_by(Query, YearPeriod) %>%
+  mutate(PercentRank =  GroupRank/max(GroupRank)) %>%
+  mutate(ToRead = case_when(
+    # If there are fewer than 5, read them all
+    max(GroupRank) <= 5 ~ "YES",
+    # If there are 20 or fewer, read the top 5
+    max(GroupRank) <= 20 & GroupRank <= 5 ~ "YES",
+    max(GroupRank) <= 20 & GroupRank >= 5 ~ "NO",
+    # If there are 21 or more, read the top 25%
+    max(GroupRank) >= 21 & PercentRank <= 0.25  ~ "YES",
+    max(GroupRank) >= 21 & PercentRank > 0.25 ~ "NO")) %>%
+  ungroup() %>%
+  unite(col = Group, c(Query, YearPeriod)) %>%
+  # Get Review_ID, GroupRank, and ToRead
+  select(Review_ID, Group, OverallRank = randRank, GroupRank, ToRead)
+```
+
+Add previously unranked papers, remove extraneous columns, and save both this workspace and the rankings to disk.
+```{r Reformat and save}
+# Get the unranked papers to add to the list
+unrankedPapers <- paperList %>% 
+  # Drop empty rows, excluded, and incidental papers
+  filter(is.na(Query) | Query == "INCIDENTAL" | Year == "EXCLUDE") %>%
+  mutate(ToRead = "NO", Group = "Unranked", GroupRank = "NA", OverallRank = "NA") %>%
+  select(Review_ID, Group, OverallRank, GroupRank, ToRead)
+
+# Combine ranked and unranked papers
+outputList <- rbind(highlightedPapers, unrankedPapers) %>%
+  mutate(Review_ID = as.numeric(Review_ID)) %>%
+  arrange(Review_ID)
+
+# Write to disk
+write_csv(outputList, file = "RankedPapers.csv")
+# Save environment as well for reproducibility
+save.image("Randomise_Papers.RData")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
