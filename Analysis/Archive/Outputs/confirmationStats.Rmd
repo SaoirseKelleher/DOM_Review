@@ -1,0 +1,204 @@
+---
+title: key stats for confirmation
+output:
+  html_document: default
+  pdf_document: default
+---
+
+***
+ 
+```{r setup, echo = FALSE, message = FALSE}
+library("knitr")
+library("tidyverse") 
+library("readxl")
+library("sf")
+```
+
+
+```{r readin}
+reviewTable <- read_xlsx("Spreadsheets/Preliminary_Spreadsheet.xlsx")
+
+nonSPOM <- reviewTable %>%
+  filter(SearchTerm %in% c("Dynamic occupancy model", "Multi-season occupancy model"))
+
+```
+
+
+```{r locations}
+reviewTable %>%
+  group_by(Biorealm) %>%
+  summarize(TotalPapers = n()) %>%
+  arrange(-TotalPapers)
+
+reviewTable %>%
+  group_by(Taxa) %>%
+  summarize(TotalPapers = n()) %>%
+  arrange(-TotalPapers)
+
+
+reviewTable %>%
+  group_by(IUCN) %>%
+  summarize(TotalPapers = n()) %>%
+  arrange(-TotalPapers)
+
+reviewTable %>%
+  group_by(AuthorCountry) %>%
+  summarize(TotalPapers = n()) %>%
+  arrange(-TotalPapers)
+
+reviewTable %>%
+  separate_rows(ObjectiveCategories, sep = ", ") %>%
+  group_by(ObjectiveCategories) %>%
+  summarise(count = n()) %>% 
+  mutate(proportion = count/58) %>%
+  arrange(-proportion) %>%
+  filter(ObjectiveCategories != 'invasives') %>%
+  
+  ggplot() +
+  geom_col(aes(x = ObjectiveCategories, y = proportion), fill = 'dodgerblue4') +
+  ylim(c(0,1)) +
+  scale_x_discrete(limits = c('conservation', 'management', 'methods', 'research'),
+                    labels = c('Conservation', 'Management', 'Methods', 'Research')) +
+  labs(x = "", y = "Proportion of papers") +
+  theme_minimal() +
+  theme(axis.text = element_text(size = 15),axis.title = element_text(size = 15))
+
+```
+
+
+```{r split covariate column}
+nonSPOM %>%
+  separate_rows(CovTypes, sep = ", ") %>%
+  group_by(CovTypes) %>%
+  summarise(count = n()) %>% 
+  mutate(proportion = count/38) %>%
+  filter(proportion > 0.125) %>%
+  arrange(proportion) %>%
+  
+  ggplot(aes(x = reorder(CovTypes, -proportion),
+             y = proportion)) +
+  geom_col(fill = "dodgerblue4") +
+  ylim(c(0,1)) + 
+  labs(title = "Covariates usage in non-SPOM models",
+       x = "Covariate class",
+       y = "Proportion of papers") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size = 15),
+        axis.title = element_text(size = 15)) +
+  scale_x_discrete(limits = c('land_cover', 'habitat', 'biotic_interaction',
+                              'hydro', 'land_use', 'anthropogenic'),
+                   labels = c('Land Cover', 'Habitat', 'Biotic Interactions',
+                              'Hydrologic', 'Land Use', 'Anthropogenic'))
+```
+
+
+```{r prop infer}
+reviewTable %>% 
+  count(InfSpatial) %>%
+  mutate(Prop = n/58)
+
+reviewTable %>% 
+  count(InfFuture)%>%
+  mutate(Prop = n/58)
+
+reviewTable %>% 
+  count(InfPast)%>%
+  mutate(Prop = n/58)
+
+reviewTable %>% 
+  count(Maps)%>%
+  mutate(Prop = n/58)
+
+reviewTable %>%
+  count(Taxa) %>%
+  arrange(-n)%>%
+  mutate(Prop = n/58)
+
+reviewTable %>%
+  count(ModelSel) %>%
+  mutate(Prop = n/58)
+
+reviewTable %>%
+  count(ModelEval) %>%
+  mutate(Prop = n/58)
+
+t<-reviewTable %>%
+  separate_rows(CovTypes, sep = ", ") %>%
+  filter(!CovTypes %in% c("connectivity", "habitat", "survey", "none"))
+
+reviewTable %>%
+  separate_rows(CovTypes, sep = ", ") %>%
+  group_by(CovTypes) %>%
+  summarise(count = n()) %>% 
+  mutate(proportion = count/58) %>%
+  arrange(-proportion)  %>%
+  ggplot(aes(x = reorder(CovTypes, -proportion),
+             y = proportion)) +
+  geom_col(fill = "dodgerblue4") +
+  ylim(c(0,0.5)) + 
+  labs(title = "Covariates usage in non-SPOM models",
+       x = "Covariate class",
+       y = "Proportion of papers") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size = 15),
+        axis.title = element_text(size = 15)) +
+  scale_x_discrete(limits = c('land_cover', 'biotic_interaction',
+                              'hydro', 'land_use', 'anthropogenic'),
+                   labels = c('Land Cover', 'Biotic Interactions',
+                              'Hydrologic', 'Land Use', 'Anthropogenic'))
+
+```
+
+```{r maps}
+ecoregions <- st_read("Data/Ecoregions2017/Ecoregions2017.shp") %>%
+  st_make_valid() %>%
+  group_by(REALM) %>%
+  summarise() %>%
+  st_simplify(dTolerance = 10000)
+
+
+ecoregions <- ecoregions %>%
+  st_simplify(dTolerance = 20000)
+
+reviewTable %>%
+  group_by(Biorealm) %>%
+  summarize(TotalPapers = n()) %>%
+  arrange(-TotalPapers)
+
+ggplot(data = ecoregions) +
+  geom_sf(aes(fill = REALM))
+```
+
+
+```{r}
+data.frame(selMethod = c("A priori", "Stepwise", "Bayesian", "Predefined alternatives"),
+           Proportion = c(.44, .24, .22, .11)) %>%
+  ggplot(aes(x = reorder(selMethod, -Proportion),
+             y = Proportion)) +
+  geom_col(fill = "dodgerblue4") +
+  ylim(c(0,1)) + 
+  labs(x = "Model Selection Method",
+       y = "Proportion of papers") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size = 15),
+        axis.title = element_text(size = 15))
+
+
+data.frame(infer = c("Limited to study\nduration and area  ", "Spatial", "Future"),
+           Proportion = c(.62, .12, .29)) %>%
+  ggplot(aes(x = reorder(infer, -Proportion),
+             y = Proportion)) +
+  geom_col(fill = "dodgerblue4") +
+  ylim(c(0,1)) + 
+  labs(x = "Type of inference",
+       y = "Proportion of papers") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size = 15),
+        axis.title = element_text(size = 15))
+```
+
+
+
+
+
+
+
+
+
+

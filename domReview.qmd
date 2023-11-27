@@ -1,0 +1,51 @@
+---
+title: Dynamic occupancy models review
+date: today
+authors:
+  - name: Saoirse Kelleher
+    affiliation: University of Melbourne
+    email: saoirse.kelleher@student.unimelb.edu.au
+    orcid: 0000-0002-4614-5753
+    corresponding: true
+  - name: Natalie Briscoe
+    affiliation: University of Melbourne
+  - name: Damaris Zurell
+    affiliation: University of Potsdam
+  - name: Marc Kery
+    affiliation: Vogelwarte
+  - name: Gurutzeta Guillera-Arroita
+    affiliation: Consejo Superior de Investigaciones Científicas (CSIC)
+  - name: Jane Elith
+    affiliation: University of Melbourne
+
+abstract: >
+  Dynamic occupancy models allow researchers to estimate species occupancy across space and time while accounting for imperfect detection.
+  
+bibliography: references.bib
+embed-resources: true
+---
+
+## Introduction
+
+
+## Methods
+
+
+## Results
+
+
+## Discussion
+
+
+## Conclusions
+
+
+
+
+
+
+
+
+
+
+
