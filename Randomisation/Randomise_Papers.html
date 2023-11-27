@@ -136,8 +136,9 @@ div.csl-indent {
 <p>As this review evolved, two samples of target papers were acquired from two distinct sampling protocols.</p>
 <ul>
 <li><p>The <strong>First Sample</strong> was acquired in October 2021 from Google Scholar. The first 100 hits for each of four search terms (‘dynamic occupancy model,’ ‘occupancy dynamics model,’ ‘multi-season occupancy model,’ and ‘stochastic patch occupancy model’, plus allowances for pluralisation) were downloaded. These were stratified by their query and year-window (2000-2005, 2006-2010, 2010-2015, and 2016-2021). A random sample of 25% of the strata <em>or</em> 5 papers, whichever was larger, was flagged for inclusion in the review, to be replaced from the same strata if inclusion criteria were not met.</p></li>
-<li><p>After reviewing this initial sample, the need for a <strong>Second Sample</strong> was identified as many of the papers included in the first did not represent our model of interest. This second, more narrowly targeted sample was drawn from papers citing <span class="citation" data-cites="mackenzie2003">MacKenzie et al. (<a href="#ref-mackenzie2003" role="doc-biblioref">2003</a>)</span>, the original description of the model class which all subsequent implementations would be expected to cite. The same 4 year-window strata were used here, with 10 papers randomly drawn from each strata.</p></li>
+<li><p>After reviewing this initial sample, the need for a <strong>Second Sample</strong> was identified as many of the papers included in the first did not represent our model of interest. This second, more narrowly targeted sample was drawn from papers citing <span class="citation" data-cites="mackenzie2003">MacKenzie et al. (<a href="#ref-mackenzie2003" role="doc-biblioref">2003</a>)</span>, the original description of the model class which all subsequent implementations would be expected to cite. Papers were acquired via Web of Science in September 2023. The same 4 year-window strata were used here, with 15 papers randomly drawn from each strata. A fifth strata was added for 2022-2023, to capture the most recent papers on these models.</p></li>
 </ul>
+<p>For transparency and reproducibility, the randomisation code is preserved in this document.</p>
 </section>
 <section id="first-sample" class="level2">
 <h2 class="anchored" data-anchor-id="first-sample">First sample</h2>
@@ -165,7 +166,7 @@ div.csl-indent {
 <span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Cut out non-data rows</span></span>
 <span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">4</span><span class="sc">:</span><span class="fu">nrow</span>(.)) <span class="sc">%&gt;%</span></span>
 <span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Only need year data and ID reference</span></span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Review_ID, Year) </span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Review_ID, Title, Year) </span>
 <span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Merge paper queries and metadata</span></span>
 <span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>paperList <span class="ot">&lt;-</span> <span class="fu">full_join</span>(identifierSheet, studyDataSheet, </span>
@@ -186,10 +187,18 @@ div.csl-indent {
 </details>
 <div class="cell-output-display">
 <table class="table table-sm table-striped small">
+<colgroup>
+<col style="width: 4%">
+<col style="width: 11%">
+<col style="width: 75%">
+<col style="width: 2%">
+<col style="width: 5%">
+</colgroup>
 <thead>
 <tr class="header">
 <th style="text-align: left;">Review_ID</th>
 <th style="text-align: left;">Query</th>
+<th style="text-align: left;">Title</th>
 <th style="text-align: left;">Year</th>
 <th style="text-align: left;">YearPeriod</th>
 </tr>
@@ -198,36 +207,42 @@ div.csl-indent {
 <tr class="odd">
 <td style="text-align: left;">6</td>
 <td style="text-align: left;">Dynamic occupancy model</td>
+<td style="text-align: left;">Single-visit dynamic occupancy models: an approach to account for imperfect detection with Atlas data</td>
 <td style="text-align: left;">2017</td>
 <td style="text-align: left;">2016:2021</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">7</td>
 <td style="text-align: left;">Dynamic occupancy model</td>
+<td style="text-align: left;">A dynamic occupancy model for interacting species with two spatial scales</td>
 <td style="text-align: left;">2020</td>
 <td style="text-align: left;">2016:2021</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">8</td>
 <td style="text-align: left;">Dynamic occupancy model</td>
+<td style="text-align: left;">A multistate dynamic occupancy model to estimate local colonization–extinction rates and patterns of co‐occurrence between two or more interacting species</td>
 <td style="text-align: left;">2019</td>
 <td style="text-align: left;">2016:2021</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">9</td>
 <td style="text-align: left;">Dynamic occupancy model</td>
+<td style="text-align: left;">Neural hierarchical models of ecological populations</td>
 <td style="text-align: left;">2019</td>
 <td style="text-align: left;">2016:2021</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">11</td>
 <td style="text-align: left;">Dynamic occupancy model</td>
+<td style="text-align: left;">Unravelling the drastic range retraction of an emblematic songbird of North Africa: potential threats to Afro-Palearctic migratory birds</td>
 <td style="text-align: left;">2017</td>
 <td style="text-align: left;">2016:2021</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">12</td>
 <td style="text-align: left;">Dynamic occupancy model</td>
+<td style="text-align: left;">Detecting dispersal: A spatial dynamic occupancy model to reliably quantify connectivity across heterogeneous conservation landscapes</td>
 <td style="text-align: left;">2021</td>
 <td style="text-align: left;">2016:2021</td>
 </tr>
@@ -235,7 +250,7 @@ div.csl-indent {
 </table>
 </div>
 </div>
-<p>A random number is then assigned to <em>all</em> papers, and papers are ranked by number within their year-window/query strata. Papers in the top 5/25% (whichever was larger) were flagged to be read, and the rest were kept available for replacement of papers which may fail to meet inclusion criteria.</p>
+<p>A random number is then assigned to <em>all</em> papers. Papers are then ranked by number within their year-window/query strata. Papers in the top 5/25% (whichever was larger) were flagged to be read, and the rest were kept available for replacement of papers which may fail to meet inclusion criteria.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -264,7 +279,7 @@ div.csl-indent {
 <span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
 <span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unite</span>(<span class="at">col =</span> Group, <span class="fu">c</span>(Query, YearPeriod)) <span class="sc">%&gt;%</span></span>
 <span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get Review_ID, GroupRank, and ToRead</span></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Review_ID, Group, <span class="at">OverallRank =</span> randRank, GroupRank, ToRead)</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Review_ID, Title, Group, <span class="at">OverallRank =</span> randRank, GroupRank, ToRead)</span>
 <span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(highlightedPapers) <span class="sc">%&gt;%</span></span>
 <span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -272,15 +287,17 @@ div.csl-indent {
 <div class="cell-output-display">
 <table class="table table-sm table-striped small">
 <colgroup>
-<col style="width: 13%">
-<col style="width: 46%">
-<col style="width: 16%">
-<col style="width: 13%">
-<col style="width: 9%">
+<col style="width: 4%">
+<col style="width: 66%">
+<col style="width: 15%">
+<col style="width: 5%">
+<col style="width: 4%">
+<col style="width: 3%">
 </colgroup>
 <thead>
 <tr class="header">
 <th style="text-align: left;">Review_ID</th>
+<th style="text-align: left;">Title</th>
 <th style="text-align: left;">Group</th>
 <th style="text-align: right;">OverallRank</th>
 <th style="text-align: right;">GroupRank</th>
@@ -290,6 +307,7 @@ div.csl-indent {
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">51</td>
+<td style="text-align: left;">Dealing with uncertainty in amphibian and reptile population monitoring for conservation</td>
 <td style="text-align: left;">Dynamic occupancy model_2006:2010</td>
 <td style="text-align: right;">30</td>
 <td style="text-align: right;">1</td>
@@ -297,6 +315,7 @@ div.csl-indent {
 </tr>
 <tr class="even">
 <td style="text-align: left;">69</td>
+<td style="text-align: left;">A BAYESIAN STATE-SPACE FORMULATION OF DYNAMIC OCCUPANCY MODELS</td>
 <td style="text-align: left;">Dynamic occupancy model_2006:2010</td>
 <td style="text-align: right;">82</td>
 <td style="text-align: right;">2</td>
@@ -304,6 +323,7 @@ div.csl-indent {
 </tr>
 <tr class="odd">
 <td style="text-align: left;">63</td>
+<td style="text-align: left;">Occurrence patterns of Black-backed Woodpeckers in green forest of the Sierra Nevada Mountains, California, USA.</td>
 <td style="text-align: left;">Dynamic occupancy model_2011:2015</td>
 <td style="text-align: right;">57</td>
 <td style="text-align: right;">1</td>
@@ -311,6 +331,7 @@ div.csl-indent {
 </tr>
 <tr class="even">
 <td style="text-align: left;">50</td>
+<td style="text-align: left;">Individual and population-level responses of the Alabama beach mouse (Peromyscus polionotus ammobates) to environmental variation in space and time</td>
 <td style="text-align: left;">Dynamic occupancy model_2011:2015</td>
 <td style="text-align: right;">67</td>
 <td style="text-align: right;">2</td>
@@ -318,6 +339,7 @@ div.csl-indent {
 </tr>
 <tr class="odd">
 <td style="text-align: left;">59</td>
+<td style="text-align: left;">Effects of Urbanization on Occupancy of Stream Salamanders: Salamander Occupancy and Urbanization</td>
 <td style="text-align: left;">Dynamic occupancy model_2011:2015</td>
 <td style="text-align: right;">69</td>
 <td style="text-align: right;">3</td>
@@ -325,6 +347,7 @@ div.csl-indent {
 </tr>
 <tr class="even">
 <td style="text-align: left;">39</td>
+<td style="text-align: left;">Coffee Agroforests Remain Beneficial for Neotropical Bird Community Conservation across Seasons</td>
 <td style="text-align: left;">Dynamic occupancy model_2011:2015</td>
 <td style="text-align: right;">70</td>
 <td style="text-align: right;">4</td>
@@ -334,9 +357,199 @@ div.csl-indent {
 </table>
 </div>
 </div>
+<p>Incidental papers which were not ranked are returned to the dataframe, and the output is saved.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>unrankedPapers <span class="ot">&lt;-</span> paperList <span class="sc">%&gt;%</span> </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Drop empty rows, excluded, and incidental papers</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(Query) <span class="sc">|</span> Query <span class="sc">==</span> <span class="st">"INCIDENTAL"</span> <span class="sc">|</span> Year <span class="sc">==</span> <span class="st">"EXCLUDE"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ToRead =</span> <span class="st">"NO"</span>, <span class="at">Group =</span> <span class="st">"Unranked"</span>, <span class="at">GroupRank =</span> <span class="st">"NA"</span>, <span class="at">OverallRank =</span> <span class="st">"NA"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Review_ID, Title, Group, OverallRank, GroupRank, ToRead)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Combine ranked and unranked papers</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>outputList <span class="ot">&lt;-</span> <span class="fu">rbind</span>(highlightedPapers, unrankedPapers) <span class="sc">%&gt;%</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Review_ID =</span> <span class="fu">as.numeric</span>(Review_ID)) <span class="sc">%&gt;%</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(Review_ID)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Write to disk</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(outputList, <span class="at">file =</span> <span class="st">"Randomisation/PrimarySampleRanks.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
 </section>
 <section id="second-sample" class="level2">
 <h2 class="anchored" data-anchor-id="second-sample">Second sample</h2>
+<p>The list of papers pulled from Web of Science is loaded in - 1184 papers are represented here. Year-windows are assigned here as in the <strong>First Sample.</strong></p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load query and extract relevant columns</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>wosQuery <span class="ot">&lt;-</span> readxl<span class="sc">::</span><span class="fu">read_xls</span>(<span class="st">"Queries/MacKenzie WOS/MacKenzie03.xls"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Review_ID, <span class="at">Title =</span> <span class="st">`</span><span class="at">Article Title</span><span class="st">`</span>, <span class="at">Year =</span> <span class="st">`</span><span class="at">Publication Year</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Assign year period</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">YearPeriod =</span> <span class="fu">case_when</span>(Year <span class="sc">%in%</span> <span class="dv">2000</span><span class="sc">:</span><span class="dv">2005</span> <span class="sc">~</span> <span class="st">"2000:2005"</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>                                Year <span class="sc">%in%</span> <span class="dv">2006</span><span class="sc">:</span><span class="dv">2010</span> <span class="sc">~</span> <span class="st">"2006:2010"</span>,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>                                Year <span class="sc">%in%</span> <span class="dv">2011</span><span class="sc">:</span><span class="dv">2015</span> <span class="sc">~</span> <span class="st">"2011:2015"</span>,</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>                                Year <span class="sc">%in%</span> <span class="dv">2016</span><span class="sc">:</span><span class="dv">2021</span> <span class="sc">~</span> <span class="st">"2016:2021"</span>,</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>                                Year <span class="sc">%in%</span> <span class="dv">2022</span><span class="sc">:</span><span class="dv">2023</span> <span class="sc">~</span> <span class="st">"2022:2023"</span>))</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(wosQuery) <span class="sc">%&gt;%</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<colgroup>
+<col style="width: 5%">
+<col style="width: 84%">
+<col style="width: 2%">
+<col style="width: 6%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Review_ID</th>
+<th style="text-align: left;">Title</th>
+<th style="text-align: right;">Year</th>
+<th style="text-align: left;">YearPeriod</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">300</td>
+<td style="text-align: left;">Estimating the effects of land abandonment on mammal communities in the Karoo region of South Africa</td>
+<td style="text-align: right;">2023</td>
+<td style="text-align: left;">2022:2023</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">301</td>
+<td style="text-align: left;">Occupancy of Bombus affinis (Hymenoptera: Apidae) in Minnesota is highest in developed areas when standardized surveys are employed</td>
+<td style="text-align: right;">2023</td>
+<td style="text-align: left;">2022:2023</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">302</td>
+<td style="text-align: left;">Climate casualties or human disturbance? Shrinking distribution of the three large carnivores in the Greater Himalaya</td>
+<td style="text-align: right;">2023</td>
+<td style="text-align: left;">2022:2023</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">303</td>
+<td style="text-align: left;">Nonparametric Identifiability in Species Distribution and Abundance Models: Why it Matters and How to Diagnose a Lack of it Using Simulation</td>
+<td style="text-align: right;">2023</td>
+<td style="text-align: left;">2022:2023</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">304</td>
+<td style="text-align: left;">Variation in flight characteristics associated with entry by eagles into rotor-swept zones of wind turbines</td>
+<td style="text-align: right;">2023</td>
+<td style="text-align: left;">2022:2023</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">305</td>
+<td style="text-align: left;">Passive acoustic monitoring using smartphones reveals an alarming gibbon decline in a protected area in the central Annamite Mountains, Vietnam</td>
+<td style="text-align: right;">2023</td>
+<td style="text-align: left;">2022:2023</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Papers are assigned a random number and ranked within their groups, and top-15 papers are flagged to be read. The output is saved for future reference.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>randomisedWOS <span class="ot">&lt;-</span> wosQuery <span class="sc">%&gt;%</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add query flag to match with the first sample</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Query =</span> <span class="st">"MacKenzie Cited"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add random ranks for all papers</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">randRank =</span> <span class="fu">sample</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(.), <span class="at">size =</span> <span class="fu">nrow</span>(.))) <span class="sc">%&gt;%</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Re-rank within strata</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Query, YearPeriod) <span class="sc">%&gt;%</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(Query, YearPeriod, randRank) <span class="sc">%&gt;%</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">GroupRank =</span> <span class="fu">row_number</span>()) <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(Query, YearPeriod) <span class="sc">%&gt;%</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ToRead =</span> <span class="fu">case_when</span>(</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    GroupRank <span class="sc">&lt;=</span> <span class="dv">15</span> <span class="sc">~</span> <span class="st">"YES"</span>,</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    GroupRank <span class="sc">&gt;</span><span class="dv">15</span> <span class="sc">~</span> <span class="st">"NO"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unite</span>(<span class="at">col =</span> Group, <span class="fu">c</span>(Query, YearPeriod)) <span class="sc">%&gt;%</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get Review_ID, GroupRank, and ToRead</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Review_ID, Title, Group, <span class="at">OverallRank =</span> randRank, GroupRank, ToRead)</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(randomisedWOS) <span class="sc">%&gt;%</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-sm table-striped small">
+<colgroup>
+<col style="width: 4%">
+<col style="width: 68%">
+<col style="width: 12%">
+<col style="width: 5%">
+<col style="width: 4%">
+<col style="width: 3%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Review_ID</th>
+<th style="text-align: left;">Title</th>
+<th style="text-align: left;">Group</th>
+<th style="text-align: right;">OverallRank</th>
+<th style="text-align: right;">GroupRank</th>
+<th style="text-align: left;">ToRead</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1479</td>
+<td style="text-align: left;">Using counts to simultaneously estimate abundance and detection probabilities in a salamander community</td>
+<td style="text-align: left;">MacKenzie Cited_2000:2005</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">YES</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1481</td>
+<td style="text-align: left;">Declining amphibian populations: The pitfalls of count data in the study of diversity, distributions, dynamics, and demography</td>
+<td style="text-align: left;">MacKenzie Cited_2000:2005</td>
+<td style="text-align: right;">37</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">YES</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1461</td>
+<td style="text-align: left;">Influence of the temporal resolution of data on the success of indicator species models of species richness across multiple taxonomic groups</td>
+<td style="text-align: left;">MacKenzie Cited_2000:2005</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">YES</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1455</td>
+<td style="text-align: left;">Modeling spatial trends in estimated species richness using breeding bird survey data: A valuable tool in biodiversity assessment</td>
+<td style="text-align: left;">MacKenzie Cited_2000:2005</td>
+<td style="text-align: right;">204</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">YES</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1467</td>
+<td style="text-align: left;">A field-based evaluation of a presence-absence protocol for monitoring ecoregional-scale biodiversity</td>
+<td style="text-align: left;">MacKenzie Cited_2000:2005</td>
+<td style="text-align: right;">284</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">YES</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1469</td>
+<td style="text-align: left;">Monitoring distributions using call surveys: estimating site occupancy, detection probabilities and inferring absence</td>
+<td style="text-align: left;">MacKenzie Cited_2000:2005</td>
+<td style="text-align: right;">366</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">YES</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </section>
 <section id="references" class="level2 unnumbered">
 
