@@ -93,10 +93,27 @@ div.csl-indent {
 
 </head>
 
-<body class="fullcontent">
+<body>
 
 <div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
-
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#first-sample" id="toc-first-sample" class="nav-link" data-scroll-target="#first-sample">First sample</a></li>
+  <li><a href="#second-sample" id="toc-second-sample" class="nav-link" data-scroll-target="#second-sample">Second sample</a></li>
+  <li><a href="#sample-summary" id="toc-sample-summary" class="nav-link" data-scroll-target="#sample-summary">Sample summary</a>
+  <ul class="collapse">
+  <li><a href="#first-sample-categories" id="toc-first-sample-categories" class="nav-link" data-scroll-target="#first-sample-categories">First sample categories</a></li>
+  <li><a href="#second-sample-categories" id="toc-second-sample-categories" class="nav-link" data-scroll-target="#second-sample-categories">Second sample categories</a></li>
+  <li><a href="#combined-sample" id="toc-combined-sample" class="nav-link" data-scroll-target="#combined-sample">Combined sample</a></li>
+  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+</div>
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
@@ -153,7 +170,7 @@ div.csl-indent {
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">5378</span>)</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># From the excel review spreadsheet, read in only the identifying characteristics </span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>identifierSheet <span class="ot">&lt;-</span> readxl<span class="sc">::</span><span class="fu">read_xlsx</span>(<span class="st">"Spreadsheets/Stage1_Spreadsheet.xlsx"</span>, </span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>first_idSheet <span class="ot">&lt;-</span> readxl<span class="sc">::</span><span class="fu">read_xlsx</span>(<span class="st">"Spreadsheets/Stage1_Spreadsheet.xlsx"</span>, </span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">sheet =</span> <span class="st">"Metadata"</span>, <span class="at">skip =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Drop rows prior to start of data</span></span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">4</span><span class="sc">:</span><span class="fu">nrow</span>(.)) <span class="sc">%&gt;%</span></span>
@@ -161,7 +178,7 @@ div.csl-indent {
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Review_ID, <span class="at">Query =</span> <span class="st">`</span><span class="at">Search terms</span><span class="st">`</span>) </span>
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Repeat with the study metadata</span></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>studyDataSheet <span class="ot">&lt;-</span> readxl<span class="sc">::</span><span class="fu">read_xlsx</span>(<span class="st">"Spreadsheets/Stage1_Spreadsheet.xlsx"</span>, </span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>first_studyDataSheet <span class="ot">&lt;-</span> readxl<span class="sc">::</span><span class="fu">read_xlsx</span>(<span class="st">"Spreadsheets/Stage1_Spreadsheet.xlsx"</span>, </span>
 <span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">sheet =</span> <span class="st">"Study data"</span>, <span class="at">skip =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Cut out non-data rows</span></span>
 <span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">4</span><span class="sc">:</span><span class="fu">nrow</span>(.)) <span class="sc">%&gt;%</span></span>
@@ -169,21 +186,19 @@ div.csl-indent {
 <span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Review_ID, Title, Year) </span>
 <span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Merge paper queries and metadata</span></span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>paperList <span class="ot">&lt;-</span> <span class="fu">full_join</span>(identifierSheet, studyDataSheet, </span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>                       <span class="at">by =</span> <span class="st">"Review_ID"</span>)</span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="co"># Exclude some non-query papers and add year periods to the rest</span></span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>includedPapers <span class="ot">&lt;-</span> paperList <span class="sc">%&gt;%</span></span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Drop empty rows, excluded, and incidental papers</span></span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(Query) <span class="sc">&amp;</span> Query <span class="sc">!=</span> <span class="st">"INCIDENTAL"</span> <span class="sc">&amp;</span> Year <span class="sc">!=</span> <span class="st">"EXCLUDE"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Break into time periods </span></span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">YearPeriod =</span> <span class="fu">case_when</span>(Year <span class="sc">%in%</span> <span class="fu">as.character</span>(<span class="dv">2000</span><span class="sc">:</span><span class="dv">2005</span>) <span class="sc">~</span> <span class="st">"2000:2005"</span>,</span>
-<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>                                Year <span class="sc">%in%</span> <span class="fu">as.character</span>(<span class="dv">2006</span><span class="sc">:</span><span class="dv">2010</span>) <span class="sc">~</span> <span class="st">"2006:2010"</span>,</span>
-<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>                                Year <span class="sc">%in%</span> <span class="fu">as.character</span>(<span class="dv">2011</span><span class="sc">:</span><span class="dv">2015</span>) <span class="sc">~</span> <span class="st">"2011:2015"</span>,</span>
-<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>                                Year <span class="sc">%in%</span> <span class="fu">as.character</span>(<span class="dv">2016</span><span class="sc">:</span><span class="dv">2021</span>) <span class="sc">~</span> <span class="st">"2016:2021"</span>))</span>
-<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(includedPapers) <span class="sc">%&gt;%</span></span>
-<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>first_paperList <span class="ot">&lt;-</span> <span class="fu">full_join</span>(first_idSheet, first_studyDataSheet, </span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>                             <span class="at">by =</span> <span class="st">"Review_ID"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Exclude some non-query papers and add year periods to the rest</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Drop empty rows, excluded, and incidental papers</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(Query) <span class="sc">&amp;</span> Query <span class="sc">!=</span> <span class="st">"INCIDENTAL"</span> <span class="sc">&amp;</span> Year <span class="sc">!=</span> <span class="st">"EXCLUDE"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Break into time periods </span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">YearPeriod =</span> <span class="fu">case_when</span>(Year <span class="sc">%in%</span> <span class="fu">as.character</span>(<span class="dv">2000</span><span class="sc">:</span><span class="dv">2005</span>) <span class="sc">~</span> <span class="st">"2000:2005"</span>,</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>                                Year <span class="sc">%in%</span> <span class="fu">as.character</span>(<span class="dv">2006</span><span class="sc">:</span><span class="dv">2010</span>) <span class="sc">~</span> <span class="st">"2006:2010"</span>,</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>                                Year <span class="sc">%in%</span> <span class="fu">as.character</span>(<span class="dv">2011</span><span class="sc">:</span><span class="dv">2015</span>) <span class="sc">~</span> <span class="st">"2011:2015"</span>,</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>                                Year <span class="sc">%in%</span> <span class="fu">as.character</span>(<span class="dv">2016</span><span class="sc">:</span><span class="dv">2021</span>) <span class="sc">~</span> <span class="st">"2016:2021"</span>))</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(first_paperList) <span class="sc">%&gt;%</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <table class="table table-sm table-striped small">
@@ -255,34 +270,32 @@ div.csl-indent {
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Randomly rank papers, then rank within the strata</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>rankedPapers <span class="ot">&lt;-</span> includedPapers <span class="sc">%&gt;%</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>first_rankedPapers <span class="ot">&lt;-</span> first_paperList <span class="sc">%&gt;%</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add random ranks for all papers</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">randRank =</span> <span class="fu">sample</span>(<span class="at">x =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(.), <span class="at">size =</span> <span class="fu">nrow</span>(.))) <span class="sc">%&gt;%</span></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Re-rank within strata</span></span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Query, YearPeriod) <span class="sc">%&gt;%</span></span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(Query, YearPeriod, randRank) <span class="sc">%&gt;%</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">GroupRank =</span> <span class="fu">row_number</span>()) </span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Identify which papers qualify to be read</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>highlightedPapers <span class="ot">&lt;-</span> rankedPapers <span class="sc">%&gt;%</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Query, YearPeriod) <span class="sc">%&gt;%</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">PercentRank =</span>  GroupRank<span class="sc">/</span><span class="fu">max</span>(GroupRank)) <span class="sc">%&gt;%</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ToRead =</span> <span class="fu">case_when</span>(</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># If there are fewer than 5, read them all</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">max</span>(GroupRank) <span class="sc">&lt;=</span> <span class="dv">5</span> <span class="sc">~</span> <span class="st">"YES"</span>,</span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># If there are 20 or fewer, read the top 5</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">max</span>(GroupRank) <span class="sc">&lt;=</span> <span class="dv">20</span> <span class="sc">&amp;</span> GroupRank <span class="sc">&lt;=</span> <span class="dv">5</span> <span class="sc">~</span> <span class="st">"YES"</span>,</span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">max</span>(GroupRank) <span class="sc">&lt;=</span> <span class="dv">20</span> <span class="sc">&amp;</span> GroupRank <span class="sc">&gt;=</span> <span class="dv">5</span> <span class="sc">~</span> <span class="st">"NO"</span>,</span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    <span class="co"># If there are 21 or more, read the top 25%</span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">max</span>(GroupRank) <span class="sc">&gt;=</span> <span class="dv">21</span> <span class="sc">&amp;</span> PercentRank <span class="sc">&lt;=</span> <span class="fl">0.25</span>  <span class="sc">~</span> <span class="st">"YES"</span>,</span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">max</span>(GroupRank) <span class="sc">&gt;=</span> <span class="dv">21</span> <span class="sc">&amp;</span> PercentRank <span class="sc">&gt;</span> <span class="fl">0.25</span> <span class="sc">~</span> <span class="st">"NO"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unite</span>(<span class="at">col =</span> Group, <span class="fu">c</span>(Query, YearPeriod)) <span class="sc">%&gt;%</span></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get Review_ID, GroupRank, and ToRead</span></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Review_ID, Title, Group, <span class="at">OverallRank =</span> randRank, GroupRank, ToRead)</span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(highlightedPapers) <span class="sc">%&gt;%</span></span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">GroupRank =</span> <span class="fu">row_number</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Identify which papers qualify to be read</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Query, YearPeriod) <span class="sc">%&gt;%</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">PercentRank =</span>  GroupRank<span class="sc">/</span><span class="fu">max</span>(GroupRank)) <span class="sc">%&gt;%</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ToRead =</span> <span class="fu">case_when</span>(</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># If there are fewer than 5, read them all</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">max</span>(GroupRank) <span class="sc">&lt;=</span> <span class="dv">5</span> <span class="sc">~</span> <span class="st">"YES"</span>,</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># If there are 20 or fewer, read the top 5</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">max</span>(GroupRank) <span class="sc">&lt;=</span> <span class="dv">20</span> <span class="sc">&amp;</span> GroupRank <span class="sc">&lt;=</span> <span class="dv">5</span> <span class="sc">~</span> <span class="st">"YES"</span>,</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">max</span>(GroupRank) <span class="sc">&lt;=</span> <span class="dv">20</span> <span class="sc">&amp;</span> GroupRank <span class="sc">&gt;=</span> <span class="dv">5</span> <span class="sc">~</span> <span class="st">"NO"</span>,</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># If there are 21 or more, read the top 25%</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">max</span>(GroupRank) <span class="sc">&gt;=</span> <span class="dv">21</span> <span class="sc">&amp;</span> PercentRank <span class="sc">&lt;=</span> <span class="fl">0.25</span>  <span class="sc">~</span> <span class="st">"YES"</span>,</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">max</span>(GroupRank) <span class="sc">&gt;=</span> <span class="dv">21</span> <span class="sc">&amp;</span> PercentRank <span class="sc">&gt;</span> <span class="fl">0.25</span> <span class="sc">~</span> <span class="st">"NO"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unite</span>(<span class="at">col =</span> Group, <span class="fu">c</span>(Query, YearPeriod)) <span class="sc">%&gt;%</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get Review_ID, GroupRank, and ToRead</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Review_ID, Title, Group, <span class="at">OverallRank =</span> randRank, GroupRank, ToRead)</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(first_rankedPapers) <span class="sc">%&gt;%</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <table class="table table-sm table-striped small">
@@ -361,19 +374,20 @@ div.csl-indent {
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>unrankedPapers <span class="ot">&lt;-</span> paperList <span class="sc">%&gt;%</span> </span>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>first_unrankedPapers <span class="ot">&lt;-</span> first_paperList <span class="sc">%&gt;%</span> </span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Drop empty rows, excluded, and incidental papers</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(Query) <span class="sc">|</span> Query <span class="sc">==</span> <span class="st">"INCIDENTAL"</span> <span class="sc">|</span> Year <span class="sc">==</span> <span class="st">"EXCLUDE"</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ToRead =</span> <span class="st">"NO"</span>, <span class="at">Group =</span> <span class="st">"Unranked"</span>, <span class="at">GroupRank =</span> <span class="st">"NA"</span>, <span class="at">OverallRank =</span> <span class="st">"NA"</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Review_ID, Title, Group, OverallRank, GroupRank, ToRead)</span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Combine ranked and unranked papers</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>outputList <span class="ot">&lt;-</span> <span class="fu">rbind</span>(highlightedPapers, unrankedPapers) <span class="sc">%&gt;%</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>firstSample <span class="ot">&lt;-</span> <span class="fu">rbind</span>(first_rankedPapers, first_unrankedPapers) <span class="sc">%&gt;%</span></span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Review_ID =</span> <span class="fu">as.numeric</span>(Review_ID)) <span class="sc">%&gt;%</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(Review_ID)</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Write to disk</span></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(outputList, <span class="at">file =</span> <span class="st">"Randomisation/PrimarySampleRanks.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(Review_ID) <span class="sc">%&gt;%</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Sample =</span> <span class="st">"First"</span>)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Write to disk</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(firstSample, <span class="at">file =</span> <span class="st">"Randomisation/FirstSampleRanks.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
@@ -384,7 +398,7 @@ div.csl-indent {
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load query and extract relevant columns</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>wosQuery <span class="ot">&lt;-</span> readxl<span class="sc">::</span><span class="fu">read_xls</span>(<span class="st">"Queries/MacKenzie WOS/MacKenzie03.xls"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>second_Query <span class="ot">&lt;-</span> readxl<span class="sc">::</span><span class="fu">read_xls</span>(<span class="st">"Queries/MacKenzie WOS/MacKenzie03.xls"</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Review_ID, <span class="at">Title =</span> <span class="st">`</span><span class="at">Article Title</span><span class="st">`</span>, <span class="at">Year =</span> <span class="st">`</span><span class="at">Publication Year</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Assign year period</span></span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">YearPeriod =</span> <span class="fu">case_when</span>(Year <span class="sc">%in%</span> <span class="dv">2000</span><span class="sc">:</span><span class="dv">2005</span> <span class="sc">~</span> <span class="st">"2000:2005"</span>,</span>
@@ -393,7 +407,7 @@ div.csl-indent {
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>                                Year <span class="sc">%in%</span> <span class="dv">2016</span><span class="sc">:</span><span class="dv">2021</span> <span class="sc">~</span> <span class="st">"2016:2021"</span>,</span>
 <span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>                                Year <span class="sc">%in%</span> <span class="dv">2022</span><span class="sc">:</span><span class="dv">2023</span> <span class="sc">~</span> <span class="st">"2022:2023"</span>))</span>
 <span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(wosQuery) <span class="sc">%&gt;%</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(second_Query) <span class="sc">%&gt;%</span></span>
 <span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
@@ -457,7 +471,7 @@ div.csl-indent {
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>randomisedWOS <span class="ot">&lt;-</span> wosQuery <span class="sc">%&gt;%</span></span>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>secondSample <span class="ot">&lt;-</span> second_Query <span class="sc">%&gt;%</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add query flag to match with the first sample</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Query =</span> <span class="st">"MacKenzie Cited"</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Add random ranks for all papers</span></span>
@@ -465,23 +479,26 @@ div.csl-indent {
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Re-rank within strata</span></span>
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Query, YearPeriod) <span class="sc">%&gt;%</span></span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(Query, YearPeriod, randRank) <span class="sc">%&gt;%</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">GroupRank =</span> <span class="fu">row_number</span>()) <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(Query, YearPeriod) <span class="sc">%&gt;%</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">GroupRank =</span> <span class="fu">row_number</span>()) <span class="sc">%&gt;%</span> </span>
 <span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ToRead =</span> <span class="fu">case_when</span>(</span>
 <span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    GroupRank <span class="sc">&lt;=</span> <span class="dv">15</span> <span class="sc">~</span> <span class="st">"YES"</span>,</span>
 <span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    GroupRank <span class="sc">&gt;</span><span class="dv">15</span> <span class="sc">~</span> <span class="st">"NO"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unite</span>(<span class="at">col =</span> Group, <span class="fu">c</span>(Query, YearPeriod)) <span class="sc">%&gt;%</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unite</span>(<span class="at">col =</span> Group, <span class="fu">c</span>(Query, YearPeriod)) <span class="sc">%&gt;%</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Sample =</span> <span class="st">"Second"</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get Review_ID, GroupRank, and ToRead</span></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Review_ID, Title, Group, <span class="at">OverallRank =</span> randRank, GroupRank, ToRead)</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Sample, Review_ID, Title, Group, <span class="at">OverallRank =</span> randRank, GroupRank, ToRead)</span>
 <span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(randomisedWOS) <span class="sc">%&gt;%</span></span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(secondSample, <span class="st">"Randomisation/SecondSampleRanks.csv"</span>)</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(secondSample) <span class="sc">%&gt;%</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <table class="table table-sm table-striped small">
 <colgroup>
+<col style="width: 3%">
 <col style="width: 4%">
-<col style="width: 68%">
+<col style="width: 66%">
 <col style="width: 12%">
 <col style="width: 5%">
 <col style="width: 4%">
@@ -489,6 +506,7 @@ div.csl-indent {
 </colgroup>
 <thead>
 <tr class="header">
+<th style="text-align: left;">Sample</th>
 <th style="text-align: right;">Review_ID</th>
 <th style="text-align: left;">Title</th>
 <th style="text-align: left;">Group</th>
@@ -499,6 +517,7 @@ div.csl-indent {
 </thead>
 <tbody>
 <tr class="odd">
+<td style="text-align: left;">Second</td>
 <td style="text-align: right;">1479</td>
 <td style="text-align: left;">Using counts to simultaneously estimate abundance and detection probabilities in a salamander community</td>
 <td style="text-align: left;">MacKenzie Cited_2000:2005</td>
@@ -507,6 +526,7 @@ div.csl-indent {
 <td style="text-align: left;">YES</td>
 </tr>
 <tr class="even">
+<td style="text-align: left;">Second</td>
 <td style="text-align: right;">1481</td>
 <td style="text-align: left;">Declining amphibian populations: The pitfalls of count data in the study of diversity, distributions, dynamics, and demography</td>
 <td style="text-align: left;">MacKenzie Cited_2000:2005</td>
@@ -515,6 +535,7 @@ div.csl-indent {
 <td style="text-align: left;">YES</td>
 </tr>
 <tr class="odd">
+<td style="text-align: left;">Second</td>
 <td style="text-align: right;">1461</td>
 <td style="text-align: left;">Influence of the temporal resolution of data on the success of indicator species models of species richness across multiple taxonomic groups</td>
 <td style="text-align: left;">MacKenzie Cited_2000:2005</td>
@@ -523,6 +544,7 @@ div.csl-indent {
 <td style="text-align: left;">YES</td>
 </tr>
 <tr class="even">
+<td style="text-align: left;">Second</td>
 <td style="text-align: right;">1455</td>
 <td style="text-align: left;">Modeling spatial trends in estimated species richness using breeding bird survey data: A valuable tool in biodiversity assessment</td>
 <td style="text-align: left;">MacKenzie Cited_2000:2005</td>
@@ -531,6 +553,7 @@ div.csl-indent {
 <td style="text-align: left;">YES</td>
 </tr>
 <tr class="odd">
+<td style="text-align: left;">Second</td>
 <td style="text-align: right;">1467</td>
 <td style="text-align: left;">A field-based evaluation of a presence-absence protocol for monitoring ecoregional-scale biodiversity</td>
 <td style="text-align: left;">MacKenzie Cited_2000:2005</td>
@@ -539,6 +562,7 @@ div.csl-indent {
 <td style="text-align: left;">YES</td>
 </tr>
 <tr class="even">
+<td style="text-align: left;">Second</td>
 <td style="text-align: right;">1469</td>
 <td style="text-align: left;">Monitoring distributions using call surveys: estimating site occupancy, detection probabilities and inferring absence</td>
 <td style="text-align: left;">MacKenzie Cited_2000:2005</td>
@@ -550,6 +574,87 @@ div.csl-indent {
 </table>
 </div>
 </div>
+</section>
+<section id="sample-summary" class="level2">
+<h2 class="anchored" data-anchor-id="sample-summary">Sample summary</h2>
+<p>A basic representation of the two sample’s coverage is presented here. The data presented is from after randomisation, <strong>not</strong> after reviewing, and thus does not represent the final coverage of the review as some papers may be excluded.</p>
+<section id="first-sample-categories" class="level3">
+<h3 class="anchored" data-anchor-id="first-sample-categories">First sample categories</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>firstSample <span class="sc">%&gt;%</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(Group, <span class="fu">c</span>(<span class="st">"Query"</span>, <span class="st">"YearWindow"</span>), <span class="at">sep =</span> <span class="st">"_"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">x =</span> YearWindow, <span class="at">fill =</span> ToRead)) <span class="sc">+</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"gray70"</span>, <span class="st">"dodgerblue2"</span>)) <span class="sc">+</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="fu">vars</span>(Query), <span class="at">nrow =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Coverage of the Primary Sample"</span>,</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Number of Papers"</span>,</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Year Window"</span>,</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"Included"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Randomise_Papers_files/figure-html/plot%20first%20sample%20categories-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="second-sample-categories" class="level3">
+<h3 class="anchored" data-anchor-id="second-sample-categories">Second sample categories</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>secondSample <span class="sc">%&gt;%</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(Group, <span class="fu">c</span>(<span class="st">"Query"</span>, <span class="st">"YearWindow"</span>), <span class="at">sep =</span> <span class="st">"_"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">x =</span> YearWindow, <span class="at">fill =</span> ToRead)) <span class="sc">+</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"gray70"</span>, <span class="st">"firebrick3"</span>)) <span class="sc">+</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Coverage of the Secondary Sample"</span>,</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Number of Papers"</span>,</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Year Window"</span>,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="st">"Included"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Randomise_Papers_files/figure-html/plot%20second%20sample%20categories-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="combined-sample" class="level3">
+<h3 class="anchored" data-anchor-id="combined-sample">Combined sample</h3>
+<p>Adding the second sample improves coverage across the review period, particularly in the first two year-windows where fewer papers were included in the first sample.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rbind</span>(firstSample, secondSample) <span class="sc">%&gt;%</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(Group, <span class="fu">c</span>(<span class="st">"Query"</span>, <span class="st">"YearWindow"</span>), <span class="at">sep =</span> <span class="st">"_"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(ToRead <span class="sc">==</span> <span class="st">"YES"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">x =</span> YearWindow, <span class="at">fill =</span> Sample)) <span class="sc">+</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"dodgerblue2"</span>, <span class="st">"firebrick3"</span>)) <span class="sc">+</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Coverage of combined sample"</span>,</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Number of papers"</span>,</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Year-window"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Randomise_Papers_files/figure-html/combined%20sample-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
 </section>
 <section id="references" class="level2 unnumbered">
 

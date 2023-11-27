@@ -25,7 +25,7 @@ For transparency and reproducibility, the randomisation code is preserved in thi
 
 The full list of papers acquired from the aforementioned queries is read into R, and each is assigned to a year-window.
 
-```{r}
+```{r load packages}
 #| message: false
 library("knitr")
 library("tidyverse") 
@@ -34,7 +34,7 @@ library("readxl")
 set.seed(5378)
 
 # From the excel review spreadsheet, read in only the identifying characteristics 
-identifierSheet <- readxl::read_xlsx("Spreadsheets/Stage1_Spreadsheet.xlsx", 
+first_idSheet <- readxl::read_xlsx("Spreadsheets/Stage1_Spreadsheet.xlsx", 
                                      sheet = "Metadata", skip = 1) %>%
   # Drop rows prior to start of data
   slice(4:nrow(.)) %>%
@@ -42,7 +42,7 @@ identifierSheet <- readxl::read_xlsx("Spreadsheets/Stage1_Spreadsheet.xlsx",
   select(Review_ID, Query = `Search terms`) 
 
 # Repeat with the study metadata
-studyDataSheet <- readxl::read_xlsx("Spreadsheets/Stage1_Spreadsheet.xlsx", 
+first_studyDataSheet <- readxl::read_xlsx("Spreadsheets/Stage1_Spreadsheet.xlsx", 
                                     sheet = "Study data", skip = 1) %>%
   # Cut out non-data rows
   slice(4:nrow(.)) %>%
@@ -50,11 +50,9 @@ studyDataSheet <- readxl::read_xlsx("Spreadsheets/Stage1_Spreadsheet.xlsx",
   select(Review_ID, Title, Year) 
 
 # Merge paper queries and metadata
-paperList <- full_join(identifierSheet, studyDataSheet, 
-                       by = "Review_ID")
-
-# Exclude some non-query papers and add year periods to the rest
-includedPapers <- paperList %>%
+first_paperList <- full_join(first_idSheet, first_studyDataSheet, 
+                             by = "Review_ID") %>%
+  # Exclude some non-query papers and add year periods to the rest
   # Drop empty rows, excluded, and incidental papers
   filter(!is.na(Query) & Query != "INCIDENTAL" & Year != "EXCLUDE") %>%
   # Break into time periods 
@@ -63,7 +61,7 @@ includedPapers <- paperList %>%
                                 Year %in% as.character(2011:2015) ~ "2011:2015",
                                 Year %in% as.character(2016:2021) ~ "2016:2021"))
 
-head(includedPapers) %>%
+head(first_paperList) %>%
   kable()
 ```
 
@@ -71,16 +69,14 @@ A random number is then assigned to *all* papers. Papers are then ranked by numb
 
 ```{r Assign random numbers}
 # Randomly rank papers, then rank within the strata
-rankedPapers <- includedPapers %>%
+first_rankedPapers <- first_paperList %>%
   # Add random ranks for all papers
   mutate(randRank = sample(x = 1:nrow(.), size = nrow(.))) %>%
   # Re-rank within strata
   group_by(Query, YearPeriod) %>%
   arrange(Query, YearPeriod, randRank) %>%
-  mutate(GroupRank = row_number()) 
-
+  mutate(GroupRank = row_number()) %>%
 # Identify which papers qualify to be read
-highlightedPapers <- rankedPapers %>%
   group_by(Query, YearPeriod) %>%
   mutate(PercentRank =  GroupRank/max(GroupRank)) %>%
   mutate(ToRead = case_when(
@@ -97,27 +93,27 @@ highlightedPapers <- rankedPapers %>%
   # Get Review_ID, GroupRank, and ToRead
   select(Review_ID, Title, Group, OverallRank = randRank, GroupRank, ToRead)
 
-head(highlightedPapers) %>%
+head(first_rankedPapers) %>%
   kable()
 ```
 
 Incidental papers which were not ranked are returned to the dataframe, and the output is saved.
 
 ```{r re-add unranked papers}
-unrankedPapers <- paperList %>% 
+first_unrankedPapers <- first_paperList %>% 
   # Drop empty rows, excluded, and incidental papers
   filter(is.na(Query) | Query == "INCIDENTAL" | Year == "EXCLUDE") %>%
   mutate(ToRead = "NO", Group = "Unranked", GroupRank = "NA", OverallRank = "NA") %>%
   select(Review_ID, Title, Group, OverallRank, GroupRank, ToRead)
 
 # Combine ranked and unranked papers
-outputList <- rbind(highlightedPapers, unrankedPapers) %>%
+firstSample <- rbind(first_rankedPapers, first_unrankedPapers) %>%
   mutate(Review_ID = as.numeric(Review_ID)) %>%
   arrange(Review_ID) %>%
   mutate(Sample = "First")
 
 # Write to disk
-write_csv(outputList, file = "Randomisation/FirstSampleRanks.csv")
+write_csv(firstSample, file = "Randomisation/FirstSampleRanks.csv")
 ```
 
 ## Second sample
@@ -126,9 +122,8 @@ The list of papers pulled from Web of Science is loaded in - 1184 papers are rep
 
 ```{r Load second sample}
 #| warning: false
-
 # Load query and extract relevant columns
-wosQuery <- readxl::read_xls("Queries/MacKenzie WOS/MacKenzie03.xls") %>%
+second_Query <- readxl::read_xls("Queries/MacKenzie WOS/MacKenzie03.xls") %>%
   select(Review_ID, Title = `Article Title`, Year = `Publication Year`) %>%
   # Assign year period
   mutate(YearPeriod = case_when(Year %in% 2000:2005 ~ "2000:2005",
@@ -137,15 +132,14 @@ wosQuery <- readxl::read_xls("Queries/MacKenzie WOS/MacKenzie03.xls") %>%
                                 Year %in% 2016:2021 ~ "2016:2021",
                                 Year %in% 2022:2023 ~ "2022:2023"))
 
-head(wosQuery) %>%
+head(second_Query) %>%
   kable()
 ```
 
 Papers are assigned a random number and ranked within their groups, and top-15 papers are flagged to be read. The output is saved for future reference.
 
 ```{r randomise second sample}
-
-randomisedWOS <- wosQuery %>%
+secondSample <- second_Query %>%
   # Add query flag to match with the first sample
   mutate(Query = "MacKenzie Cited") %>%
   # Add random ranks for all papers
@@ -162,14 +156,62 @@ randomisedWOS <- wosQuery %>%
   # Get Review_ID, GroupRank, and ToRead
   select(Sample, Review_ID, Title, Group, OverallRank = randRank, GroupRank, ToRead)
   
-write_csv(randomisedWOS, "Randomisation/SecondSampleRanks.csv")
+write_csv(secondSample, "Randomisation/SecondSampleRanks.csv")
 
-head(randomisedWOS) %>%
+head(secondSample) %>%
   kable()
 ```
 
 ## Sample summary
 
-A basic representation of the two sample's coverage is presented here.
+A basic representation of the two sample's coverage is presented here. The data presented is from after randomisation, **not** after reviewing, and thus does not represent the final coverage of the review as some papers may be excluded.
+
+### First sample categories
+
+```{r plot first sample categories}
+firstSample %>%
+  separate(Group, c("Query", "YearWindow"), sep = "_") %>%
+  
+  ggplot() +
+  geom_bar(aes(x = YearWindow, fill = ToRead)) +
+  scale_fill_manual(values = c("gray70", "dodgerblue2")) +
+  facet_wrap(vars(Query), nrow = 2) +
+  labs(title = "Coverage of the Primary Sample",
+       y = "Number of Papers",
+       x = "Year Window",
+       fill = "Included")
+```
+
+### Second sample categories
+
+```{r plot second sample categories}
+secondSample %>%
+  separate(Group, c("Query", "YearWindow"), sep = "_") %>%
+  
+  ggplot() +
+  geom_bar(aes(x = YearWindow, fill = ToRead)) +
+  scale_fill_manual(values = c("gray70", "firebrick3")) +
+  labs(title = "Coverage of the Secondary Sample",
+       y = "Number of Papers",
+       x = "Year Window",
+       fill = "Included")
+```
+
+### Combined sample
+
+Adding the second sample improves coverage across the review period, particularly in the first two year-windows where fewer papers were included in the first sample.
+
+```{r combined sample}
+rbind(firstSample, secondSample) %>%
+  separate(Group, c("Query", "YearWindow"), sep = "_") %>%
+  filter(ToRead == "YES") %>%
+  
+  ggplot() +
+  geom_bar(aes(x = YearWindow, fill = Sample)) +
+  scale_fill_manual(values = c("dodgerblue2", "firebrick3")) +
+  labs(title = "Coverage of combined sample",
+       y = "Number of papers",
+       x = "Year-window")
+```
 
 ## References
