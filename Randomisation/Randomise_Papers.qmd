@@ -1,0 +1,217 @@
+---
+title: Randomise papers
+subtitle: Describes random selection of papers for inclusion in the review
+author: Saoirse Kelleher
+date: today
+format: 
+  html:
+    code-fold: true
+    theme: minty
+    toc: true
+bibliography: references.bib
+---
+
+## Overview
+
+As this review evolved, two samples of target papers were acquired from two distinct sampling protocols.
+
+-   The **First Sample** was acquired in October 2021 from Google Scholar. The first 100 hits for each of four search terms ('dynamic occupancy model,' 'occupancy dynamics model,' 'multi-season occupancy model,' and 'stochastic patch occupancy model', plus allowances for pluralisation) were downloaded. These were stratified by their query and year-window (2000-2005, 2006-2010, 2010-2015, and 2016-2021). A random sample of 25% of the strata *or* 5 papers, whichever was larger, was flagged for inclusion in the review, to be replaced from the same strata if inclusion criteria were not met.
+
+-   After reviewing this initial sample, the need for a **Second Sample** was identified as many of the papers included in the first did not represent our model of interest. This second, more narrowly targeted sample was drawn from papers citing @mackenzie2003, the original description of the model class which all subsequent implementations would be expected to cite. Papers were acquired via Web of Science in September 2023. The same 4 year-window strata were used here, with 15 papers randomly drawn from each strata. A fifth strata was added for 2022-2023, to capture the most recent papers on these models.
+
+For transparency and reproducibility, the randomisation code is preserved in this document.
+
+## First sample
+
+The full list of papers acquired from the aforementioned queries is read into R, and each is assigned to a year-window.
+
+```{r load packages}
+#| message: false
+library("knitr")
+library("tidyverse") 
+library("readxl")
+
+set.seed(5378)
+
+# From the excel review spreadsheet, read in only the identifying characteristics 
+first_idSheet <- readxl::read_xlsx("Spreadsheets/Stage1_Spreadsheet.xlsx", 
+                                     sheet = "Metadata", skip = 1) %>%
+  # Drop rows prior to start of data
+  slice(4:nrow(.)) %>%
+  # Only need google search query and the ID reference
+  select(Review_ID, Query = `Search terms`) 
+
+# Repeat with the study metadata
+first_studyDataSheet <- readxl::read_xlsx("Spreadsheets/Stage1_Spreadsheet.xlsx", 
+                                    sheet = "Study data", skip = 1) %>%
+  # Cut out non-data rows
+  slice(4:nrow(.)) %>%
+  # Only need year data and ID reference
+  select(Review_ID, Title, Year) 
+
+# Merge paper queries and metadata
+first_paperList <- full_join(first_idSheet, first_studyDataSheet, 
+                             by = "Review_ID") %>%
+  # Exclude some non-query papers and add year periods to the rest
+  # Drop empty rows, excluded, and incidental papers
+  filter(!is.na(Query) & Query != "INCIDENTAL" & Year != "EXCLUDE") %>%
+  # Break into time periods 
+  mutate(YearPeriod = case_when(Year %in% as.character(2000:2005) ~ "2000:2005",
+                                Year %in% as.character(2006:2010) ~ "2006:2010",
+                                Year %in% as.character(2011:2015) ~ "2011:2015",
+                                Year %in% as.character(2016:2021) ~ "2016:2021"))
+
+head(first_paperList) %>%
+  kable()
+```
+
+A random number is then assigned to *all* papers. Papers are then ranked by number within their year-window/query strata. Papers in the top 5/25% (whichever was larger) were flagged to be read, and the rest were kept available for replacement of papers which may fail to meet inclusion criteria.
+
+```{r Assign random numbers}
+# Randomly rank papers, then rank within the strata
+first_rankedPapers <- first_paperList %>%
+  # Add random ranks for all papers
+  mutate(randRank = sample(x = 1:nrow(.), size = nrow(.))) %>%
+  # Re-rank within strata
+  group_by(Query, YearPeriod) %>%
+  arrange(Query, YearPeriod, randRank) %>%
+  mutate(GroupRank = row_number()) %>%
+# Identify which papers qualify to be read
+  group_by(Query, YearPeriod) %>%
+  mutate(PercentRank =  GroupRank/max(GroupRank)) %>%
+  mutate(ToRead = case_when(
+    # If there are fewer than 5, read them all
+    max(GroupRank) <= 5 ~ "YES",
+    # If there are 20 or fewer, read the top 5
+    max(GroupRank) <= 20 & GroupRank <= 5 ~ "YES",
+    max(GroupRank) <= 20 & GroupRank >= 5 ~ "NO",
+    # If there are 21 or more, read the top 25%
+    max(GroupRank) >= 21 & PercentRank <= 0.25  ~ "YES",
+    max(GroupRank) >= 21 & PercentRank > 0.25 ~ "NO")) %>%
+  ungroup() %>%
+  unite(col = Group, c(Query, YearPeriod)) %>%
+  # Get Review_ID, GroupRank, and ToRead
+  select(Review_ID, Title, Group, OverallRank = randRank, GroupRank, ToRead)
+
+head(first_rankedPapers) %>%
+  kable()
+```
+
+Incidental papers which were not ranked are returned to the dataframe, and the output is saved.
+
+```{r re-add unranked papers}
+first_unrankedPapers <- first_paperList %>% 
+  # Drop empty rows, excluded, and incidental papers
+  filter(is.na(Query) | Query == "INCIDENTAL" | Year == "EXCLUDE") %>%
+  mutate(ToRead = "NO", Group = "Unranked", GroupRank = "NA", OverallRank = "NA") %>%
+  select(Review_ID, Title, Group, OverallRank, GroupRank, ToRead)
+
+# Combine ranked and unranked papers
+firstSample <- rbind(first_rankedPapers, first_unrankedPapers) %>%
+  mutate(Review_ID = as.numeric(Review_ID)) %>%
+  arrange(Review_ID) %>%
+  mutate(Sample = "First")
+
+# Write to disk
+write_csv(firstSample, file = "Randomisation/FirstSampleRanks.csv")
+```
+
+## Second sample
+
+The list of papers pulled from Web of Science is loaded in - 1184 papers are represented here. Year-windows are assigned here as in the **First Sample.**
+
+```{r Load second sample}
+#| warning: false
+# Load query and extract relevant columns
+second_Query <- readxl::read_xls("Queries/MacKenzie WOS/MacKenzie03.xls") %>%
+  select(Review_ID, Title = `Article Title`, Year = `Publication Year`) %>%
+  # Assign year period
+  mutate(YearPeriod = case_when(Year %in% 2000:2005 ~ "2000:2005",
+                                Year %in% 2006:2010 ~ "2006:2010",
+                                Year %in% 2011:2015 ~ "2011:2015",
+                                Year %in% 2016:2021 ~ "2016:2021",
+                                Year %in% 2022:2023 ~ "2022:2023"))
+
+head(second_Query) %>%
+  kable()
+```
+
+Papers are assigned a random number and ranked within their groups, and top-15 papers are flagged to be read. The output is saved for future reference.
+
+```{r randomise second sample}
+secondSample <- second_Query %>%
+  # Add query flag to match with the first sample
+  mutate(Query = "MacKenzie Cited") %>%
+  # Add random ranks for all papers
+  mutate(randRank = sample(x = 1:nrow(.), size = nrow(.))) %>%
+  # Re-rank within strata
+  group_by(Query, YearPeriod) %>%
+  arrange(Query, YearPeriod, randRank) %>%
+  mutate(GroupRank = row_number()) %>% 
+  mutate(ToRead = case_when(
+    GroupRank <= 15 ~ "YES",
+    GroupRank >15 ~ "NO")) %>%
+  unite(col = Group, c(Query, YearPeriod)) %>%
+  mutate(Sample = "Second") %>%
+  # Get Review_ID, GroupRank, and ToRead
+  select(Sample, Review_ID, Title, Group, OverallRank = randRank, GroupRank, ToRead)
+  
+write_csv(secondSample, "Randomisation/SecondSampleRanks.csv")
+
+head(secondSample) %>%
+  kable()
+```
+
+## Sample summary
+
+A basic representation of the two sample's coverage is presented here. The data presented is from after randomisation, **not** after reviewing, and thus does not represent the final coverage of the review as some papers may be excluded.
+
+### First sample categories
+
+```{r plot first sample categories}
+firstSample %>%
+  separate(Group, c("Query", "YearWindow"), sep = "_") %>%
+  
+  ggplot() +
+  geom_bar(aes(x = YearWindow, fill = ToRead)) +
+  scale_fill_manual(values = c("gray70", "dodgerblue2")) +
+  facet_wrap(vars(Query), nrow = 2) +
+  labs(title = "Coverage of the Primary Sample",
+       y = "Number of Papers",
+       x = "Year Window",
+       fill = "Included")
+```
+
+### Second sample categories
+
+```{r plot second sample categories}
+secondSample %>%
+  separate(Group, c("Query", "YearWindow"), sep = "_") %>%
+  
+  ggplot() +
+  geom_bar(aes(x = YearWindow, fill = ToRead)) +
+  scale_fill_manual(values = c("gray70", "firebrick3")) +
+  labs(title = "Coverage of the Secondary Sample",
+       y = "Number of Papers",
+       x = "Year Window",
+       fill = "Included")
+```
+
+### Combined sample
+
+Adding the second sample improves coverage across the review period, particularly in the first two year-windows where fewer papers were included in the first sample.
+
+```{r combined sample}
+rbind(firstSample, secondSample) %>%
+  separate(Group, c("Query", "YearWindow"), sep = "_") %>%
+  filter(ToRead == "YES") %>%
+  
+  ggplot() +
+  geom_bar(aes(x = YearWindow, fill = Sample)) +
+  scale_fill_manual(values = c("dodgerblue2", "firebrick3")) +
+  labs(title = "Coverage of combined sample",
+       y = "Number of papers",
+       x = "Year-window")
+```
+
+## References

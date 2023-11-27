@@ -5,13 +5,14 @@ output:
   pdf_document: default
 ---
 
-***
+------------------------------------------------------------------------
 
 ## Summary
-This document contains code for randomising paper ranks for the review on Dynamic Occupancy Models. For each of four search parameters, papers are stratified into 5 year time periods and randomly ranked. The top 25% or top 5 papers in each ranking category, whichever is larger, will be evaluated for inclusion; papers which do not qualify for review will be replaced with the next highest rank. 
 
-***
- 
+This document contains code for randomising paper ranks for the review on Dynamic Occupancy Models. For each of four search parameters, papers are stratified into 5 year time periods and randomly ranked. The top 25% or top 5 papers in each ranking category, whichever is larger, will be evaluated for inclusion; papers which do not qualify for review will be replaced with the next highest rank.
+
+------------------------------------------------------------------------
+
 ```{r setup, echo = FALSE, message = FALSE}
 library("knitr")
 library("tidyverse") 
@@ -22,6 +23,7 @@ set.seed(5378)
 ```
 
 Read in the excel sheets and process out the header
+
 ```{r Read-in excel sheets, echo = FALSE, message = FALSE, warning = FALSE}
 # From the excel review spreadsheet, read in only the identifying characteristics 
 identifierSheet <- readxl::read_xlsx("Data/Review Spreadsheet.xlsx", 
@@ -40,6 +42,7 @@ studyDataSheet <- readxl::read_xlsx("Data/Review Spreadsheet.xlsx",
 ```
 
 Combine the two sheets, the former containing metadata and the latter containing information on the papers
+
 ```{r Combine and merge, echo = FALSE, message = FALSE}
 # Merge paper queries and metadata
 paperList <- full_join(identifierSheet, studyDataSheet, 
@@ -56,8 +59,8 @@ includedPapers <- paperList %>%
                                 Year %in% as.character(2015:2021) ~ "2015:2021"))
 ```
 
-
 Assign each paper a random overll rank, then order the papers within their strata by the overall rank
+
 ```{r Randomly rank papers within strata}
 # Randomly rank papers, then rank within the strata
 rankedPapers <- includedPapers %>%
@@ -69,8 +72,8 @@ rankedPapers <- includedPapers %>%
   mutate(GroupRank = row_number()) 
 ```
 
+Highlight which papers are ranked highly enough to qualify for evaluation
 
-Highlight which papers are ranked highly enough to qualify for evaluation 
 ```{r Highlight papers to read}
 # Identify which papers qualify to be read
 highlightedPapers <- rankedPapers %>%
@@ -92,6 +95,7 @@ highlightedPapers <- rankedPapers %>%
 ```
 
 Add previously unranked papers, remove extraneous columns, and save both this workspace and the rankings to disk.
+
 ```{r Reformat and save}
 # Get the unranked papers to add to the list
 unrankedPapers <- paperList %>% 
@@ -110,28 +114,3 @@ write_csv(outputList, file = "RankedPapers.csv")
 # Save environment as well for reproducibility
 save.image("Randomise_Papers.RData")
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
