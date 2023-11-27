@@ -9,10 +9,6 @@ authors:
     corresponding: true
   - name: Natalie Briscoe
     affiliation: University of Melbourne
-  - name: Damaris Zurell
-    affiliation: University of Potsdam
-  - name: Marc Kery
-    affiliation: Vogelwarte
   - name: Gurutzeta Guillera-Arroita
     affiliation: Consejo Superior de Investigaciones Científicas (CSIC)
   - name: Jane Elith
