@@ -1,46 +1,51 @@
 ---
-title: Randomly select papers for review
-output:
-  html_document: default
-  pdf_document: default
+title: Randomise papers
+subtitle: Describes random selection of papers for inclusion in the review
+author: Saoirse Kelleher
+date: today
+format: 
+  html:
+    code-fold: true
+    theme: minty
+bibliography: references.bib
 ---
 
-***
+## Overview
 
-## Summary
-This document contains code for randomising paper ranks for the review on Dynamic Occupancy Models. For each of four search parameters, papers are stratified into 5 year time periods and randomly ranked. The top 25% or top 5 papers in each ranking category, whichever is larger, will be evaluated for inclusion; papers which do not qualify for review will be replaced with the next highest rank. 
+As this review evolved, two samples of target papers were acquired from two distinct sampling protocols.
 
-***
- 
-```{r setup, echo = FALSE, message = FALSE}
+-   The **First Sample** was acquired in October 2021 from Google Scholar. The first 100 hits for each of four search terms ('dynamic occupancy model,' 'occupancy dynamics model,' 'multi-season occupancy model,' and 'stochastic patch occupancy model', plus allowances for pluralisation) were downloaded. These were stratified by their query and year-window (2000-2005, 2006-2010, 2010-2015, and 2016-2021). A random sample of 25% of the strata *or* 5 papers, whichever was larger, was flagged for inclusion in the review, to be replaced from the same strata if inclusion criteria were not met.
+
+-   After reviewing this initial sample, the need for a **Second Sample** was identified as many of the papers included in the first did not represent our model of interest. This second, more narrowly targeted sample was drawn from papers citing @mackenzie2003, the original description of the model class which all subsequent implementations would be expected to cite. The same 4 year-window strata were used here, with 10 papers randomly drawn from each strata.
+
+## First sample
+
+The full list of papers acquired from the aforementioned queries is read into R, and each is assigned to a year-window.
+
+```{r}
+#| message: false
 library("knitr")
 library("tidyverse") 
 library("readxl")
 
-# Need seed set for reproducibility
 set.seed(5378)
-```
 
-Read in the excel sheets and process out the header
-```{r Read-in excel sheets, echo = FALSE, message = FALSE, warning = FALSE}
 # From the excel review spreadsheet, read in only the identifying characteristics 
-identifierSheet <- readxl::read_xlsx("Data/Review Spreadsheet.xlsx", 
+identifierSheet <- readxl::read_xlsx("Spreadsheets/Stage1_Spreadsheet.xlsx", 
                                      sheet = "Metadata", skip = 1) %>%
   # Drop rows prior to start of data
   slice(4:nrow(.)) %>%
   # Only need google search query and the ID reference
   select(Review_ID, Query = `Search terms`) 
+
 # Repeat with the study metadata
-studyDataSheet <- readxl::read_xlsx("Data/Review Spreadsheet.xlsx", 
+studyDataSheet <- readxl::read_xlsx("Spreadsheets/Stage1_Spreadsheet.xlsx", 
                                     sheet = "Study data", skip = 1) %>%
   # Cut out non-data rows
   slice(4:nrow(.)) %>%
   # Only need year data and ID reference
   select(Review_ID, Year) 
-```
 
-Combine the two sheets, the former containing metadata and the latter containing information on the papers
-```{r Combine and merge, echo = FALSE, message = FALSE}
 # Merge paper queries and metadata
 paperList <- full_join(identifierSheet, studyDataSheet, 
                        by = "Review_ID")
@@ -51,14 +56,17 @@ includedPapers <- paperList %>%
   filter(!is.na(Query) & Query != "INCIDENTAL" & Year != "EXCLUDE") %>%
   # Break into time periods 
   mutate(YearPeriod = case_when(Year %in% as.character(2000:2005) ~ "2000:2005",
-                                Year %in% as.character(2005:2010) ~ "2005:2010",
-                                Year %in% as.character(2010:2015) ~ "2010:2015",
-                                Year %in% as.character(2015:2021) ~ "2015:2021"))
+                                Year %in% as.character(2006:2010) ~ "2006:2010",
+                                Year %in% as.character(2011:2015) ~ "2011:2015",
+                                Year %in% as.character(2016:2021) ~ "2016:2021"))
+
+head(includedPapers) %>%
+  kable()
 ```
 
+A random number is then assigned to *all* papers. Papers are then ranked by number within their year-window/query strata. Papers in the top 5/25% (whichever was larger) were flagged to be read, and the rest were kept available for replacement of papers which may fail to meet inclusion criteria.
 
-Assign each paper a random overll rank, then order the papers within their strata by the overall rank
-```{r Randomly rank papers within strata}
+```{r Assign random numbers}
 # Randomly rank papers, then rank within the strata
 rankedPapers <- includedPapers %>%
   # Add random ranks for all papers
@@ -67,11 +75,7 @@ rankedPapers <- includedPapers %>%
   group_by(Query, YearPeriod) %>%
   arrange(Query, YearPeriod, randRank) %>%
   mutate(GroupRank = row_number()) 
-```
 
-
-Highlight which papers are ranked highly enough to qualify for evaluation 
-```{r Highlight papers to read}
 # Identify which papers qualify to be read
 highlightedPapers <- rankedPapers %>%
   group_by(Query, YearPeriod) %>%
@@ -89,11 +93,14 @@ highlightedPapers <- rankedPapers %>%
   unite(col = Group, c(Query, YearPeriod)) %>%
   # Get Review_ID, GroupRank, and ToRead
   select(Review_ID, Group, OverallRank = randRank, GroupRank, ToRead)
+
+head(highlightedPapers) %>%
+  kable()
 ```
 
-Add previously unranked papers, remove extraneous columns, and save both this workspace and the rankings to disk.
-```{r Reformat and save}
-# Get the unranked papers to add to the list
+Incidental papers which were not ranked are returned to the dataframe, and the output is saved.
+
+```{r re-add unranked papers}
 unrankedPapers <- paperList %>% 
   # Drop empty rows, excluded, and incidental papers
   filter(is.na(Query) | Query == "INCIDENTAL" | Year == "EXCLUDE") %>%
@@ -106,32 +113,9 @@ outputList <- rbind(highlightedPapers, unrankedPapers) %>%
   arrange(Review_ID)
 
 # Write to disk
-write_csv(outputList, file = "RankedPapers.csv")
-# Save environment as well for reproducibility
-save.image("Randomise_Papers.RData")
+write_csv(outputList, file = "Randomisation/PrimarySampleRanks.csv")
 ```
 
+## Second sample
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+## References
