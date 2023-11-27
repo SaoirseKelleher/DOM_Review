@@ -8,6 +8,7 @@ format:
     code-fold: true
     theme: minty
     toc: true
+    embed-resources: true
 bibliography: references.bib
 ---
 
@@ -27,8 +28,10 @@ The full list of papers acquired from the aforementioned queries is read into R,
 
 ```{r load packages}
 #| message: false
+
+options(tidyverse.quiet = TRUE)
 library("knitr")
-library("tidyverse") 
+library("tidyverse")
 library("readxl")
 
 set.seed(5378)

@@ -22,6 +22,7 @@ abstract: >
   Dynamic occupancy models allow researchers to estimate species occupancy across space and time while accounting for imperfect detection.
   
 bibliography: references.bib
+embed-resources: true
 ---
 
 ## Introduction
