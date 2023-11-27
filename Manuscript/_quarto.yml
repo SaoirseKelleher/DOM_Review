@@ -1,0 +1,16 @@
+project:
+  type: manuscript
+
+manuscript:
+  article: index.qmd
+
+format:
+  html:
+    theme: minty
+  docx: default
+
+execute:
+  freeze: true
+
+
+
