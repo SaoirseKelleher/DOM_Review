@@ -1,0 +1,285 @@
+Review_ID,Title,Group,OverallRank,GroupRank,ToRead,Sample
+6,Single-visit dynamic occupancy models: an approach to account for imperfect detection with Atlas data,Dynamic occupancy model_2016:2021,159,42,NO,First
+7,A dynamic occupancy model for interacting species with two spatial scales,Dynamic occupancy model_2016:2021,12,5,YES,First
+8,A multistate dynamic occupancy model to estimate local colonization–extinction rates and patterns of co‐occurrence between two or more interacting species,Dynamic occupancy model_2016:2021,42,14,YES,First
+9,Neural hierarchical models of ecological populations,Dynamic occupancy model_2016:2021,63,20,NO,First
+11,Unravelling the drastic range retraction of an emblematic songbird of North Africa: potential threats to Afro-Palearctic migratory birds,Dynamic occupancy model_2016:2021,77,23,NO,First
+12,Detecting dispersal: A spatial dynamic occupancy model to reliably quantify connectivity across heterogeneous conservation landscapes,Dynamic occupancy model_2016:2021,9,4,YES,First
+13,A DYNAMIC OCCUPANCY MODEL FOR MULTIPLE SPECIES IN SERENGETI NATIONAL PARK,Dynamic occupancy model_2016:2021,135,38,NO,First
+14,Drought‐mediated extinction of an arid‐land amphibian: insights from a spatially explicit dynamic occupancy model,Dynamic occupancy model_2016:2021,55,18,NO,First
+15,Modelling species distributional shifts across broad spatial extents by linking dynamic occupancy models with public-based surveys,Dynamic occupancy model_2011:2015,161,12,NO,First
+16,Assessing spatio-temporal priorities for species’ recovery in broad-scale dynamic landscapes,Dynamic occupancy model_2011:2015,211,16,NO,First
+17,Distinguishing distribution dynamics from temporary emigration using dynamic occupancy models,Dynamic occupancy model_2016:2021,7,3,YES,First
+18,Citizen Science Data Show Temperature-Driven Declines in Riverine Sentinel Invertebrates,Dynamic occupancy model_2016:2021,15,6,YES,First
+19,Dynamic occupancy models for explicit colonization processes,Dynamic occupancy model_2016:2021,254,64,NO,First
+20,American marten and fisher do not segregate in space and time during winter in a mixed‐forest system,Dynamic occupancy model_2016:2021,168,46,NO,First
+21,Using Fourier series to estimate periodic patterns in dynamic occupancy models,Dynamic occupancy model_2016:2021,235,60,NO,First
+22,Modeling multi‐scale occupancy for monitoring rare and highly mobile species,Dynamic occupancy model_2016:2021,250,63,NO,First
+23,Small sample bias in dynamic occupancy models,Dynamic occupancy model_2011:2015,281,21,NO,First
+24,"Reversing a downward trend in threatened peripheral amphibian (Triturus cristatus) populations through interventions combining species, habitat and genetic information",Dynamic occupancy model_2016:2021,49,16,YES,First
+25,Statistical power of dynamic occupancy models to identify temporal change: Informing the North American Bat Monitoring Program,Dynamic occupancy model_2016:2021,219,57,NO,First
+26,Markov models for community dynamics allowing for observation error,Dynamic occupancy model_2011:2015,279,20,NO,First
+27,"Quantifying data quality in a citizen science monitoring program: False negatives, false positives and occupancy trends",Dynamic occupancy model_2016:2021,166,45,NO,First
+28,Quantifying spatiotemporal occupancy dynamics and multi‐year core‐use areas at a species range boundary,Dynamic occupancy model_2016:2021,175,49,NO,First
+29,Detecting tropical wildlife declines through camera-trap monitoring: an evaluation of the Tropical Ecology Assessment and Monitoring protocol,Dynamic occupancy model_2016:2021,213,56,NO,First
+30,Analysing and mapping species range dynamics using occupancy models,Dynamic occupancy model_2011:2015,203,15,NO,First
+31,Population trends of the Peregrine Falcon in Switzerland with special reference to the period 2005–2016,Dynamic occupancy model_2016:2021,191,52,NO,First
+32,Use of ambiguous detections to improve estimates from species distribution models,Dynamic occupancy model_2016:2021,74,22,NO,First
+33,Avian Species and Functional Diversity in Agricultural Landscapes: Does Landscape Heterogeneity Matter?,Dynamic occupancy model_2016:2021,5,2,YES,First
+34,Drought and Metapopulation Dynamics of a Desert‐Dwelling Amphibian,Dynamic occupancy model_2016:2021,62,19,NO,First
+35,Dynamic occupancy models in unmarked,Dynamic occupancy model_2016:2021,93,29,NO,First
+36,Dynamic occupancy modeling of temperate marine fish in area-based closures,Dynamic occupancy model_2016:2021,162,43,NO,First
+37,Inferential biases linked to unobservable states in complex occupancy models,Dynamic occupancy model_2016:2021,34,11,YES,First
+38,Disentangling effects of invasive species and habitat while accounting for observer error in a long‐term amphibian study,Dynamic occupancy model_2016:2021,44,15,YES,First
+39,Coffee Agroforests Remain Beneficial for Neotropical Bird Community Conservation across Seasons,Dynamic occupancy model_2011:2015,70,4,YES,First
+40,Insights from distribution dynamics inform strategies to conserve a dhole Cuon alpinus metapopulation in India,Dynamic occupancy model_2016:2021,163,44,NO,First
+41,Modeling spatially and temporally complex range dynamics when detection is imperfect,Dynamic occupancy model_2016:2021,126,35,NO,First
+42,Use of ambiguous detections to improve estimates from species distribution models,Dynamic occupancy model_2016:2021,123,33,NO,First
+43,Data-Driven Management—A Dynamic Occupancy Approach to Enhanced Rabies Surveillance Prioritization,Dynamic occupancy model_2016:2021,265,68,NO,First
+44,Urbanization alters predator‐avoidance behaviours,Dynamic occupancy model_2016:2021,24,9,YES,First
+45,Manipulating wetland hydroperiod to improve occupancy rates by an endangered amphibian: modelling management scenarios,Dynamic occupancy model_2016:2021,146,40,NO,First
+46,Factors Influencing Colonization and Survival of Juvenile Blue Crabs Callinectes sapidus in Southeastern U.S. Tidal Creeks,Dynamic occupancy model_2016:2021,111,31,NO,First
+47,Estimation of metademographic rates and landscape connectivity for a conservation-reliant anuran,Dynamic occupancy model_2016:2021,225,58,NO,First
+48,Exploiting opportunistic observations to estimate changes in seasonal site use: An example with wetland birds,Dynamic occupancy model_2016:2021,256,65,NO,First
+49,Quantifying site-level usage and certainty of absence for an invasive species through occupancy analysis of camera-trap data,Dynamic occupancy model_2016:2021,21,8,YES,First
+50,Individual and population-level responses of the Alabama beach mouse (Peromyscus polionotus ammobates) to environmental variation in space and time,Dynamic occupancy model_2011:2015,67,2,YES,First
+51,Dealing with uncertainty in amphibian and reptile population monitoring for conservation,Dynamic occupancy model_2006:2010,30,1,YES,First
+52,Mediterranean amphibians and the loss of temporary ponds: Are there alternative breeding habitats?,Dynamic occupancy model_2011:2015,116,9,NO,First
+53,Songbird response to green-tree retention prescriptions in clearcut forests,Dynamic occupancy model_2011:2015,81,5,YES,First
+54,Collaboration for conservation: Assessing countrywide carnivore occupancy dynamics from sparse data,Dynamic occupancy model_2016:2021,86,27,NO,First
+55,Evidence of region‐wide bat population decline from long‐term monitoring and Bayesian occupancy models with empirically informed priors,Dynamic occupancy model_2016:2021,172,48,NO,First
+56,Agricultural lands offer seasonal habitats to tigers in a human‐dominated and fragmented landscape in India,Dynamic occupancy model_2016:2021,25,10,YES,First
+57,Long‐term drivers of persistence and colonization dynamics in spatially structured amphibian populations,Dynamic occupancy model_2016:2021,19,7,YES,First
+58,Mammal diversity and metacommunity dynamics in urban green spaces: implications for urban wildlife conservation,Dynamic occupancy model_2016:2021,212,55,NO,First
+59,Effects of Urbanization on Occupancy of Stream Salamanders: Salamander Occupancy and Urbanization,Dynamic occupancy model_2011:2015,69,3,YES,First
+60,Territory occupancy and breeding success of Peregrine Falcons <i>Falco peregrinus</i> at various stages of population recovery,Dynamic occupancy model_2016:2021,248,61,NO,First
+61,Distributional shifts in a biodiversity hotspot,Dynamic occupancy model_2016:2021,183,50,NO,First
+62,"Mammal distribution and trends in the threatened Ebo 'intact forest landscape', Cameroon",Dynamic occupancy model_2016:2021,186,51,NO,First
+63,"Occurrence patterns of Black-backed Woodpeckers in green forest of the Sierra Nevada Mountains, California, USA.",Dynamic occupancy model_2011:2015,57,1,YES,First
+64,Stopover ecology of American Golden-Plovers ( <i>Pluvialis dominica</i> ) in Midwestern agricultural fields,Dynamic occupancy model_2011:2015,224,17,NO,First
+65,Intensive farming drives long-term shifts in avian community composition,Dynamic occupancy model_2016:2021,41,13,YES,First
+66,Individual and population-level responses of the Alabama beach mouse (Peromyscus polionotus ammobates) to environmental variation in space and time,Dynamic occupancy model_2011:2015,87,7,NO,First
+67,Assessing the effectiveness of intensive conservation actions: Does guarding and feeding increase productivity and survival of Egyptian Vultures in the Balkans?,Dynamic occupancy model_2016:2021,68,21,NO,First
+68,Easily Overlooked: Modelling coastal dune habitat occupancy of threatened and endangered beach mice (Peromyscus polionotus spp.) using high-resolution aerial imagery,Dynamic occupancy model_2016:2021,2,1,YES,First
+69,A BAYESIAN STATE-SPACE FORMULATION OF DYNAMIC OCCUPANCY MODELS,Dynamic occupancy model_2006:2010,82,2,YES,First
+70,The Peregrine population study in the French Jura mountains 1964–2016: use of occupancy modeling to estimate population size and analyze site persistence and colonization rates,Dynamic occupancy model_2016:2021,275,69,NO,First
+71,Determinants and patterns of the endangered brown bear <i>Ursus arctos</i> habitat use in the French Pyrenees revealed by occupancy modeling,Dynamic occupancy model_2016:2021,84,26,NO,First
+72,Demographic response of northern spotted owls to barred owl removal: Barred Owl Removal Experiment,Dynamic occupancy model_2016:2021,249,62,NO,First
+73,Post-hurricane recovery and long-term viability of the Alabama beach mouse,Dynamic occupancy model_2011:2015,276,19,NO,First
+74,Using environmental DNA and occupancy modelling to estimate rangewide metapopulation dynamics,Dynamic occupancy model_2016:2021,102,30,NO,First
+75,Living with the enemy: a threatened prey species coexisting with feral cats on a fox-free island,Dynamic occupancy model_2016:2021,54,17,YES,First
+76,A multi‐state occupancy model to non‐invasively monitor visible signs of wildlife health with camera traps that accounts for image quality,Dynamic occupancy model_2016:2021,118,32,NO,First
+77,The upward elevational shifts of pond breeding amphibians following climate warming,Dynamic occupancy model_2016:2021,132,36,NO,First
+78,Prepared for: Hawaii Endangered Species Research Committee,Dynamic occupancy model_2016:2021,171,47,NO,First
+79,A THESIS SUBMITTED TO THE GRADUATE DIVISION OF THE UNIVERSITY OF HAWAI‘I AT MĀNOA IN PARTIAL FULFILLMENT OF THE REQUIREMENTS FOR THE DEGREE OF MASTER OF SCIENCE IN NATURAL RESOURCES AND ENVIRONMENTAL MANAGEMENT,Dynamic occupancy model_2016:2021,198,53,NO,First
+80,Cryptic wide‐ranging movements lead to upwardly biased occupancy in a territorial species,Dynamic occupancy model_2016:2021,78,24,NO,First
+81,Fitting occupancy models with E-SURGE: hidden Markov modelling of presence-absence data,Dynamic occupancy model_2011:2015,192,13,NO,First
+82,Regional and local effects drive changes in spawning stream occupancy in a sockeye salmon metapopulation,Dynamic occupancy model_2016:2021,89,28,NO,First
+83,"A Bayesian model of metapopulation viability, with application to an endangered amphibian",Dynamic occupancy model_2011:2015,149,11,NO,First
+84,Accounting for heterogeneous invasion rates reveals management impacts on the spatial expansion of an invasive species,Dynamic occupancy model_2016:2021,201,54,NO,First
+85,Species‐specific and temporal scale‐dependent responses of birds to drought,Dynamic occupancy model_2016:2021,260,67,NO,First
+86,Spatial and temporal patterns of range expansion of white-winged doves in the USA from 1979 to 2007,Dynamic occupancy model_2011:2015,193,14,NO,First
+87,Trends in Amphibian Occupancy in the United States,Dynamic occupancy model_2011:2015,122,10,NO,First
+88,Using Bayesian Population Viability Analysis to Define Relevant Conservation Objectives,Dynamic occupancy model_2011:2015,115,8,NO,First
+89,Cross‐scale occupancy dynamics of a postfire specialist in response to variation across a fire regime,Dynamic occupancy model_2016:2021,150,41,NO,First
+90,Estimating indices of range shifts in birds using dynamic models when detection is imperfect,Dynamic occupancy model_2016:2021,83,25,NO,First
+91,Meta-analysis of California Spotted Owl ( <i>Strix occidentalis occidentalis</i> ) territory occupancy in the Sierra Nevada: Habitat associations and their implications for forest management,Dynamic occupancy model_2016:2021,35,12,YES,First
+92,Dynamic wildlife occupancy models using automated acoustic monitoring data,Dynamic occupancy model_2016:2021,133,37,NO,First
+93,Can dynamic occupancy models improve predictions of species' range dynamics? A test using Swiss birds,Dynamic occupancy model_2016:2021,230,59,NO,First
+94,Influence of Climatic and Non-Climatic Factors on Range Dynamics and Conservation Priorities of Long-Distance Migratory Birds,Dynamic occupancy model_2011:2015,85,6,NO,First
+95,Occupancy modelling as a new approach to assess supranational trends using opportunistic data: a pilot study for the damselfly Calopteryx splendens,Dynamic occupancy model_2011:2015,264,18,NO,First
+96,Standardized Assessment of Biodiversity Trends in Tropical Forest Protected Areas: The End Is Not in Sight,Dynamic occupancy model_2016:2021,124,34,NO,First
+97,2019 MINNESOTA SPRUCE GROUSE SURVEY,Dynamic occupancy model_2016:2021,142,39,NO,First
+98,Identifying Factors Driving Sensitivity to Fragmentation in Forest Breeding Songbirds,Dynamic occupancy model_2016:2021,258,66,NO,First
+99,Non-shared dispersal networks with heterogeneity promote species coexistence in hierarchical competitive communities,Occupancy dynamics model_2016:2021,101,2,YES,First
+100,Colonization and extinction in dynamic habitats: an occupancy approach for a Great Plains stream fish assemblage,Occupancy dynamics model_2011:2015,158,4,YES,First
+101,Predicting the relationship between local and regional species richness from a patch occupancy dynamics model,Occupancy dynamics model_2000:2005,195,7,NO,First
+102,Density-range size relationships in French riverine fishes,Occupancy dynamics model_2000:2005,179,6,NO,First
+103,Spatially Explicit Power Analyses for Occupancy‐Based Monitoring of Wolverine in the U.S. Rocky Mountains,Occupancy dynamics model_2011:2015,120,3,YES,First
+104,Local–regional species richness relationships are linear at very small to large scales in west-central Pacific corals,Occupancy dynamics model_2006:2010,114,1,YES,First
+105,Site Occupancy by Aedes aegypti in a Subtropical City is Most Sensitive to Control during Autumn and Winter Months,Occupancy dynamics model_2016:2021,139,4,YES,First
+106,Effects of habitat quality and wildfire on occupancy dynamics of Coastal California Gnatcatcher ( <i>Polioptila californica californica)</i>,Occupancy dynamics model_2011:2015,253,5,YES,First
+107,Accessible habitat and wetland structure drive occupancy dynamics of a threatened amphibian across a peri-urban landscape,Occupancy dynamics model_2016:2021,104,3,YES,First
+108,"Making predictive modelling ART: accurate, reliable, and transparent",Occupancy dynamics model_2016:2021,266,6,NO,First
+109,Barred Owls reduce occupancy and breeding propensity of Northern Spotted Owl in a Washington old-growth forest,Occupancy dynamics model_2016:2021,38,1,YES,First
+110,Insects on Plants: Diversity of Herbivore Assemblages Revisited,Occupancy dynamics model_2000:2005,58,2,YES,First
+111,Mosaics of canopy openness induced by tropical cyclones in lowland rain forests with contrasting management histories in northeastern Australia,Occupancy dynamics model_2000:2005,167,5,YES,First
+112,Ecological Biogeography of Southern Ocean Islands: The Importance of Considering Spatial Issues,Occupancy dynamics model_2000:2005,14,1,YES,First
+113,"Application of Threshold Concepts to Ecological Management Problems: Occupancy of Golden Eagles in Denali National Park, Alaska",Occupancy dynamics model_2011:2015,100,2,YES,First
+114,"THE LOCAL–REGIONAL RELATIONSHIP: IMMIGRATION, EXTINCTION, AND SCALE",Occupancy dynamics model_2000:2005,205,9,NO,First
+115,"Effects of Competition, Predation, and Dispersal on Species Richness at Local and Regional Scales",Occupancy dynamics model_2000:2005,105,3,YES,First
+116,A joint model of species interaction dynamics for multistate processes incorporating imperfect detection,Occupancy dynamics model_2016:2021,274,7,NO,First
+117,Scale-dependent frequency distributions of plant species in dune slacks: Dispersal and niche limitation,Occupancy dynamics model_2000:2005,240,10,NO,First
+118,Evidence for community assembly constraints during succession in dune slack plant communities,Occupancy dynamics model_2000:2005,138,4,YES,First
+119,The influence of forest management history on the integrity of the saproxylic beetle fauna in an Australian lowland tropical rainforest,Occupancy dynamics model_2000:2005,197,8,NO,First
+120,Species diversity gradients in relation to geological history in North American freshwater fishes,Occupancy dynamics model_2011:2015,56,1,YES,First
+121,Assessing the efficacy of monitoring wolverine on a regional scale using occupancy and abundance estimation,Occupancy dynamics model_2016:2021,257,5,YES,First
+122,Multi-season occupancy analysis reveals large scale competitive exclusion of the critically endangered European mink by the invasive non-native American mink in Spain,Multi-season occupancy model_2016:2021,1,1,YES,First
+123,Validating dispersal distances inferred from autoregressive occupancy models with genetic parentage assignments,Multi-season occupancy model_2016:2021,263,56,NO,First
+124,Dynamic occupancy models for explicit colonization processes,Multi-season occupancy model_2011:2015,11,1,YES,First
+125,Examining occupancy and detection probability after three years of monitoring for the Illinois chorus frog (Pseudacris streckeri illinoensis) _______________________________________,Multi-season occupancy model_2011:2015,130,8,NO,First
+126,"DISTRIBUTION, HABITAT SUITABILITY, AND CONNECTIVITY OF WOLVES (CANIS LUPUS) IN THE ALPS",Multi-season occupancy model_2011:2015,215,15,NO,First
+127,Sonoran Desert Tortoise (Gopherus morafkai) occupancy monitoring on the Arizona Army National Guard Florence Military Reservation: 2014 Report.,Multi-season occupancy model_2006:2010,226,4,YES,First
+128,"Impact of cattle grazing on the occupancy of a cryptic, threatened rail",Multi-season occupancy model_2016:2021,188,38,NO,First
+129,Bird community response to fruit energy: Bird community response,Multi-season occupancy model_2016:2021,156,33,NO,First
+130,Early detection of rapid Barred Owl population growth within the range of the California Spotted Owl advises the Precautionary Principle,Multi-season occupancy model_2016:2021,4,2,YES,First
+131,Accounting for imperfect detection in estimates of yearly site occupancy,Multi-season occupancy model_2011:2015,209,14,NO,First
+132,The Role of Resource Predictability in the Metapopulation Dynamics of Insects,Multi-season occupancy model_2016:2021,154,32,NO,First
+133,Anuran occupancy dynamics and an assessment of floodplain wetland distribution and hydrology in a Missouri River floodplain,Multi-season occupancy model_2016:2021,202,42,NO,First
+134,"Distribution of crickets (Subfamily: Phalangopsinae) in caves of Baratang Island, Andaman and Nicobar Islands, India",Multi-season occupancy model_2016:2021,90,13,YES,First
+135,Invasive plant Arundo donax alters habitat use by carnivores,Multi-season occupancy model_2016:2021,129,25,NO,First
+136,"Occupancy modeling reveals territory-level effects of nest boxes on the presence, colonization, and persistence of a declining raptor in a fruit-growing region",Multi-season occupancy model_2016:2021,79,12,YES,First
+137,"Survey design for broad-scale, territory-based occupancy monitoring of a raptor: Ferruginous hawk (Buteo regalis) as a case study",Multi-season occupancy model_2016:2021,244,51,NO,First
+138,Prey abundance and urbanization influence the establishment of avian predators in a metropolitan landscape,Multi-season occupancy model_2016:2021,196,41,NO,First
+139,EVALUATING THE CONSERVATION AND AGRICULTURAL APPLICATIONS OF ORCHARD NEST BOXES FOR A DECLINING RAPTOR,Multi-season occupancy model_2016:2021,223,47,NO,First
+140,The Role of Resource Predictability in the Metapopulation Dynamics of Insects,Multi-season occupancy model_2011:2015,277,22,NO,First
+141,Urbanization alters predator‐avoidance behaviours,Multi-season occupancy model_2016:2021,127,24,NO,First
+142,Anuran occupancy dynamics and an assessment of floodplain wetland distribution and hydrology in a Missouri River floodplain,Multi-season occupancy model_2016:2021,182,37,NO,First
+143,Audible bats provide opportunities for citizen scientists,Multi-season occupancy model_2011:2015,148,9,NO,First
+144,Barred Owls reduce occupancy and breeding propensity of Northern Spotted Owl in a Washington old-growth forest,Multi-season occupancy model_2016:2021,255,54,NO,First
+145,Human disturbance and stage-specific habitat requirements influence snowy plover site occupancy during the breeding season,Multi-season occupancy model_2011:2015,229,17,NO,First
+146,Multi‐year nest box occupancy and short‐term resilience to wildfire disturbance by barn owls in a vineyard agroecosystem,Multi-season occupancy model_2011:2015,222,16,NO,First
+147,Short-term anuran community dynamics in the Missouri River floodplain following an historic flood,Multi-season occupancy model_2011:2015,157,10,NO,First
+148,"Climatic constraints on wintering bird distributions are modified by urbanization and weather: Wintering birds, weather, food, and climate",Multi-season occupancy model_2011:2015,29,2,YES,First
+149,An integrated model of habitat and species occurrence dynamics: <i>Habitat and occupancy dynamic model</i>,Multi-season occupancy model_2016:2021,242,50,NO,First
+150,Multi-Season Regional Analysis of Multi-Species Occupancy: Implications for Bird Conservation in Agricultural Lands in East-Central Argentina,Multi-season occupancy model_2011:2015,46,3,YES,First
+151,Managing individual nests promotes population recovery of a top predator,Multi-season occupancy model_2016:2021,245,52,NO,First
+152,Accounting for false positive detection error induced by transient individuals,Multi-season occupancy model_2011:2015,234,19,NO,First
+153,Inferring wildlife poaching in southeast Asia with multispecies dynamic occupancy models,Multi-season occupancy model_2016:2021,6,3,YES,First
+154,Quantifying the impact of <i>Gambusia holbrooki</i> on the extinction risk of the critically endangered red-finned blue-eye,Multi-season occupancy model_2016:2021,282,60,NO,First
+155,Design tradeoffs in long-term research for stream salamanders: Tradeoffs in Stream Salamander Site Selection,Multi-season occupancy model_2016:2021,39,8,YES,First
+156,Does Hopi Religious Harvest of Eaglets Affect Golden Eagle Territory Occupancy and Reproduction on the Navajo Nation?,Multi-season occupancy model_2016:2021,144,29,NO,First
+157,Spatial structure of woody cover affects habitat use patterns of ocelots in Texas,Multi-season occupancy model_2016:2021,131,26,NO,First
+158,Urban mesopredator distribution: examining the relative effects of landscape and socioeconomic factors: Urban mesopredator role of socioeconomics,Multi-season occupancy model_2011:2015,160,11,NO,First
+159,Short-term effects of hurricanes Maria and Irma on forest birds of Puerto Rico,Multi-season occupancy model_2016:2021,92,14,YES,First
+160,TRENDS IN ANURAN OCCUPANCY FROM NORTHEASTERN STATES OF THE NORTH AMERICAN AMPHIBIAN MONITORING PROGRAM,Multi-season occupancy model_2016:2021,18,5,YES,First
+161,On the tiger trails: Leopard occupancy decline and leopard interaction with tigers in the forested habitat across the Terai Arc Landscape of Nepal,Multi-season occupancy model_2016:2021,262,55,NO,First
+162,Factors influencing the occurrence of the Southern Long‐nosed Bandicoot ( <i>Perameles nasuta</i> Geoffroy) during a population irruption and decline,Multi-season occupancy model_2006:2010,96,1,YES,First
+163,"Staggered-Entry Analysis of Breeding Phenology and Occupancy Dynamics of Arizona Toads from Historically Occupied Habitats of New Mexico, USA",Multi-season occupancy model_2011:2015,233,18,NO,First
+164,Predicting spatio-temporal recolonization of large carnivore populations and livestock depredation risk: wolves in the Italian Alps: Wolf recolonization in the Alps,Multi-season occupancy model_2011:2015,80,6,NO,First
+165,Truly enigmatic declines in terrestrial salamander populations in Great Smoky Mountains National Park,Multi-season occupancy model_2011:2015,271,21,NO,First
+166,Non-native species impacts on pond occupancy by an anuran: Anuran Occupancy Changes,Multi-season occupancy model_2016:2021,269,58,NO,First
+167,Evidence-based evaluation of artificial reptile habitats: A case study on stone structures,Multi-season occupancy model_2016:2021,227,48,NO,First
+168,Stream community richness predicts apex predator occupancy dynamics in riparian systems,Multi-season occupancy model_2016:2021,109,19,NO,First
+169,Climate change surpasses land-use change in the contracting range boundary of a winter-adapted mammal,Multi-season occupancy model_2016:2021,252,53,NO,First
+170,Occupancy dynamics of rare cyprinids after invasive fish eradication,Multi-season occupancy model_2016:2021,273,59,NO,First
+171,Forced neighbours: Coexistence between jaguars and pumas in a harsh environment,Multi-season occupancy model_2016:2021,50,10,YES,First
+172,"Cats, connectivity and conservation: incorporating data sets and integrating scales for wildlife management",Multi-season occupancy model_2016:2021,31,7,YES,First
+173,"Monitoring occurrence, extinction, and colonization probabilities for gibbon populations",Multi-season occupancy model_2016:2021,98,16,NO,First
+174,"Occupancy dynamics of semi‐aquatic herbivores in riparian systems in Illinois, USA",Multi-season occupancy model_2016:2021,147,30,NO,First
+175,Multi-year occupancy of the hops blue butterfly (Celastrina humulus): habitat patch colonization and extinction,Multi-season occupancy model_2016:2021,220,46,NO,First
+176,River otter and mink occupancy dynamics in riparian systems,Multi-season occupancy model_2016:2021,119,22,NO,First
+177,Evaluation of Karner blue butterfly occupancy and relationships to management on state lands in Michigan,Multi-season occupancy model_2011:2015,164,12,NO,First
+178,Stop and ask for directions: factors affecting anuran detection and occupancy in Pampa farmland ponds,Multi-season occupancy model_2016:2021,152,31,NO,First
+179,Detectability of Estuarine Fishes in a Beach Seine Survey of Tidal Tributaries of Lower Chesapeake Bay,Multi-season occupancy model_2016:2021,189,39,NO,First
+180,Distributional shifts in a biodiversity hotspot,Multi-season occupancy model_2016:2021,173,34,NO,First
+181,"Cost-share conservation practices have mixed effects on priority grassland and shrubland breeding bird occupancy in the Central Hardwoods Bird Conservation Region, USA",Multi-season occupancy model_2016:2021,106,17,NO,First
+182,Identifying important military installations for continental-scale conservation of marsh bird breeding habitat,Multi-season occupancy model_2016:2021,95,15,YES,First
+183,The Peregrine population study in the French Jura mountains 1964–2016: use of occupancy modeling to estimate population size and analyze site persistence and colonization rates,Multi-season occupancy model_2016:2021,107,18,NO,First
+184,Elusive cats in our backyards: persistence of the North Chinese leopard ( <i>Panthera pardus japonensis</i> ) in a human‐dominated landscape in central China,Multi-season occupancy model_2011:2015,103,7,NO,First
+185,Host population dynamics in the face of an evolving pathogen,Multi-season occupancy model_2016:2021,217,45,NO,First
+186,"Methodological, temporal and spatial factors affecting modeled occupancy of resident birds in the perennially cultivated landscape of Uttar Pradesh, India",Multi-season occupancy model_2006:2010,143,2,YES,First
+187,Multiyear monitoring (2007-2013) of flat-tailed horned lizards (Phrynosoma mcallii),Multi-season occupancy model_2016:2021,125,23,NO,First
+188,Modeling the effects of environmental disturbance on wildlife communities: avian responses to prescribed fire,Multi-season occupancy model_2016:2021,110,20,NO,First
+189,Trophic interactions mediate the response of predator populations to habitat change,Multi-season occupancy model_2016:2021,13,4,YES,First
+190,Testing the efficacy of camera-trap sampling designs for monitoring giant pandas in a heterogeneous landscape,Multi-season occupancy model_2011:2015,187,13,NO,First
+191,Life history plasticity does not confer resilience to environmental change in the mole salamander (Ambystoma talpoideum),Multi-season occupancy model_2016:2021,181,36,NO,First
+192,"Modeling occupancy dynamics of a rare species, Franklin’s ground squirrel, with limited data: are simple connectivity metrics adequate?",Multi-season occupancy model_2006:2010,169,3,YES,First
+193,Effects of exotic pastures on tadpole assemblages in Pantanal floodplains: assessing changes in species composition,Multi-season occupancy model_2016:2021,194,40,NO,First
+194,Estimating Detection Probabilities In Beach Seine Surveys For Estuarine Fishes,Multi-season occupancy model_2016:2021,267,57,NO,First
+195,Long-term monitoring of margays (Leopardus wiedii): Implications for understanding low detection rates,Multi-season occupancy model_2011:2015,53,4,YES,First
+196,Long-term declines of a highly interactive urban species,Multi-season occupancy model_2016:2021,141,28,NO,First
+197,Open-File Report,Multi-season occupancy model_2016:2021,174,35,NO,First
+198,Multi-year occupancy of the hops blue butterfly (Celastrina humulus): habitat patch colonization and extinction,Multi-season occupancy model_2016:2021,210,44,NO,First
+199,"Coffee plantations, hurricanes and avian resiliency: insights from occupancy, and local colonization and extinction rates in Puerto Rico",Multi-season occupancy model_2016:2021,26,6,YES,First
+200,Are ranger patrols effective in reducing poaching-related threats within protected areas?,Multi-season occupancy model_2011:2015,238,20,NO,First
+201,Factors affecting species richness and distribution spatially and temporally within a protected area using multi‐season occupancy models,Multi-season occupancy model_2016:2021,231,49,NO,First
+202,Anuran occupancy dynamics and an assessment of floodplain wetland distribution and hydrology in a Missouri River floodplain,Multi-season occupancy model_2016:2021,140,27,NO,First
+203,Evaluating the Ecology of Tantilla relicta in Florida Pine–Wiregrass Sandhills Using Multi-Season Occupancy Models,Multi-season occupancy model_2011:2015,60,5,YES,First
+204,Population trends of the Peregrine Falcon in Switzerland with special reference to the period 2005–2016,Multi-season occupancy model_2016:2021,117,21,NO,First
+205,Grassland Fire and Cattle Grazing Regulate Reptile and Amphibian Assembly Among Patches,Multi-season occupancy model_2016:2021,208,43,NO,First
+206,The costs of ignoring species detectability on functional diversity estimation,Multi-season occupancy model_2016:2021,61,11,YES,First
+207,EVALUATING THE ROLE OF PROTECTED AREAS IN MITIGATING AVIAN RESPONSES TO CLIMATE AND LAND USE CHANGE,Multi-season occupancy model_2016:2021,43,9,YES,First
+208,SPOMSIM: software for stochastic patch occupancy models of metapopulation dynamics,Stochastic patch occupancy model_2000:2005,247,15,NO,First
+209,"Coherence, conservation and patch-occupancy analysis",Stochastic patch occupancy model_2011:2015,239,19,NO,First
+210,The limiting behaviour of a stochastic patch occupancy model,Stochastic patch occupancy model_2011:2015,236,17,NO,First
+211,Effects of patch quality and network structure on patch occupancy dynamics of a yellow-bellied marmot metapopulation,Stochastic patch occupancy model_2006:2010,180,14,NO,First
+212,Using citizen science data for conservation planning: Methods for quality control and downscaling for use in stochastic patch occupancy modelling,Stochastic patch occupancy model_2011:2015,259,20,NO,First
+213,"Field Surveys and Use of a Spatially Realistic Stochastic Patch Occupancy Model to Evaluate the Conservation Status of the Northern Cavefish, Amblyopsis spelaea Dekay",Stochastic patch occupancy model_2000:2005,20,3,YES,First
+214,"A demographic, spatially explicit patch occupancy model of metapopulation dynamics and persistence",Stochastic patch occupancy model_2011:2015,76,5,YES,First
+215,Detecting environmental impacts on metapopulations of mound spring invertebrates Assessing an incidence function model,Stochastic patch occupancy model_2000:2005,28,4,YES,First
+216,Effects of the spatial pattern of disturbance on the patch-occupancy dynamics of juniper–pine open woodland,Stochastic patch occupancy model_2006:2010,27,5,YES,First
+217,Immigration-extinction dynamics of stochastic populations,Stochastic patch occupancy model_2011:2015,177,10,NO,First
+218,Use of stochastic patch occupancy models in the California red‐legged frog for Bayesian inference regarding past events and future persistence,Stochastic patch occupancy model_2016:2021,270,22,NO,First
+219,THE USE OF STOCHASTIC DYNAMIC PROGRAMMING IN OPTIMAL LANDSCAPE RECONSTRUCTION FOR METAPOPULATIONS,Stochastic patch occupancy model_2000:2005,121,11,NO,First
+220,Dynamic spatio-temporal patterns of metapopulation occupancy in patchy habitats,Stochastic patch occupancy model_2016:2021,261,21,NO,First
+222,Using Genetic Algorithms to Fit Species and Habitat Parameters for Modelling the Effect of Climate Change on Species Distributions with Stochastic Patch Occupancy Models,Stochastic patch occupancy model_2011:2015,207,14,NO,First
+223,Metapopulation responses to patch connectivity and quality are masked by successional habitat dynamics,Stochastic patch occupancy model_2006:2010,75,10,NO,First
+224,Bayesian state-space modeling of metapopulation dynamics in the Glanville fritillary butterfly,Stochastic patch occupancy model_2011:2015,48,2,YES,First
+225,Evaluating the combined effects of climate and land-use change on tree species distributions,Stochastic patch occupancy model_2011:2015,134,7,NO,First
+226,The contribution of patch topology and demographic parameters to population viability analysis predictions: the case of the European tree frog,Stochastic patch occupancy model_2006:2010,108,12,NO,First
+227,"A Bayesian model of metapopulation viability, with application to an endangered amphibian",Stochastic patch occupancy model_2011:2015,176,9,NO,First
+228,Spatio-temporal models in animal population dynamics,Stochastic patch occupancy model_2000:2005,280,18,NO,First
+229,Integrating social and ecological data to model metapopulation dynamics in coupled human and natural systems,Stochastic patch occupancy model_2016:2021,200,17,NO,First
+230,Metapopulation theory for fragmented landscapes,Stochastic patch occupancy model_2000:2005,251,16,NO,First
+231,Normal approximations for discrete-time occupancy processes,Stochastic patch occupancy model_2016:2021,97,8,NO,First
+232,From Individual Behavior to Metapopulation Dynamics: Unifying the Patchy Population and Classic Metapopulation Models,Stochastic patch occupancy model_2000:2005,91,10,NO,First
+233,Long‐term demographic surveys reveal a consistent relationship between average occupancy and abundance within local populations of a butterfly metapopulation,Stochastic patch occupancy model_2016:2021,185,16,NO,First
+234,Eco-evolutionary dynamics of dispersal in spatially heterogeneous environments: Eco-evolutionary dynamics of dispersal,Stochastic patch occupancy model_2011:2015,52,3,YES,First
+235,Stochastic ecological network occupancy (SENO) models: a new tool for modeling ecological networks across spatial scales,Stochastic patch occupancy model_2006:2010,241,19,NO,First
+236,Metapopulation dynamics and a landscape approach to conservation of lowland water voles (Arvicola amphibius),Stochastic patch occupancy model_2011:2015,206,13,NO,First
+237,The Effective Size of a Metapopulation Living in a Heterogeneous Patch Network,Stochastic patch occupancy model_2000:2005,65,7,NO,First
+238,When environmentally persistent pathogens transform good habitat into ecological traps,Stochastic patch occupancy model_2016:2021,94,7,NO,First
+240,Using metapopulation models to assess species conservation–ecosystem restoration trade-offs,Stochastic patch occupancy model_2016:2021,136,11,NO,First
+241,"Persistence of black-tailed prairie-dog populations affected by plague in northern Colorado, USA",Stochastic patch occupancy model_2011:2015,184,11,NO,First
+242,IMPROVED BAYESIAN ANALYSIS OF METAPOPULATION DATA WITH AN APPLICATION TO A TREE FROG METAPOPULATION,Stochastic patch occupancy model_2000:2005,178,13,NO,First
+243,Analytical methods for a stochastic mainland–island metapopulation model,Stochastic patch occupancy model_2006:2010,284,22,NO,First
+244,Abundance-based detectability in a spatially-explicit metapopulation: a case study on a vulnerable beetle species in hollow trees,Stochastic patch occupancy model_2016:2021,218,19,NO,First
+245,"Species traits, patch turnover and successional dynamics: when does intermediate disturbance favour metapopulation occupancy?",Stochastic patch occupancy model_2016:2021,72,6,NO,First
+246,The Interplay between Immigration and Local Population Dynamics in Metapopulations,Stochastic patch occupancy model_2016:2021,155,14,NO,First
+247,"ENVIRONMENTAL HETEROGENEITY, BIRD-MEDIATED DIRECTED DISPERSAL, AND OAK WOODLAND DYNAMICS IN MEDITERRANEAN SPAIN",Stochastic patch occupancy model_2006:2010,216,17,NO,First
+248,When Group Dispersal and Allee Effect Shape Metapopulation Dynamics,Stochastic patch occupancy model_2016:2021,37,2,YES,First
+249,A spatially structured metapopulation model within a stochastic environment,Stochastic patch occupancy model_2016:2021,137,12,NO,First
+250,Effects of a mobile disturbance pattern on dynamic patch networks and metapopulation persistence,Stochastic patch occupancy model_2016:2021,59,4,YES,First
+251,Implications of empirical data quality to metapopulation model parameter estimation and application,Stochastic patch occupancy model_2000:2005,10,1,YES,First
+252,Should metapopulation restoration strategies increase patch area or number of patches?,Stochastic patch occupancy model_2006:2010,32,6,NO,First
+253,INTERACTION BETWEEN HABITAT QUALITY AND AN ALLEE-LIKE EFFECT IN METAPOPULATIONS,Stochastic patch occupancy model_2006:2010,8,2,YES,First
+254,Eco‐Evolutionary Metapopulation Dynamics and the Spatial Scale of Adaptation,Stochastic patch occupancy model_2011:2015,237,18,NO,First
+255,Dynamic populations in a dynamic landscape: the metapopulation structure of the marsh fritillary butterfly,Stochastic patch occupancy model_2000:2005,243,14,NO,First
+256,The Speed of Range Shifts in Fragmented Landscapes,Stochastic patch occupancy model_2011:2015,268,21,NO,First
+257,"Multi-scale processes in metapopulations: contributions of stage structure, rescue effect, and correlated extinctions",Stochastic patch occupancy model_2011:2015,73,4,YES,First
+258,1 Stochastic dynamic programming without transition matrices,Stochastic patch occupancy model_2016:2021,246,20,NO,First
+259,Optimizing habitat management for amphibians: From simple models to complex decisions,Stochastic patch occupancy model_2016:2021,151,13,NO,First
+260,The influence of landscape heterogeneity and local habitat effects on the response to competitive pressures in metapopulations,Stochastic patch occupancy model_2006:2010,232,18,NO,First
+261,Modelling range dynamics under global change: which framework and why?,Stochastic patch occupancy model_2011:2015,153,8,NO,First
+262,Extinction threshold and large population limit of a plant metapopulation model with recurrent extinction events and a seed bank component,Stochastic patch occupancy model_2016:2021,45,3,YES,First
+263,"MINIMUM VIABLE METAPOPULATION SIZE, EXTINCTION DEBT, AND THE CONSERVATION OF A DECLINING SPECIES",Stochastic patch occupancy model_2006:2010,40,8,NO,First
+264,Metapopulation Dynamics on Ephemeral Patches,Stochastic patch occupancy model_2011:2015,112,6,NO,First
+265,Spatial patterns of coexistence of competing species in patchy habitat,Stochastic patch occupancy model_2006:2010,36,7,NO,First
+266,"Global Warming, Human Population Pressure, and Viability of the World's Smallest Butterfly",Stochastic patch occupancy model_2000:2005,64,6,NO,First
+267,"Metapopulation Modeling and Optimal Habitat Reconstruction for Birds in the Mount Lofty Ranges, South Australia",Stochastic patch occupancy model_2000:2005,66,8,NO,First
+268,On optimal choices in increase of patch area and reduction of interpatch distance for metapopulation persistence,Stochastic patch occupancy model_2000:2005,278,17,NO,First
+269,Measuring impacts on species with models and metrics of varying ecological and computational complexity,Stochastic patch occupancy model_2016:2021,204,18,NO,First
+270,RANKING METAPOPULATION EXTINCTION RISK: FROM PATTERNS IN DATA TO CONSERVATION MANAGEMENT DECISIONS,Stochastic patch occupancy model_2000:2005,88,9,NO,First
+271,"ENVIRONMENTAL HETEROGENEITY, BIRD-MEDIATED DIRECTED DISPERSAL, AND OAK WOODLAND DYNAMICS IN MEDITERRANEAN SPAIN",Stochastic patch occupancy model_2006:2010,23,4,YES,First
+272,"Simple models, complex models, useful models: can we tell them from the flap of a butterfly's wings?",Stochastic patch occupancy model_2011:2015,22,1,YES,First
+273,Reserve Design to Maximize Species Persistence,Stochastic patch occupancy model_2006:2010,190,15,NO,First
+274,Predicting Argentine ant spread over the heterogeneous landscape using a spatially explicit stochastic model,Stochastic patch occupancy model_2006:2010,99,11,NO,First
+275,Optimal timing of biodiversity offsetting for metapopulations,Stochastic patch occupancy model_2016:2021,113,9,NO,First
+276,Subpopulation Agents Emerge from Individual Agents in Metapopulation Simulations,Stochastic patch occupancy model_2006:2010,214,16,NO,First
+277,SINGLE-SPECIES DYNAMIC SITE SELECTION,Stochastic patch occupancy model_2000:2005,47,5,YES,First
+278,Innovations in data integration for modeling populations,Stochastic patch occupancy model_2016:2021,170,15,NO,First
+279,Linking habitat use to range expansion rates in fragmented landscapes: a metapopulation approach,Stochastic patch occupancy model_2006:2010,165,13,NO,First
+280,Conservation planning with insects at three different spatial scales,Stochastic patch occupancy model_2006:2010,16,3,YES,First
+281,The virtual ecologist approach: simulating data and observers,Stochastic patch occupancy model_2006:2010,272,20,NO,First
+282,How Is Extinction Risk Related to Population‐Size Variability over Time? A Family of Models for Species with Repeated Extinction and Immigration,Stochastic patch occupancy model_2006:2010,283,21,NO,First
+283,Modelling the effect of habitat fragmentation on range expansion in a butterfly,Stochastic patch occupancy model_2006:2010,51,9,NO,First
+284,Evolution of Migration Rate in a Spatially Realistic Metapopulation Model,Stochastic patch occupancy model_2000:2005,145,12,NO,First
+285,The incidence function model as a tool for landscape-scale ecological impact assessments,Stochastic patch occupancy model_2016:2021,33,1,YES,First
+286,How much does an individual habitat fragment contribute to metapopulation dynamics and persistence?,Stochastic patch occupancy model_2000:2005,17,2,YES,First
+287,On the impact of dispersal asymmetry on metapopulation persistence,Stochastic patch occupancy model_2011:2015,228,16,NO,First
+288,Regional and local effects drive changes in spawning stream occupancy in a sockeye salmon metapopulation,Stochastic patch occupancy model_2016:2021,128,10,NO,First
+289,Species-area relationships and extinctions caused by habitat loss and fragmentation,Stochastic patch occupancy model_2011:2015,221,15,NO,First
+290,Large-Scale Habitat Corridors for Biodiversity Conservation: A Forest Corridor in Madagascar,Stochastic patch occupancy model_2011:2015,199,12,NO,First
+291,Mid-domain effect for food chain length in a colonization–extinction model,Stochastic patch occupancy model_2016:2021,71,5,YES,First
+292,PATHOGEN PERSISTENCE IN WILDLIFE POPULATIONS: CASE STUDIES OF PLAGUE IN PRAIRIE DOGS AND RABIES IN BATS,Stochastic patch occupancy model_2006:2010,3,1,YES,First

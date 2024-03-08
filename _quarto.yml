@@ -1,0 +1,10 @@
+project:
+  title: "DOM Review"
+  execute-dir: project
+
+format: 
+  html:
+    theme: minty
+
+editor: visual
+
