@@ -1,0 +1,134 @@
+---
+title: "DOM Review Summary"
+author: "Saoirse Kelleher"
+date: "March 13 2024"
+date-modifed: today
+abstract: "A summary of results from the DOM Review, for use in interpreting outputs and writing the review manuscript. "
+abstract-title: "Summary"
+format: 
+  html:
+    theme: minty
+    toc: true
+---
+
+```{r prepare inputs}
+#| include: false
+
+library(tidyverse)
+library(readxl)
+
+# Study Details
+review_StudyDetails <- read_xlsx("Spreadsheets/Stage3_Spreadsheet.xlsx",
+                                 sheet = "Study") |>
+  select(ID = "Review ID", Sample, Status, Title, Journal, Year, 
+         FirstAuthor = "First author country", 
+         AuthorCategories = "Authorship groups")
+
+# Objectives and Inference
+review_Objectives <- read_xlsx("Spreadsheets/Stage3_Spreadsheet.xlsx",
+                               sheet = "Objectives and Inference") |>
+  select(ID = "Review ID", Status, Title, 
+         Obj_Methods = "Methods?",
+         Obj_Future = "Future predictions?",
+         Obj_Spatial = "Spatial predictions?", 
+         Obj_Hypothesis = "Hypothesis testing?")
+
+# Species and Location
+review_SpeciesLocation <- read_xlsx("Spreadsheets/Stage3_Spreadsheet.xlsx",
+                                    sheet = "Species and Location") |>
+  select(ID = "Review ID", Status, Title, 
+         Taxa_Category = "Taxa keywords", Taxa_Number = "Number",
+         IUCN_Status = "IUCN Status", Threat_Category = "Threat categories",
+         Country, Continent, Realm, Size_km = "Study Size")
+
+# Data Collection
+review_DataCollection <- read_xlsx("Spreadsheets/Stage3_Spreadsheet.xlsx",
+                                   sheet = "Data collection") |>
+  select(ID = "Review ID", Status, Title,
+         Duration = "Study duration", Detection_Method = "Capture method",
+         Primary_Occasions = "Number of primary occasions",
+         Secondary_Occasions = "Number of secondary occasions",
+         Secondary_Type = "Type of secondary occasions",
+         Site_Number = "Number of sites", Site_Type = "Type of site",
+         Sampling_Method = "Sampling method")
+
+# Covariates
+review_Covariates <- read_xlsx("Spreadsheets/Stage3_Spreadsheet.xlsx",
+                               sheet = "Covariates") |>
+  select(ID = "Review ID", Status, Title, 
+         Parameter, Covariate_Count = "Total covariates",
+         Covariates = "Covariate List")
+
+# Modelling
+review_Modelling <- read_xlsx("Spreadsheets/Stage3_Spreadsheet.xlsx",
+                              sheet = "Modelling") |>
+  select(ID = "Review ID", Status, Title,
+         Bayesian, Prefiltering = "Prefiltering category",
+         Selection = "Selection category", Evaluation = "Evaluation method",
+         Multispecies = "Multi-species", Connectivity)
+
+```
+
+# Study details
+
+Basic metadata was collected for each paper in the review, with available data including:
+
+| Field             | Description                                      | Possible values                      |
+|--------------|------------------------------------|----------------------|
+| Journal           | Journal which this article was published in      | *Any*                                |
+| Year              | Year of publication                              | *Any*                                |
+| Author country    | Nation of the first author's primary affiliation | *ISO 3166 country names*             |
+| Author categories | Categories of affiliations for *all* authors     | *Academic, Government, NGO, Private* |
+
+## Publication journals
+
+## Authorship countries
+
+## Authorship categories
+
+## Authorship category trends
+
+## Review coverage
+
+# Objectives and inference
+
+The stated objectives for each article were assessed and divided into four categories - each paper could fall into multiple (or zero) objective categories.
+
+| Objective           | Description                                                                       |
+|---------------------|---------------------------------------------------|
+| Methods             | Did authors seek to demonstrate or test specific methods for occupancy modelling? |
+| Future Predictions  | Did authors make predictions beyond the study period?                             |
+| Spatial Predictions | Did authors make predictions at locations where surveys were not conducted?       |
+| Hypothesis testing  | Did authors seek to test specific hypotheses of species occupancy dynamics?       |
+
+## Frequency of objectives
+
+## Stated objectives by authorship categories
+
+## Stated objective by year
+
+# Species and location
+
+Data on focal species and the location of study areas was collected, available fields include:
+
+| Field           | Description                                                                                | Possible values                                                                   |
+|----------------|----------------------------|----------------------------|
+| Taxa category   | Category of study taxa; could fit into multiple categories                                 | *Bird, Mammal, Invertebrate, Herptile, Fish, Threatened, Invasive, Other*         |
+| Taxa number     | Number of individual species within the taxa for which models were fit                     | *Numeric*                                                                         |
+| IUCN status     | IUCN status for the study species; NA if multi-species or if the study species is invasive | *LC, NT, EN, CR, DD, NA*                                                          |
+| Threat category | Category of threats to the species; multiple per species permitted                         | *Habitat loss, Climate change, Exploitation, Invasives, Disease, Disaster, Other* |
+| Country         | Country/countries where the study took place                                               | *ISO 3166 country names*                                                          |
+| Continent       | Continent(s) where the study took place                                                    | *North America, South America, Europe, Asia, Africa, Oceania*                     |
+|                 |                                                                                            |                                                                                   |
+|                 |                                                                                            |                                                                                   |
+|                 |                                                                                            |                                                                                   |
+|                 |                                                                                            |                                                                                   |
+|                 |                                                                                            |                                                                                   |
+
+# Data collection
+
+## 
+
+# Covariates
+
+# Modelling
