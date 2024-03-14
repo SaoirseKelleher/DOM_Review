@@ -12,11 +12,17 @@ format:
 embed-resources: true
 ---
 
-```{r prepare inputs}
+```{r Load_packages}
 #| include: false
 
 library(tidyverse)
 library(readxl)
+library(knitr)
+library(reactable)
+```
+
+```{r Load_data}
+#| include: false
 
 # Study Details
 review_StudyDetails <- read_xlsx("Spreadsheets/Stage3_Spreadsheet.xlsx",
@@ -86,15 +92,128 @@ Basic metadata was collected for each paper in the review, with available data i
 | Author categories | Categories of affiliations for *all* authors     | *Academic, Government, NGO, Private* |
 +-------------------+--------------------------------------------------+--------------------------------------+
 
+```{r StudyDetails_Clean}
+#| include: false
+
+studyDetails_clean <- review_StudyDetails |>
+  filter(Status == "Complete")  |>
+  mutate(YearStrata = case_when(Year %in% 2000:2005 ~ "2000-2005",
+                                Year %in% 2006:2010 ~ "2006-2010",
+                                Year %in% 2011:2015 ~ "2011-2015",
+                                Year %in% 2016:2020 ~ "2016-2020",
+                                Year %in% 2021:2023 ~ "2021-2023"))
+```
+
+## Year coverage
+
+```{r StudyDetails_years}
+studyDetails_clean |>
+  filter(!is.na(YearStrata)) |>
+  mutate(YearStrata = fct(YearStrata,
+                          levels = c("2000-2005", "2006-2010",
+                                     "2011-2015", "2016-2020",
+                                     "2021-2023"))) |>
+  summarise(Articles = n(), .by = YearStrata) |>
+  
+  ggplot() +
+  geom_col(aes(x = YearStrata, y = Articles), fill = "darkslategrey") +
+  labs(title = "Number of articles by year strata",
+       x = "Year Strata", y = "Number of articles")
+```
+
 ## Publication journals
+
+```{r StudyDetails_journals}
+#| echo: false
+
+journalsTable <- studyDetails_clean |>
+  summarise(Articles = n(), .by = "Journal") |>
+  arrange(-Articles, Journal) 
+```
+
+`{r} nrow(journalsTable)` unique journals are represented in the sample - `{r} nrow(filter(journalsTable, Articles >1))` journals have more than one article.
+
+```{r StudyDetails_journalsTable}
+#| echo: false
+reactable(journalsTable, defaultPageSize = 8)
+```
 
 ## Authorship countries
 
+```{r StudyDetails_countries}
+#| echo: false
+
+countriesTable <- studyDetails_clean |>
+  summarise(Articles = n(), .by = "FirstAuthor") |>
+  arrange(-Articles)
+```
+
+Counting by the location of the first author's institution, `{r} nrow(countriesTable` countries are represented in the sample. A strong majority of articles were published by first authors based in the United States of America.
+
+```{r StudyDetails_countriesTable}
+#| echo: false
+
+reactable(countriesTable, defaultPageSize = 8)
+```
+
 ## Authorship categories
 
-## Authorship category trends
+```{r StudyDetails_Categories}
+#| echo: false
+ 
+authorCategories_overall <- studyDetails_clean |>
+  separate_rows(AuthorCategories, sep = ", ") |> 
+  summarise(Articles = n(),
+            Proportion = n()/nrow(studyDetails_clean),
+            .by = AuthorCategories) |>
+  mutate(Proportion = round(Proportion, 2)) |>
+  rename(Category = AuthorCategories) |>
+  arrange(-Proportion)
+```
 
-## Review coverage
+The most frequent category of authorship was academic, with `{r} max(authorCategories_overall)`% of articles having at least one author from an academic institution.
+
+```{r StudyDetails_CategoriesTable}
+#| echo: false
+
+kable(authorCategories_overall)
+```
+
+There is limited discernible change in authorship categories over time.
+
+```{r StudyDetails_authorshipTrend}
+#| echo: false
+#| warning: false
+
+studyDetails_clean |>
+  filter(!is.na(YearStrata)) |>
+  mutate(StrataArticles = n(), .by = YearStrata) |>
+  separate_rows(AuthorCategories, sep = ", ") |> 
+  summarise(Articles = n(),
+            .by = c(AuthorCategories, YearStrata, StrataArticles)) |>
+  mutate(Proportion = Articles/StrataArticles) |>
+  mutate(YearStrata = fct(YearStrata,
+                          levels = c("2000-2005", "2006-2010",
+                                     "2011-2015", "2016-2020",
+                                     "2021-2023")),
+         AuthorCategories = fct(AuthorCategories,
+                                levels = c("Academic", "Government",
+                                           "NGO", "Private"))) |>
+  complete(AuthorCategories, YearStrata) |>
+  
+  ggplot(aes(x = YearStrata, 
+                 y = Proportion, 
+                 fill = AuthorCategories)) +
+  geom_col(position = "dodge") +
+  labs(title = "Authorship trends over time",
+       x = "Year of publication",
+       y = "Proportion of Articles") +
+  scale_fill_manual("Authorship category",
+                    values = c("darkslategrey", "darkorchid3",
+                               "cyan3", "goldenrod1"))
+```
+
+## 
 
 # Objectives and inference
 
@@ -220,18 +339,18 @@ All covariates considered for modelling were documented for each article. Detail
 
 Key details of the modelling process were documented.
 
-+---------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------+
-| Field         | Description                                               | Possible values                                                                                 |
-+===============+===========================================================+=================================================================================================+
-| Bayesian      | Whether the models fit were Bayesian                      | *Logical*                                                                                       |
-+---------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------+
-| Prefiltering  | Which, if any, prefiltering method was used               | *Expert, Simple, Other*                                                                         |
-+---------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------+
-| Selection     | Which, if any, selection method was used                  | *Single a priori, Multiple a priori, Exhaustive, Exhaustive by parameter, Forwards, Backwards*  |
-+---------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------+
-| Evaluation    | How models were compared and evaluated                    | *AIC, AUC, DiC, Model-averaging, Bootstrapping*                                                 |
-+---------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------+
-| Multi-species | Whether this was a multi-species model                    | *Logical*                                                                                       |
-+---------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------+
-| Connectivity  | Whether site connectivity was incorporated into the model | *Logical*                                                                                       |
-+---------------+-----------------------------------------------------------+-------------------------------------------------------------------------------------------------+
++---------------+-----------------------------------------------------------+------------------------------------------------------------------------------------------------+
+| Field         | Description                                               | Possible values                                                                                |
++===============+===========================================================+================================================================================================+
+| Bayesian      | Whether the models fit were Bayesian                      | *Logical*                                                                                      |
++---------------+-----------------------------------------------------------+------------------------------------------------------------------------------------------------+
+| Prefiltering  | Which, if any, prefiltering method was used               | *Expert, Simple, Other*                                                                        |
++---------------+-----------------------------------------------------------+------------------------------------------------------------------------------------------------+
+| Selection     | Which, if any, selection method was used                  | *Single a priori, Multiple a priori, Exhaustive, Exhaustive by parameter, Forwards, Backwards* |
++---------------+-----------------------------------------------------------+------------------------------------------------------------------------------------------------+
+| Evaluation    | How models were compared and evaluated                    | *AIC, AUC, DiC, Model-averaging, Bootstrapping*                                                |
++---------------+-----------------------------------------------------------+------------------------------------------------------------------------------------------------+
+| Multi-species | Whether this was a multi-species model                    | *Logical*                                                                                      |
++---------------+-----------------------------------------------------------+------------------------------------------------------------------------------------------------+
+| Connectivity  | Whether site connectivity was incorporated into the model | *Logical*                                                                                      |
++---------------+-----------------------------------------------------------+------------------------------------------------------------------------------------------------+
