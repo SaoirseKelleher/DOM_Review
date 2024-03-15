@@ -107,6 +107,8 @@ studyDetails_clean <- review_StudyDetails |>
 ## Year coverage
 
 ```{r StudyDetails_years}
+#| echo: false
+
 studyDetails_clean |>
   filter(!is.na(YearStrata)) |>
   mutate(YearStrata = fct(YearStrata,
@@ -148,7 +150,7 @@ countriesTable <- studyDetails_clean |>
   arrange(-Articles)
 ```
 
-Counting by the location of the first author's institution, `{r} nrow(countriesTable` countries are represented in the sample. A strong majority of articles were published by first authors based in the United States of America.
+Counting by the location of the first author's institution, `{r} nrow(countriesTable)` countries are represented in the sample. A strong majority of articles were published by first authors based in the United States of America.
 
 ```{r StudyDetails_countriesTable}
 #| echo: false
@@ -171,7 +173,7 @@ authorCategories_overall <- studyDetails_clean |>
   arrange(-Proportion)
 ```
 
-The most frequent category of authorship was academic, with `{r} max(authorCategories_overall)`% of articles having at least one author from an academic institution.
+The most frequent category of authorship was academic, with `{r} max(authorCategories_overall$Proportion)` % of articles having at least one author from an academic institution.
 
 ```{r StudyDetails_CategoriesTable}
 #| echo: false
@@ -230,6 +232,23 @@ The stated objectives for each article were assessed and divided into four categ
 +---------------------+-----------------------------------------------------------------------------------+
 | Hypothesis testing  | Did authors seek to test specific hypotheses of species occupancy dynamics?       |
 +---------------------+-----------------------------------------------------------------------------------+
+
+```{r Objectives_clean}
+#| echo: false
+
+review_Objectives |>
+  filter(Status == "Complete") |> 
+  select(ID, Obj_Methods, Obj_Future, Obj_Spatial, Obj_Hypothesis) |>
+  pivot_longer(cols = c(Obj_Methods, Obj_Future, 
+                        Obj_Spatial, Obj_Hypothesis), 
+               names_to = "Objective", 
+               values_to = "Stated") |>
+  mutate(Objective = str_extract(Objective, "(?<=Obj\\_).+"),
+         Stated = case_when(Stated == "Y" ~ TRUE,
+                            Stated == "N" ~ FALSE)) |>
+  left_join(select(studyDetails_clean, ID, Year, YearStrata), by = "ID")
+
+```
 
 ## Frequency of objectives
 
