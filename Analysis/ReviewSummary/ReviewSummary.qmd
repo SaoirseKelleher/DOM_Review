@@ -107,6 +107,8 @@ studyDetails_clean <- review_StudyDetails |>
 ## Year coverage
 
 ```{r StudyDetails_years}
+#| echo: false
+
 studyDetails_clean |>
   filter(!is.na(YearStrata)) |>
   mutate(YearStrata = fct(YearStrata,
@@ -148,7 +150,7 @@ countriesTable <- studyDetails_clean |>
   arrange(-Articles)
 ```
 
-Counting by the location of the first author's institution, `{r} nrow(countriesTable` countries are represented in the sample. A strong majority of articles were published by first authors based in the United States of America.
+Counting by the location of the first author's institution, `{r} nrow(countriesTable)` countries are represented in the sample. A strong majority of articles were published by first authors based in the United States of America.
 
 ```{r StudyDetails_countriesTable}
 #| echo: false
@@ -171,7 +173,7 @@ authorCategories_overall <- studyDetails_clean |>
   arrange(-Proportion)
 ```
 
-The most frequent category of authorship was academic, with `{r} max(authorCategories_overall)`% of articles having at least one author from an academic institution.
+The most frequent category of authorship was academic, with `{r} max(authorCategories_overall$Proportion)` % of articles having at least one author from an academic institution.
 
 ```{r StudyDetails_CategoriesTable}
 #| echo: false
@@ -231,11 +233,131 @@ The stated objectives for each article were assessed and divided into four categ
 | Hypothesis testing  | Did authors seek to test specific hypotheses of species occupancy dynamics?       |
 +---------------------+-----------------------------------------------------------------------------------+
 
+```{r Objectives_clean}
+#| echo: false
+
+objectives_Clean <- review_Objectives |>
+  filter(Status == "Complete") |> 
+  select(ID, Obj_Methods, Obj_Future, Obj_Spatial, Obj_Hypothesis) |>
+  rowwise() |>
+  mutate(Obj_None = case_when(all(c(Obj_Methods, Obj_Future,
+                                    Obj_Spatial, Obj_Hypothesis) == "N") ~ "Y",
+                              any(c(Obj_Methods, Obj_Future,
+                                    Obj_Spatial, Obj_Hypothesis) == "Y") ~ "N")) |>
+  pivot_longer(cols = c(Obj_Methods, Obj_Future, 
+                        Obj_Spatial, Obj_Hypothesis, Obj_None), 
+               names_to = "Objective", 
+               values_to = "Stated") |>
+  mutate(Objective = str_extract(Objective, "(?<=Obj\\_).+"),
+         Stated = case_when(Stated == "Y" ~ TRUE,
+                            Stated == "N" ~ FALSE)) |>
+  left_join(select(studyDetails_clean, ID, 
+                   Year, YearStrata), 
+            by = "ID")
+```
+
 ## Frequency of objectives
+
+```{r Objectives_frequency}
+#| echo: false
+
+objectives_frequency <- objectives_Clean |>
+  mutate(Total = length(unique(ID))) |>
+  filter(Stated == TRUE) |>
+  summarise(Articles = n(),
+            .by = c(Objective, Total)) |>
+  mutate(Proportion = Articles/Total) |> 
+  arrange(-Proportion)
+```
+
+The most common objective was **Testing Hypotheses**, with `{r} max(objectives_frequency$Proportion)`% of articles examining pre-determined relationships. Prediction, whether spatial or temporal, was rare.
+
+```{r Objectives_frequencyPlot}
+#| echo: false
+
+objectives_frequency |>
+  mutate(Objective = fct(Objective,
+                         levels = c("Hypothesis", "Methods",
+                                    "Future", "Spatial",
+                                    "None"))) |>
+  
+  ggplot() +
+  geom_col(aes(x = Objective, y = Articles, fill = Objective)) +
+  scale_fill_manual(values = c("darkorchid", "deepskyblue3",
+                               "coral2", "goldenrod", "gray60")) +
+  labs(title = "Number of articles by objective",
+       subtitle = "'None' indicates that none of the objectives were stated,\ngenerally this indicates a focus on occupancy dynamics parameters",
+       x = "Stated objective", y = "Number of articles") +
+  theme(legend.position = "none")
+
+```
 
 ## Stated objectives by authorship categories
 
+Little variation was shown between the objectives of papers by different authorship categories.
+
+```{r Objective_frequencyAuthorship}
+#| echo: false
+
+objectives_frequencyAuthorship <- objectives_Clean |>
+  left_join(select(studyDetails_clean, ID, AuthorCategories), by = "ID") |>
+  separate_rows(AuthorCategories, sep = ", ") |>
+  filter(Stated == TRUE) |>
+  mutate(Total = length(unique(ID)), .by = AuthorCategories) |>
+  summarise(Articles = n(),
+            .by = c(Objective, AuthorCategories, Total)) |>
+  mutate(Proportion = Articles/Total) |>
+  complete(Objective, AuthorCategories, 
+           fill = list(Articles = 0,
+                       Proportion = 0))
+
+# Plot frequency faceted by authorship
+objectives_frequencyAuthorship |>
+  mutate(Objective = fct(Objective,
+                         levels = c("Hypothesis", "Methods",
+                                    "Future", "Spatial",
+                                    "None"))) |>
+  
+  ggplot() +
+  geom_col(aes(x = Objective, y = Proportion, fill = Objective)) +
+  scale_fill_manual(values = c("darkorchid", "deepskyblue3",
+                               "coral2", "goldenrod", "gray60")) +
+  facet_wrap(facets = vars(AuthorCategories)) +
+  labs(title = "Proportion of articles with each objective",
+       subtitle = "'None' indicates that none of the listed objectives were stated,\ngenerally this indicates a focus on simply estimating occupancy dynamics",
+       x = "Stated objective", y = "Number of articles") +
+  theme(legend.position = "bottom")
+```
+
 ## Stated objective by year
+
+Objective categories have changed in frequency over time, with more variation in objectives in recent years relative to the early days of DOMs
+
+```{r Objectives_byYear}
+#| echo: false
+
+objectives_Clean |>
+  filter(!is.na(YearStrata)) |>
+  filter(Stated == TRUE) |>
+  mutate(Total = length(unique(ID)), .by = YearStrata) |>
+  summarise(Articles = n(), .by = c(Objective, YearStrata, Total)) |>
+  mutate(Proportion = Articles/Total) |>
+  complete(Objective, YearStrata, fill = list(Articles = 0, Proportion = 0)) |>
+  mutate(Objective = fct(Objective,
+                         levels = c("Hypothesis", "Methods",
+                                    "Future", "Spatial",
+                                    "None"))) |>
+  
+  ggplot() +
+  geom_col(aes(x = YearStrata, y = Proportion, fill = Objective),
+           position = "dodge") +
+  scale_fill_manual(values = c("darkorchid", "deepskyblue3",
+                               "coral2", "goldenrod", "gray60")) +
+  labs(title = "Objective categories over time",
+       subtitle = "'None' indicates that none of the listed objectives were stated,\ngenerally this indicates a focus on simply estimating occupancy dynamics",
+       y = "Proportion of articles", x = "Year Strata")
+
+```
 
 # Species and location
 
