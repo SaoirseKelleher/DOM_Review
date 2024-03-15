@@ -361,6 +361,12 @@ objectives_Clean |>
 
 # Species and location
 
+```{r Species_clean}
+species_clean <- review_SpeciesLocation |>
+  filter(Status == "Complete") |>
+  mutate(ID_clean = str_extract(ID, "[:digit:]+"))
+```
+
 Data on focal species and the location of study areas was collected, available fields include:
 
 +-----------------+--------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
@@ -385,7 +391,57 @@ Data on focal species and the location of study areas was collected, available f
 
 ## Taxa categories
 
+```{r Species_Taxa}
+#| echo: false
+
+species_taxaTable <-species_clean |>
+  separate_rows(Taxa_Category, sep = ", ") |>
+  mutate(Total = length(unique(ID_clean))) |>
+  select(Taxa_Category, ID_clean, Total) |>
+  distinct() |>
+  summarise(Articles = n(), 
+            Proportion = round(Articles/mean(Total), 2),
+            .by = Taxa_Category) |>
+  arrange(-Articles) |>
+  rename(Taxa = Taxa_Category)
+```
+
+DOMs have been widely used for terrestrial taxa, with numerous examples modelling bird, mammal, and herptile occupancy dynamics. `{r} species_taxaTable$Articles[species_taxaTable$Taxa == "Threatened"]` articles described their focal species as threatened in some way; `{r} species_taxaTable$Articles[species_taxaTable$Taxa == "Invasive"]` fit models to invasive species.
+
+```{r Species_TaxaTable}
+#| echo: false
+
+kable(species_taxaTable)
+```
+
 ## Number of species
+
+```{r Species_Number}
+#| echo: false
+species_Number <- species_clean |>
+  select(ID_clean, Taxa_Number) |>
+  mutate(Taxa_Number = sum(Taxa_Number), .by = ID_clean)
+```
+
+Only approximately half of articles modelled occupancy dynamics for a single species. Others fit multiple occupancy models: either multi-species models where 2+ species were modelled in concert, or many independent models for a suite of species. The largest number of species modelled in a single paper was **`{r} max(species_Number$Taxa_Number)`**.
+
+```{r Species_NumberPlot}
+#| echo: false
+
+species_Number |>
+  mutate(NumberGroup = case_when(Taxa_Number == 1 ~ "1",
+                                 Taxa_Number %in% 2:10 ~ "2-10",
+                                 Taxa_Number %in% 11:100 ~ "11-100",
+                                 Taxa_Number > 100 ~ ">100")) |>
+  summarise(Articles = n(), .by = NumberGroup) |>
+  mutate(NumberGroup = fct(NumberGroup,
+                           levels = c("1", "2-10", "11-100", ">100"))) |>
+  
+  ggplot() +
+  geom_col(aes(x = NumberGroup, y = Articles), fill = "darkslategrey") +
+  labs(title = "Number of species modelled per article",
+       x = "Number of species", y = "Number of articles") 
+```
 
 ## Threatened taxa
 
