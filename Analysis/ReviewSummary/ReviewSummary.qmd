@@ -412,6 +412,77 @@ DOMs have been widely used for terrestrial taxa, with numerous examples modellin
 #| echo: false
 
 kable(species_taxaTable)
+species_taxaTable |>
+  mutate(Taxa = fct_reorder(Taxa, Articles)) |>
+  
+  ggplot() +
+  geom_col(aes(x = Articles, y = Taxa, fill = Taxa)) +
+  scale_fill_manual(limits = c("Bird", "Threatened", "Mammal", 
+                               "Herptile", "Invasive", "Invertebrate",
+                               "Lichen"),
+                    values = c("darkslategrey", "firebrick4", "darkslategrey", 
+                               "darkslategrey", "cyan4", "darkslategrey", 
+                               "darkslategrey")) +
+  theme(legend.position = "none") +
+  labs(title = "Modelled taxa", y = "", 
+       x = "number of articles")
+
+```
+
+## Threats to modelled taxa
+
+Of papers which describe any threats to their focal taxa, by far the most frequent threat was habitat loss.
+
+```{r Species_Threats}
+#| echo: false
+
+species_clean |>
+  filter(!Threat_Category %in% c("NA", "None"),
+         !is.na(Threat_Category)) |> 
+  separate_rows(Threat_Category, sep = ", ") |>
+  select(ID_clean, Threat_Category) |>
+  distinct() |>
+  mutate(Total = length(unique(ID_clean))) |>
+  summarise(Articles = n(), 
+            Proportion = round(Articles/mean(Total), 2),
+            .by = Threat_Category)|>
+  mutate(Threat_Category = case_when(Threat_Category == "HabitatLoss" ~ "Habitat loss",
+                                     Threat_Category == "ClimateChange" ~ "Climate change",
+                                     Threat_Category == "Other_Pollution" ~ "Pollution",
+                                     .default = Threat_Category)) |>
+  mutate(Threat_Category = fct_reorder(Threat_Category, Articles)) |>
+  
+  ggplot() +
+  geom_col(aes(x = Proportion, y = Threat_Category), fill = "darkslategrey") +
+  xlim(c(0,1)) +
+  labs(title = "Threats to study taxa",
+       subtitle = "Of articles which explicitly mention any threats",
+       x = "Proportion of articles", y = "")
+```
+
+## Threatened taxa
+
+```{r Species_IUCN}
+#| echo: false
+
+species_clean |>
+  summarise(Articles = n(), .by = IUCN_Status) |>
+  filter(!IUCN_Status %in% c("Not applicable", "NA")) |>
+  mutate(IUCN_Status = case_when(IUCN_Status == "NL" ~ "Not listed",
+                                 .default = IUCN_Status)) |>
+  mutate(IUCN_Status = fct(IUCN_Status,
+                           levels = c("LC", "NT", "VU",
+                                      "EN", "CR", "Not listed"))) |>
+  
+  ggplot() +
+  geom_col(aes(x = IUCN_Status, y = Articles, fill = IUCN_Status)) +
+  scale_fill_manual(values = c("darkslategrey", "darkorange3",
+                               "darkorange3", "darkorange3",
+                               "darkorange3", "darkslategrey")) +
+  labs(title = "IUCN Red list status",
+       subtitle = "Invasives, higher-order taxa, and grouped species excluded",
+       y = "Number of articles", x = "IUCN Red List Status") +
+  theme(legend.position = "none")
 ```
 
 ## Number of species
@@ -423,7 +494,7 @@ species_Number <- species_clean |>
   mutate(Taxa_Number = sum(Taxa_Number), .by = ID_clean)
 ```
 
-Only approximately half of articles modelled occupancy dynamics for a single species. Others fit multiple occupancy models: either multi-species models where 2+ species were modelled in concert, or many independent models for a suite of species. The largest number of species modelled in a single paper was **`{r} max(species_Number$Taxa_Number)`**.
+Only approximately half of articles modelled occupancy dynamics for a single taxa. Others fit multiple occupancy models: either multi-species models where 2+ taxa were modelled in concert, or many independent models for a suite of taxa. The largest number of species modelled in a single paper was **`{r} max(species_Number$Taxa_Number)`**.
 
 ```{r Species_NumberPlot}
 #| echo: false
@@ -442,8 +513,6 @@ species_Number |>
   labs(title = "Number of species modelled per article",
        x = "Number of species", y = "Number of articles") 
 ```
-
-## Threatened taxa
 
 ## Study locations
 
