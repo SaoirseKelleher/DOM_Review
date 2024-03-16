@@ -361,6 +361,12 @@ objectives_Clean |>
 
 # Species and location
 
+```{r Species_clean}
+species_clean <- review_SpeciesLocation |>
+  filter(Status == "Complete") |>
+  mutate(ID_clean = str_extract(ID, "[:digit:]+"))
+```
+
 Data on focal species and the location of study areas was collected, available fields include:
 
 +-----------------+--------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
@@ -385,11 +391,207 @@ Data on focal species and the location of study areas was collected, available f
 
 ## Taxa categories
 
-## Number of species
+```{r Species_Taxa}
+#| echo: false
+
+species_taxaTable <-species_clean |>
+  separate_rows(Taxa_Category, sep = ", ") |>
+  mutate(Total = length(unique(ID_clean))) |>
+  select(Taxa_Category, ID_clean, Total) |>
+  distinct() |>
+  summarise(Articles = n(), 
+            Proportion = round(Articles/mean(Total), 2),
+            .by = Taxa_Category) |>
+  arrange(-Articles) |>
+  rename(Taxa = Taxa_Category)
+```
+
+DOMs have been widely used for terrestrial taxa, with numerous examples modelling bird, mammal, and herptile occupancy dynamics. `{r} species_taxaTable$Articles[species_taxaTable$Taxa == "Threatened"]` articles described their focal species as threatened in some way; `{r} species_taxaTable$Articles[species_taxaTable$Taxa == "Invasive"]` fit models to invasive species.
+
+```{r Species_TaxaTable}
+#| echo: false
+
+kable(species_taxaTable)
+species_taxaTable |>
+  mutate(Taxa = fct_reorder(Taxa, Articles)) |>
+  
+  ggplot() +
+  geom_col(aes(x = Articles, y = Taxa, fill = Taxa)) +
+  scale_fill_manual(limits = c("Bird", "Threatened", "Mammal", 
+                               "Herptile", "Invasive", "Invertebrate",
+                               "Lichen"),
+                    values = c("darkslategrey", "firebrick4", "darkslategrey", 
+                               "darkslategrey", "cyan4", "darkslategrey", 
+                               "darkslategrey")) +
+  theme(legend.position = "none") +
+  labs(title = "Modelled taxa", y = "", 
+       x = "number of articles")
+
+```
+
+## Threats to modelled taxa
+
+Of papers which describe any threats to their focal taxa, by far the most frequent threat was habitat loss.
+
+```{r Species_Threats}
+#| echo: false
+
+species_clean |>
+  filter(!Threat_Category %in% c("NA", "None"),
+         !is.na(Threat_Category)) |> 
+  separate_rows(Threat_Category, sep = ", ") |>
+  select(ID_clean, Threat_Category) |>
+  distinct() |>
+  mutate(Total = length(unique(ID_clean))) |>
+  summarise(Articles = n(), 
+            Proportion = round(Articles/mean(Total), 2),
+            .by = Threat_Category)|>
+  mutate(Threat_Category = case_when(Threat_Category == "HabitatLoss" ~ "Habitat loss",
+                                     Threat_Category == "ClimateChange" ~ "Climate change",
+                                     Threat_Category == "Other_Pollution" ~ "Pollution",
+                                     .default = Threat_Category)) |>
+  mutate(Threat_Category = fct_reorder(Threat_Category, Articles)) |>
+  
+  ggplot() +
+  geom_col(aes(x = Proportion, y = Threat_Category), fill = "darkslategrey") +
+  xlim(c(0,1)) +
+  labs(title = "Threats to study taxa",
+       subtitle = "Of articles which explicitly mention any threats",
+       x = "Proportion of articles", y = "")
+```
 
 ## Threatened taxa
 
+```{r Species_IUCN}
+#| echo: false
+
+species_clean |>
+  summarise(Articles = n(), .by = IUCN_Status) |>
+  filter(!IUCN_Status %in% c("Not applicable", "NA")) |>
+  mutate(IUCN_Status = case_when(IUCN_Status == "NL" ~ "Not listed",
+                                 .default = IUCN_Status)) |>
+  mutate(IUCN_Status = fct(IUCN_Status,
+                           levels = c("LC", "NT", "VU",
+                                      "EN", "CR", "Not listed"))) |>
+  
+  ggplot() +
+  geom_col(aes(x = IUCN_Status, y = Articles, fill = IUCN_Status)) +
+  scale_fill_manual(values = c("darkslategrey", "darkorange3",
+                               "darkorange3", "darkorange3",
+                               "darkorange3", "darkslategrey")) +
+  labs(title = "IUCN Red list status",
+       subtitle = "Invasives, higher-order taxa, and grouped species excluded",
+       y = "Number of articles", x = "IUCN Red List Status") +
+  theme(legend.position = "none")
+```
+
+## Number of species
+
+```{r Species_Number}
+#| echo: false
+species_Number <- species_clean |>
+  select(ID_clean, Taxa_Number) |>
+  mutate(Taxa_Number = sum(Taxa_Number), .by = ID_clean)
+```
+
+Only approximately half of articles modelled occupancy dynamics for a single taxa. Others fit multiple occupancy models: either multi-species models where 2+ taxa were modelled in concert, or many independent models for a suite of taxa. The largest number of species modelled in a single paper was **`{r} max(species_Number$Taxa_Number)`**.
+
+```{r Species_NumberPlot}
+#| echo: false
+
+species_Number |>
+  mutate(NumberGroup = case_when(Taxa_Number == 1 ~ "1",
+                                 Taxa_Number %in% 2:10 ~ "2-10",
+                                 Taxa_Number %in% 11:100 ~ "11-100",
+                                 Taxa_Number > 100 ~ ">100")) |>
+  summarise(Articles = n(), .by = NumberGroup) |>
+  mutate(NumberGroup = fct(NumberGroup,
+                           levels = c("1", "2-10", "11-100", ">100"))) |>
+  
+  ggplot() +
+  geom_col(aes(x = NumberGroup, y = Articles), fill = "darkslategrey") +
+  labs(title = "Number of species modelled per article",
+       x = "Number of species", y = "Number of articles") 
+```
+
 ## Study locations
+
+Consistent with authorship trends, a majority of articles conducted studies in the United States.
+
+::: panel-tabset
+## Country
+
+```{r Species_Country}
+#| echo: false 
+
+species_clean |> 
+  select(ID_clean, Country) |>
+  separate_rows(Country, sep = ", ") |> 
+  distinct() |>
+  summarise(Articles = n(), .by = Country) |>
+  arrange(-Articles) |>
+  reactable(defaultPageSize = 8)
+```
+
+## Continent
+
+```{r Species_Continent}
+#| echo: false 
+
+species_clean |> 
+  select(ID_clean, Continent) |>
+  distinct() |>
+  summarise(Articles = n(), .by = Continent) |>
+  arrange(-Articles) |>
+  reactable(defaultPageSize = 8)
+```
+
+## Realm
+
+```{r Species_Realm}
+#| echo: false 
+
+species_clean |> 
+  select(ID_clean, Realm) |>
+  distinct() |>
+  summarise(Articles = n(), .by = Realm) |>
+  arrange(-Articles) |>
+  reactable(defaultPageSize = 8)
+
+
+```
+:::
+
+```{r Species_locations}
+
+```
+
+## Study area size
+
+The size of the study area in square kilometres follows a log-normal distribution, with studies ranging from less than one to over one million square kilometres.
+
+```{r Species_sizeKM}
+#| echo: false
+
+species_clean |> 
+  select(ID_clean, Size_km) |>
+  distinct() |>
+  mutate(Size_km = case_when(Size_km == "<1" ~ "0-1",
+                             Size_km == "1000-9999" ~ "1000-10000",
+                             .default = Size_km)) |>
+  summarise(Articles = n(), .by = Size_km) |>
+  arrange(Size_km) |>
+  mutate(Size_km = fct_inorder(Size_km)) |> 
+  filter(!Size_km %in% c("Not specified", "Unspecified")) |>
+  
+  ggplot() +
+  geom_col(aes(x = Size_km, y = Articles), fill = "darkslategrey") +
+  labs(title = "Study area size",
+       x = "Study area in square kilometres", 
+       y = "Number of articles") +
+  theme(axis.text.x = element_text(angle = 60, vjust = 0.5))
+
+```
 
 # Data collection
 
