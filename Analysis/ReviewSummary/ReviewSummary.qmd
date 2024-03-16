@@ -516,6 +516,83 @@ species_Number |>
 
 ## Study locations
 
+Consistent with authorship trends, a majority of articles conducted studies in the United States.
+
+::: panel-tabset
+## Country
+
+```{r Species_Country}
+#| echo: false 
+
+species_clean |> 
+  select(ID_clean, Country) |>
+  separate_rows(Country, sep = ", ") |> 
+  distinct() |>
+  summarise(Articles = n(), .by = Country) |>
+  arrange(-Articles) |>
+  reactable(defaultPageSize = 8)
+```
+
+## Continent
+
+```{r Species_Continent}
+#| echo: false 
+
+species_clean |> 
+  select(ID_clean, Continent) |>
+  distinct() |>
+  summarise(Articles = n(), .by = Continent) |>
+  arrange(-Articles) |>
+  reactable(defaultPageSize = 8)
+```
+
+## Realm
+
+```{r Species_Realm}
+#| echo: false 
+
+species_clean |> 
+  select(ID_clean, Realm) |>
+  distinct() |>
+  summarise(Articles = n(), .by = Realm) |>
+  arrange(-Articles) |>
+  reactable(defaultPageSize = 8)
+
+
+```
+:::
+
+```{r Species_locations}
+
+```
+
+## Study area size
+
+The size of the study area in square kilometres follows a log-normal distribution, with studies ranging from less than one to over one million square kilometres.
+
+```{r Species_sizeKM}
+#| echo: false
+
+species_clean |> 
+  select(ID_clean, Size_km) |>
+  distinct() |>
+  mutate(Size_km = case_when(Size_km == "<1" ~ "0-1",
+                             Size_km == "1000-9999" ~ "1000-10000",
+                             .default = Size_km)) |>
+  summarise(Articles = n(), .by = Size_km) |>
+  arrange(Size_km) |>
+  mutate(Size_km = fct_inorder(Size_km)) |> 
+  filter(!Size_km %in% c("Not specified", "Unspecified")) |>
+  
+  ggplot() +
+  geom_col(aes(x = Size_km, y = Articles), fill = "darkslategrey") +
+  labs(title = "Study area size",
+       x = "Study area in square kilometres", 
+       y = "Number of articles") +
+  theme(axis.text.x = element_text(angle = 60, vjust = 0.5))
+
+```
+
 # Data collection
 
 +---------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
