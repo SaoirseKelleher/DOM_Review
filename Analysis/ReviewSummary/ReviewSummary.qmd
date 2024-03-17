@@ -400,7 +400,7 @@ species_taxaTable <-species_clean |>
   select(Taxa_Category, ID_clean, Total) |>
   distinct() |>
   summarise(Articles = n(), 
-            Proportion = round(Articles/mean(Total), 2),
+            Percentage = round(Articles/mean(Total), 2)*100,
             .by = Taxa_Category) |>
   arrange(-Articles) |>
   rename(Taxa = Taxa_Category)
@@ -416,16 +416,18 @@ species_taxaTable |>
   mutate(Taxa = fct_reorder(Taxa, Articles)) |>
   
   ggplot() +
-  geom_col(aes(x = Articles, y = Taxa, fill = Taxa)) +
+  geom_col(aes(x = Percentage, y = Taxa, fill = Taxa)) +
   scale_fill_manual(limits = c("Bird", "Threatened", "Mammal", 
                                "Herptile", "Invasive", "Invertebrate",
                                "Lichen"),
-                    values = c("darkslategrey", "firebrick4", "darkslategrey", 
-                               "darkslategrey", "cyan4", "darkslategrey", 
+                    values = c("darkslategrey", "darkorange4", "darkslategrey", 
+                               "darkslategrey", "darkorange4", "darkslategrey", 
                                "darkslategrey")) +
   theme(legend.position = "none") +
-  labs(title = "Modelled taxa", y = "", 
-       x = "number of articles")
+  xlim(c(0,50)) +
+  labs(title = "Modelled taxa", 
+       subtitle = "Multiple categories per article permitted",
+       y = "", x = "Percentage of articles")
 
 ```
 
@@ -614,6 +616,13 @@ species_clean |>
 +---------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
 | Sampling method     | How sites were selected                                                  | *Random, Stratified, Grid, Preferential, Available, Exhaustive, Uniform, Transect*           |
 +---------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
+
+```{r DataCollection_clean}
+#| echo: false
+
+
+
+```
 
 ## Study duration
 
