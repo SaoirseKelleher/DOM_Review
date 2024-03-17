@@ -394,7 +394,7 @@ Data on focal species and the location of study areas was collected, available f
 ```{r Species_Taxa}
 #| echo: false
 
-species_taxaTable <-species_clean |>
+species_taxaTable <- species_clean |>
   separate_rows(Taxa_Category, sep = ", ") |>
   mutate(Total = length(unique(ID_clean))) |>
   select(Taxa_Category, ID_clean, Total) |>
@@ -496,7 +496,7 @@ species_Number <- species_clean |>
   mutate(Taxa_Number = sum(Taxa_Number), .by = ID_clean)
 ```
 
-Only approximately half of articles modelled occupancy dynamics for a single taxa. Others fit multiple occupancy models: either multi-species models where 2+ taxa were modelled in concert, or many independent models for a suite of taxa. The largest number of species modelled in a single paper was **`{r} max(species_Number$Taxa_Number)`**.
+Only approximately half of articles modelled occupancy dynamics for a single taxa. Others fit multiple occupancy models: either multi-species models where 2+ taxa were modelled in concert, or many independent models fit for a suite of taxa. The largest number of species modelled in a single paper was **`{r} max(species_Number$Taxa_Number)`**.
 
 ```{r Species_NumberPlot}
 #| echo: false
@@ -619,9 +619,33 @@ species_clean |>
 
 ```{r DataCollection_clean}
 #| echo: false
+#| warning: false
 
-
-
+dataCollection_clean <- review_DataCollection |>
+  filter(Status == "Complete") |>
+  mutate(Duration = as.numeric(Duration)) |>
+  separate_wider_delim(cols = Primary_Occasions, 
+                       delim = "-",
+                       names = c("Primary_Min", "Primary_Max"),
+                       too_few = "align_start") |>
+  separate_wider_delim(cols = Secondary_Occasions, 
+                       delim = "-",
+                       names = c("Secondary_Min", "Secondary_Max"),
+                       too_few = "align_start") |>
+  separate_wider_delim(cols = Site_Number, 
+                       delim = "-",
+                       names = c("SiteNumber_Min", "SiteNumber_Max"),
+                       too_few = "align_start") |>
+  mutate(Primary_Max = if_else(is.na(Primary_Max),
+                               Primary_Min, Primary_Max),
+         Secondary_Max = if_else(is.na(Secondary_Max),
+                                 Secondary_Min, Secondary_Max),
+         SiteNumber_Max = if_else(is.na(SiteNumber_Max),
+                                  SiteNumber_Min, SiteNumber_Max)) |>
+  mutate(across(c(Primary_Min, Primary_Max, 
+                  Secondary_Min, Secondary_Max,
+                  SiteNumber_Min, SiteNumber_Max),
+                as.numeric))
 ```
 
 ## Study duration
