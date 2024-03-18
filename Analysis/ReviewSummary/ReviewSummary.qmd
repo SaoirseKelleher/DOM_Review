@@ -650,7 +650,7 @@ dataCollection_clean <- review_DataCollection |>
 
 ## Study duration
 
-Study duration, defined as the length of time between the first and last survey, ranged from **`{r} min(dataCollection_clean$Duration)`** month to **`{r} max(dataCollection_clean$Duration)/12`** years, with a median of **`{r} median(dataCollection_clean$Duration`** months.
+Study duration, defined as the length of time between the first and last survey, ranged from **`{r} min(dataCollection_clean$Duration)`** month to **`{r} max(dataCollection_clean$Duration)/12`** years, with a median of **`{r} median(dataCollection_clean$Duration)`** months.
 
 ```{r DataCollection_duration}
 #| echo: false
@@ -740,7 +740,6 @@ dataCollection_clean |>
   mutate(Total = length(unique(ID_clean))) |>
   separate_rows(Detection_Method, sep = ", ") |>
   summarise(Articles = n(), 
-            #Proportion = round(Articles/Total, 2),
             .by = c(Detection_Method, Total)) |>
   mutate(Percentage = round(Articles/Total, 2)*100) |>
   select(Detection_Method, Articles, Percentage) |>
@@ -785,13 +784,96 @@ dataCollection_clean |>
 
 ## Sampling method
 
+Site selection was variable; various studies selected sites randomly, as part of a grid design, preferentially, or exhaustively. A considerable amount did not clearly specify how their study sites were determined.
+
 ```{r DataCollection_Sampling}
+#| echo: false
 
-
-
+dataCollection_clean |>
+  mutate(Total = length(unique(ID_clean))) |>
+  separate_rows(Sampling_Method, sep = ", ") |>
+  mutate(Sampling_Method = case_when(Sampling_Method == "Unspecified" ~ "Not specified",
+         .default = Sampling_Method)) |>
+  summarise(Articles = n(), 
+            .by = c(Sampling_Method, Total)) |>
+  mutate(Percentage = round(Articles/Total, 2)*100) |>
+  select(-Total) |>
+  arrange(-Percentage) |>
+  kable()
 ```
 
 ## Study size over time
+
+There does not appear to be a discernible trend in study size (whether defined by duration, number of sites, or total number of survey occasions.
+
+::: panel-tabset
+## Year
+
+```{r DataCollection_sizeTrend}
+#| echo: false
+#| warning: false
+#| message: false
+
+dataCollection_clean |>
+  select(ID_clean, Duration, 
+         Primary_Max, Secondary_Max,
+         SiteNumber_Max) |>
+  mutate(ID_clean = as.numeric(ID_clean)) |>
+  rowwise() |>
+  mutate(TotalOccasions = Primary_Max*Secondary_Max) |>
+  left_join(select(studyDetails_clean, ID, Year), by = join_by(ID_clean == ID)) |>
+  pivot_longer(cols = c(Duration, TotalOccasions, SiteNumber_Max),
+               names_to = "Variable", values_to = "Quantity") |>
+  mutate(Variable = case_when(Variable == "Duration" ~ "Study duration (months)",
+                              Variable == "SiteNumber_Max" ~ "Number of sites",
+                              Variable == "TotalOccasions" ~ "Total survey occasions (Primary x Secondary)")) |>
+  
+  ggplot(aes(x = Year, y = Quantity, colour = Variable)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE, alpha = 0.7) +
+  scale_y_continuous(transform = "log10") +
+  xlim(c(2005, 2024)) +
+  scale_x_continuous(breaks = c(2005, 2010, 2015, 2020, 2024)) +
+  scale_colour_manual(values = c("darkslategrey", "cyan4", "darkorchid4")) +
+  facet_wrap(vars(Variable), ncol = 1, scales = "free_y") +
+  theme(legend.position = "none") +
+  labs(title = "Trend in study size",
+       x = "Year", y = "")
+```
+
+## Year Strata
+
+```{r DataCollection_Sizetrendboxplots}
+#| echo: false
+#| warning: false
+#| message: false
+
+dataCollection_clean |>
+  select(ID_clean, Duration, 
+         Primary_Max, Secondary_Max,
+         SiteNumber_Max) |>
+  mutate(ID_clean = as.numeric(ID_clean)) |>
+  rowwise() |>
+  mutate(TotalOccasions = Primary_Max*Secondary_Max) |>
+  left_join(select(studyDetails_clean, ID, YearStrata), by = join_by(ID_clean == ID)) |>
+  filter(!is.na(YearStrata)) |>
+  pivot_longer(cols = c(Duration, TotalOccasions, SiteNumber_Max),
+               names_to = "Variable", values_to = "Quantity") |>
+  mutate(Variable = case_when(Variable == "Duration" ~ "Study duration (months)",
+                              Variable == "SiteNumber_Max" ~ "Number of sites",
+                              Variable == "TotalOccasions" ~ "Total survey occasions (Primary x Secondary)")) |>
+  
+  ggplot(aes(x = YearStrata, y = Quantity, colour = Variable)) +
+  geom_point(alpha = 0.3) +
+  geom_boxplot() +
+  scale_y_continuous(transform = "log10") +
+  scale_colour_manual(values = c("darkslategrey", "cyan4", "darkorchid4")) +
+  facet_wrap(vars(Variable), ncol = 1, scales = "free_y") +
+  theme(legend.position = "none") +
+  labs(title = "Trend in study size",
+       x = "Year strata", y = "")
+```
+:::
 
 # Covariates
 
