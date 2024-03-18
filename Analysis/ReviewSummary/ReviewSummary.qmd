@@ -622,6 +622,7 @@ species_clean |>
 
 dataCollection_clean <- review_DataCollection |>
   filter(Status == "Complete") |>
+  mutate(ID_clean = str_extract(ID, "[:digit:]+")) |>
   mutate(Duration = as.numeric(Duration)) |>
   separate_wider_delim(cols = Primary_Occasions, 
                        delim = "-",
@@ -649,7 +650,7 @@ dataCollection_clean <- review_DataCollection |>
 
 ## Study duration
 
-Study duration, defined as the length of time between the first and last survey, ranged from **`{r} min(dataCollection_clean$Duration)`** month to **`{r} max(dataCollection_clean$Duration)/12`** years.
+Study duration, defined as the length of time between the first and last survey, ranged from **`{r} min(dataCollection_clean$Duration)`** month to **`{r} max(dataCollection_clean$Duration)/12`** years, with a median of **`{r} median(dataCollection_clean$Duration`** months.
 
 ```{r DataCollection_duration}
 #| echo: false
@@ -669,6 +670,10 @@ dataCollection_clean |>
 ```
 
 ## Number of occasions
+
+The number of sampling occasions varied considerably. The number of primary occasions ranged from just **`{r} min(dataCollection_clean$Primary_Max)`** to **`{r} max(dataCollection_clean$Primary_Max)`** with a median of **`{r} median(dataCollection_clean$Primary_Max)`**.
+
+The number of secondary occasions from **`{r} min(dataCollection_clean$Secondary_Max, na.rm = TRUE)`** to **`{r} max(dataCollection_clean$Secondary_Max, na.rm = TRUE)`** with a median of **`{r} median(dataCollection_clean$Secondary_Max, na.rm = TRUE)`**.
 
 ```{r DataCollection_PrimaryOccasions}
 #| echo: false
@@ -726,7 +731,65 @@ dataCollection_clean |>
 
 ## Data collection method
 
+The most common method for recording detections was human surveys, either structured (e.g. time-bound point counts or transects) or unstructured (searches of sites). Autonomous detection methods (camera traps & acoustic monitors) were used infrequently, despite their potential suitability.
+
+```{r DataCollection_SamplingMethod}
+#| echo: false 
+
+dataCollection_clean |>
+  mutate(Total = length(unique(ID_clean))) |>
+  separate_rows(Detection_Method, sep = ", ") |>
+  summarise(Articles = n(), 
+            #Proportion = round(Articles/Total, 2),
+            .by = c(Detection_Method, Total)) |>
+  mutate(Percentage = round(Articles/Total, 2)*100) |>
+  select(Detection_Method, Articles, Percentage) |>
+  filter(!Detection_Method %in% c("66", NA, "Unspecificed",
+                                  "Survey", "Incidental")) |>
+  arrange(Percentage) |>
+  mutate(Detection_Method = case_when(Detection_Method == "AudioVisual" ~ "Human structured survey",
+                                      Detection_Method == "Search" ~ "Human unstructured search",
+                                      Detection_Method == "Trapping" ~ "Physical trapping",
+                                      Detection_Method == "Camera" ~ "Camera trapping",
+                                      Detection_Method == "Citizen" ~ "Citizen science",
+                                      Detection_Method == "Bioacoustic" ~ "Acoustic monitor")) |>
+  mutate(Detection_Method = fct_inorder(Detection_Method)) |>
+  
+  ggplot() +
+  geom_col(aes(x = Percentage, y = Detection_Method), fill = "darkslategrey") +
+  labs(title = "Detection method",
+       subtitle = "Multiple methods per article permitted",
+       x = "Percentage of articles", y = "") +
+  xlim(c(0,50))
+```
+
+## Number of sites
+
+The number of sites where surveys were conducted ranged widely from **`{r} min(dataCollection_clean$SiteNumber_Max, na.rm = TRUE)`** to **`{r} max(dataCollection_clean$SiteNumber_Max, na.rm = TRUE)`**, with a median site count of **`{r} median(dataCollection_clean$SiteNumber_Max, na.rm = TRUE)`**.
+
+```{r DataCollection_numberSites}
+#| echo: false
+
+dataCollection_clean |>
+  filter(!is.na(SiteNumber_Max)) |>
+  
+  ggplot() +
+  geom_histogram(aes(x = SiteNumber_Max), 
+                 binwidth = 0.1, 
+                 fill = "darkslategrey") +
+  scale_x_continuous(transform = "log10",
+                     breaks = c(5, 10, 25, 50, 100, 500, 1000, 10000)) +
+  labs(title = "Number of sites",
+       x = "Number of sites", y = "Number of articles")
+```
+
 ## Sampling method
+
+```{r DataCollection_Sampling}
+
+
+
+```
 
 ## Study size over time
 
