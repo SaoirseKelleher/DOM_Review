@@ -1,8 +1,7 @@
 ---
 title: "DOM Review Summary"
 author: "Saoirse Kelleher"
-date: "March 13 2024"
-date-modifed: today
+date: today
 abstract: "A summary of results from the DOM Review, for use in interpreting outputs and writing the review manuscript. "
 abstract-title: "Summary"
 format: 
@@ -394,13 +393,13 @@ Data on focal species and the location of study areas was collected, available f
 ```{r Species_Taxa}
 #| echo: false
 
-species_taxaTable <-species_clean |>
+species_taxaTable <- species_clean |>
   separate_rows(Taxa_Category, sep = ", ") |>
   mutate(Total = length(unique(ID_clean))) |>
   select(Taxa_Category, ID_clean, Total) |>
   distinct() |>
   summarise(Articles = n(), 
-            Proportion = round(Articles/mean(Total), 2),
+            Percentage = round(Articles/mean(Total), 2)*100,
             .by = Taxa_Category) |>
   arrange(-Articles) |>
   rename(Taxa = Taxa_Category)
@@ -416,16 +415,18 @@ species_taxaTable |>
   mutate(Taxa = fct_reorder(Taxa, Articles)) |>
   
   ggplot() +
-  geom_col(aes(x = Articles, y = Taxa, fill = Taxa)) +
+  geom_col(aes(x = Percentage, y = Taxa, fill = Taxa)) +
   scale_fill_manual(limits = c("Bird", "Threatened", "Mammal", 
                                "Herptile", "Invasive", "Invertebrate",
                                "Lichen"),
-                    values = c("darkslategrey", "firebrick4", "darkslategrey", 
-                               "darkslategrey", "cyan4", "darkslategrey", 
+                    values = c("darkslategrey", "darkorange4", "darkslategrey", 
+                               "darkslategrey", "darkorange4", "darkslategrey", 
                                "darkslategrey")) +
   theme(legend.position = "none") +
-  labs(title = "Modelled taxa", y = "", 
-       x = "number of articles")
+  xlim(c(0,50)) +
+  labs(title = "Modelled taxa", 
+       subtitle = "Multiple categories per article permitted",
+       y = "", x = "Percentage of articles")
 
 ```
 
@@ -494,7 +495,7 @@ species_Number <- species_clean |>
   mutate(Taxa_Number = sum(Taxa_Number), .by = ID_clean)
 ```
 
-Only approximately half of articles modelled occupancy dynamics for a single taxa. Others fit multiple occupancy models: either multi-species models where 2+ taxa were modelled in concert, or many independent models for a suite of taxa. The largest number of species modelled in a single paper was **`{r} max(species_Number$Taxa_Number)`**.
+Only approximately half of articles modelled occupancy dynamics for a single taxa. Others fit multiple occupancy models: either multi-species models where 2+ taxa were modelled in concert, or many independent models fit for a suite of taxa. The largest number of species modelled in a single paper was **`{r} max(species_Number$Taxa_Number)`**.
 
 ```{r Species_NumberPlot}
 #| echo: false
@@ -615,15 +616,264 @@ species_clean |>
 | Sampling method     | How sites were selected                                                  | *Random, Stratified, Grid, Preferential, Available, Exhaustive, Uniform, Transect*           |
 +---------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
 
+```{r DataCollection_clean}
+#| echo: false
+#| warning: false
+
+dataCollection_clean <- review_DataCollection |>
+  filter(Status == "Complete") |>
+  mutate(ID_clean = str_extract(ID, "[:digit:]+")) |>
+  mutate(Duration = as.numeric(Duration)) |>
+  separate_wider_delim(cols = Primary_Occasions, 
+                       delim = "-",
+                       names = c("Primary_Min", "Primary_Max"),
+                       too_few = "align_start") |>
+  separate_wider_delim(cols = Secondary_Occasions, 
+                       delim = "-",
+                       names = c("Secondary_Min", "Secondary_Max"),
+                       too_few = "align_start") |>
+  separate_wider_delim(cols = Site_Number, 
+                       delim = "-",
+                       names = c("SiteNumber_Min", "SiteNumber_Max"),
+                       too_few = "align_start") |>
+  mutate(Primary_Max = if_else(is.na(Primary_Max),
+                               Primary_Min, Primary_Max),
+         Secondary_Max = if_else(is.na(Secondary_Max),
+                                 Secondary_Min, Secondary_Max),
+         SiteNumber_Max = if_else(is.na(SiteNumber_Max),
+                                  SiteNumber_Min, SiteNumber_Max)) |>
+  mutate(across(c(Primary_Min, Primary_Max, 
+                  Secondary_Min, Secondary_Max,
+                  SiteNumber_Min, SiteNumber_Max),
+                as.numeric))
+```
+
 ## Study duration
+
+Study duration, defined as the length of time between the first and last survey, ranged from **`{r} min(dataCollection_clean$Duration)`** month to **`{r} max(dataCollection_clean$Duration)/12`** years, with a median of **`{r} median(dataCollection_clean$Duration)`** months.
+
+```{r DataCollection_duration}
+#| echo: false
+
+dataCollection_clean |>
+  ggplot() +
+  geom_histogram(aes(x = Duration), 
+                 binwidth = 0.1, fill = "darkslategrey") +
+  scale_x_continuous(transform = "log10", 
+                     breaks = c(1, 12, 60, 
+                                120, 240, 480), 
+                     labels = c("1 month", "1 year", "5 years", 
+                                "10 years", "20 years", "40 years")) +
+  labs(title = "Study duration distribution",
+       subtitle = "Defined as time between first and last survey",
+       y = "Frequency", x = "Study duration (log10 scale)")
+```
 
 ## Number of occasions
 
+The number of sampling occasions varied considerably. The number of primary occasions ranged from just **`{r} min(dataCollection_clean$Primary_Max)`** to **`{r} max(dataCollection_clean$Primary_Max)`** with a median of **`{r} median(dataCollection_clean$Primary_Max)`**.
+
+The number of secondary occasions from **`{r} min(dataCollection_clean$Secondary_Max, na.rm = TRUE)`** to **`{r} max(dataCollection_clean$Secondary_Max, na.rm = TRUE)`** with a median of **`{r} median(dataCollection_clean$Secondary_Max, na.rm = TRUE)`**.
+
+```{r DataCollection_PrimaryOccasions}
+#| echo: false
+
+dataCollection_clean |>
+  rowwise() |>
+  mutate(Primary_Max = case_when(Primary_Max > 30 ~ 30,
+                                  .default = Primary_Max)) |>
+  
+  ggplot() +
+  geom_histogram(aes(x = Primary_Max),
+                 binwidth = 1, fill = "darkslategrey") +
+  labs(title = "Number of primary occasions",
+       x = "Number of primary occasions", y = "Number of articles") +
+  scale_x_continuous(breaks = c(1, 5, 10, 20, 30),
+                     labels = c("1", "5", "10", "20", "30+"))
+```
+
+```{r DataCollection_SecondaryOccasions}
+#| echo: false
+
+dataCollection_clean |>
+  filter(!is.na(Secondary_Max)) |>
+  rowwise() |>
+  mutate(Secondary_Max = case_when(Secondary_Max > 20 ~ 20,
+                                   .default = Secondary_Max)) |>
+  
+  ggplot() +
+  geom_histogram(aes(x = Secondary_Max),
+                 binwidth = 1, fill = "darkcyan") +
+  labs(title = "Number of secondary occasions",
+       subtitle = "Where variable, maximum number of occasions is presented",
+       x = "Number of secondary occasions", y = "Number of articles") +
+  scale_x_continuous(breaks = c(1, 5, 10, 20),
+                     labels = c("1", "5", "10", "20+"))
+```
+
+```{r DataCollection_TotalOccasions}
+#| echo: false
+
+dataCollection_clean |>
+  filter(!is.na(Secondary_Max) & !is.na(Primary_Max)) |>
+  mutate(TotalOccasions = Secondary_Max*Primary_Max) |>
+  ggplot() +
+  geom_histogram(aes(x = TotalOccasions),
+                 binwidth = 0.1,
+                 fill = "darkorchid3") +
+  labs(title = "Total number of occasions",
+       subtitle = "Product of primary and secondary occasions",
+       x = "Number of occasions (log10 scale)", y = "Number of articles") +
+  scale_x_continuous(transform = "log10",
+                     breaks = c(4, 10, 25, 50, 100, 500, 1000, 2000)) +
+  scale_y_continuous(breaks = c(1, 3, 6, 9))
+```
+
 ## Data collection method
+
+The most common method for recording detections was human surveys, either structured (e.g. time-bound point counts or transects) or unstructured (searches of sites). Autonomous detection methods (camera traps & acoustic monitors) were used infrequently, despite their potential suitability.
+
+```{r DataCollection_SamplingMethod}
+#| echo: false 
+
+dataCollection_clean |>
+  mutate(Total = length(unique(ID_clean))) |>
+  separate_rows(Detection_Method, sep = ", ") |>
+  summarise(Articles = n(), 
+            .by = c(Detection_Method, Total)) |>
+  mutate(Percentage = round(Articles/Total, 2)*100) |>
+  select(Detection_Method, Articles, Percentage) |>
+  filter(!Detection_Method %in% c("66", NA, "Unspecificed",
+                                  "Survey", "Incidental")) |>
+  arrange(Percentage) |>
+  mutate(Detection_Method = case_when(Detection_Method == "AudioVisual" ~ "Human structured survey",
+                                      Detection_Method == "Search" ~ "Human unstructured search",
+                                      Detection_Method == "Trapping" ~ "Physical trapping",
+                                      Detection_Method == "Camera" ~ "Camera trapping",
+                                      Detection_Method == "Citizen" ~ "Citizen science",
+                                      Detection_Method == "Bioacoustic" ~ "Acoustic monitor")) |>
+  mutate(Detection_Method = fct_inorder(Detection_Method)) |>
+  
+  ggplot() +
+  geom_col(aes(x = Percentage, y = Detection_Method), fill = "darkslategrey") +
+  labs(title = "Detection method",
+       subtitle = "Multiple methods per article permitted",
+       x = "Percentage of articles", y = "") +
+  xlim(c(0,50))
+```
+
+## Number of sites
+
+The number of sites where surveys were conducted ranged widely from **`{r} min(dataCollection_clean$SiteNumber_Max, na.rm = TRUE)`** to **`{r} max(dataCollection_clean$SiteNumber_Max, na.rm = TRUE)`**, with a median site count of **`{r} median(dataCollection_clean$SiteNumber_Max, na.rm = TRUE)`**.
+
+```{r DataCollection_numberSites}
+#| echo: false
+
+dataCollection_clean |>
+  filter(!is.na(SiteNumber_Max)) |>
+  
+  ggplot() +
+  geom_histogram(aes(x = SiteNumber_Max), 
+                 binwidth = 0.1, 
+                 fill = "darkslategrey") +
+  scale_x_continuous(transform = "log10",
+                     breaks = c(5, 10, 25, 50, 100, 500, 1000, 10000)) +
+  labs(title = "Number of sites",
+       x = "Number of sites", y = "Number of articles")
+```
 
 ## Sampling method
 
+Site selection was variable; various studies selected sites randomly, as part of a grid design, preferentially, or exhaustively. A considerable amount did not clearly specify how their study sites were determined.
+
+```{r DataCollection_Sampling}
+#| echo: false
+
+dataCollection_clean |>
+  mutate(Total = length(unique(ID_clean))) |>
+  separate_rows(Sampling_Method, sep = ", ") |>
+  mutate(Sampling_Method = case_when(Sampling_Method == "Unspecified" ~ "Not specified",
+         .default = Sampling_Method)) |>
+  summarise(Articles = n(), 
+            .by = c(Sampling_Method, Total)) |>
+  mutate(Percentage = round(Articles/Total, 2)*100) |>
+  select(-Total) |>
+  arrange(-Percentage) |>
+  kable()
+```
+
 ## Study size over time
+
+There does not appear to be a discernible trend in study size (whether defined by duration, number of sites, or total number of survey occasions.
+
+::: panel-tabset
+## Year
+
+```{r DataCollection_sizeTrend}
+#| echo: false
+#| warning: false
+#| message: false
+
+dataCollection_clean |>
+  select(ID_clean, Duration, 
+         Primary_Max, Secondary_Max,
+         SiteNumber_Max) |>
+  mutate(ID_clean = as.numeric(ID_clean)) |>
+  rowwise() |>
+  mutate(TotalOccasions = Primary_Max*Secondary_Max) |>
+  left_join(select(studyDetails_clean, ID, Year), by = join_by(ID_clean == ID)) |>
+  pivot_longer(cols = c(Duration, TotalOccasions, SiteNumber_Max),
+               names_to = "Variable", values_to = "Quantity") |>
+  mutate(Variable = case_when(Variable == "Duration" ~ "Study duration (months)",
+                              Variable == "SiteNumber_Max" ~ "Number of sites",
+                              Variable == "TotalOccasions" ~ "Total survey occasions (Primary x Secondary)")) |>
+  
+  ggplot(aes(x = Year, y = Quantity, colour = Variable)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE, alpha = 0.7) +
+  scale_y_continuous(transform = "log10") +
+  xlim(c(2005, 2024)) +
+  scale_x_continuous(breaks = c(2005, 2010, 2015, 2020, 2024)) +
+  scale_colour_manual(values = c("darkslategrey", "cyan4", "darkorchid4")) +
+  facet_wrap(vars(Variable), ncol = 1, scales = "free_y") +
+  theme(legend.position = "none") +
+  labs(title = "Trend in study size",
+       x = "Year", y = "")
+```
+
+## Year Strata
+
+```{r DataCollection_Sizetrendboxplots}
+#| echo: false
+#| warning: false
+#| message: false
+
+dataCollection_clean |>
+  select(ID_clean, Duration, 
+         Primary_Max, Secondary_Max,
+         SiteNumber_Max) |>
+  mutate(ID_clean = as.numeric(ID_clean)) |>
+  rowwise() |>
+  mutate(TotalOccasions = Primary_Max*Secondary_Max) |>
+  left_join(select(studyDetails_clean, ID, YearStrata), by = join_by(ID_clean == ID)) |>
+  filter(!is.na(YearStrata)) |>
+  pivot_longer(cols = c(Duration, TotalOccasions, SiteNumber_Max),
+               names_to = "Variable", values_to = "Quantity") |>
+  mutate(Variable = case_when(Variable == "Duration" ~ "Study duration (months)",
+                              Variable == "SiteNumber_Max" ~ "Number of sites",
+                              Variable == "TotalOccasions" ~ "Total survey occasions (Primary x Secondary)")) |>
+  
+  ggplot(aes(x = YearStrata, y = Quantity, colour = Variable)) +
+  geom_point(alpha = 0.3) +
+  geom_boxplot() +
+  scale_y_continuous(transform = "log10") +
+  scale_colour_manual(values = c("darkslategrey", "cyan4", "darkorchid4")) +
+  facet_wrap(vars(Variable), ncol = 1, scales = "free_y") +
+  theme(legend.position = "none") +
+  labs(title = "Trend in study size",
+       x = "Year strata", y = "")
+```
+:::
 
 # Covariates
 
