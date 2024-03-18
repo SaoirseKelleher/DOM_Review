@@ -1,0 +1,1614 @@
+---
+title: "DOM Review Summary"
+author: "Saoirse Kelleher"
+date: today
+abstract: "A summary of results from the DOM Review, for use in interpreting outputs and writing the review manuscript. "
+abstract-title: "Summary"
+format: 
+  html:
+    theme: minty
+    toc: true
+embed-resources: true
+---
+
+```{r Load_packages}
+#| include: false
+
+library(tidyverse)
+library(readxl)
+library(knitr)
+library(reactable)
+```
+
+```{r Load_data}
+#| include: false
+
+# Study Details
+review_StudyDetails <- read_xlsx("Spreadsheets/Stage3_Spreadsheet.xlsx",
+                                 sheet = "Study") |>
+  select(ID = "Review ID", Sample, Status, Title, Journal, Year, 
+         FirstAuthor = "First author country", 
+         AuthorCategories = "Authorship groups")
+
+# Objectives and Inference
+review_Objectives <- read_xlsx("Spreadsheets/Stage3_Spreadsheet.xlsx",
+                               sheet = "Objectives and Inference") |>
+  select(ID = "Review ID", Status, Title, 
+         Obj_Methods = "Methods?",
+         Obj_Future = "Future predictions?",
+         Obj_Spatial = "Spatial predictions?", 
+         Obj_Hypothesis = "Hypothesis testing?")
+
+# Species and Location
+review_SpeciesLocation <- read_xlsx("Spreadsheets/Stage3_Spreadsheet.xlsx",
+                                    sheet = "Species and Location") |>
+  select(ID = "Review ID", Status, Title, 
+         Taxa_Category = "Taxa keywords", Taxa_Number = "Number",
+         IUCN_Status = "IUCN Status", Threat_Category = "Threat categories",
+         Country, Continent, Realm, Size_km = "Study Size")
+
+# Data Collection
+review_DataCollection <- read_xlsx("Spreadsheets/Stage3_Spreadsheet.xlsx",
+                                   sheet = "Data collection") |>
+  select(ID = "Review ID", Status, Title,
+         Duration = "Study duration", Detection_Method = "Capture method",
+         Primary_Occasions = "Number of primary occasions",
+         Secondary_Occasions = "Number of secondary occasions",
+         Secondary_Type = "Type of secondary occasions",
+         Site_Number = "Number of sites", Site_Type = "Type of site",
+         Sampling_Method = "Sampling method")
+
+# Covariates
+review_Covariates <- read_xlsx("Spreadsheets/Stage3_Spreadsheet.xlsx",
+                               sheet = "Covariates") |>
+  select(ID = "Review ID", Status, Title, 
+         Parameter, Covariate_Count = "Total covariates",
+         Covariates = "Covariate List")
+
+# Modelling
+review_Modelling <- read_xlsx("Spreadsheets/Stage3_Spreadsheet.xlsx",
+                              sheet = "Modelling") |>
+  select(ID = "Review ID", Status, Title,
+         Bayesian, Prefiltering = "Prefiltering category",
+         Selection = "Selection category", Evaluation = "Evaluation method",
+         Multispecies = "Multi-species", Connectivity)
+
+```
+
+# Study details
+
+Basic metadata was collected for each paper in the review, with available data including:
+
++-------------------+--------------------------------------------------+--------------------------------------+
+| Field             | Description                                      | Possible values                      |
++===================+==================================================+======================================+
+| Journal           | Journal which this article was published in      | *Any*                                |
++-------------------+--------------------------------------------------+--------------------------------------+
+| Year              | Year of publication                              | *Any*                                |
++-------------------+--------------------------------------------------+--------------------------------------+
+| Author country    | Nation of the first author's primary affiliation | *ISO 3166 country names*             |
++-------------------+--------------------------------------------------+--------------------------------------+
+| Author categories | Categories of affiliations for *all* authors     | *Academic, Government, NGO, Private* |
++-------------------+--------------------------------------------------+--------------------------------------+
+
+```{r StudyDetails_Clean}
+#| include: false
+
+studyDetails_clean <- review_StudyDetails |>
+  filter(Status == "Complete")  |>
+  mutate(YearStrata = case_when(Year %in% 2000:2005 ~ "2000-2005",
+                                Year %in% 2006:2010 ~ "2006-2010",
+                                Year %in% 2011:2015 ~ "2011-2015",
+                                Year %in% 2016:2020 ~ "2016-2020",
+                                Year %in% 2021:2023 ~ "2021-2023"))
+```
+
+## Year coverage
+
+```{r StudyDetails_years}
+#| echo: false
+
+studyDetails_clean |>
+  filter(!is.na(YearStrata)) |>
+  mutate(YearStrata = fct(YearStrata,
+                          levels = c("2000-2005", "2006-2010",
+                                     "2011-2015", "2016-2020",
+                                     "2021-2023"))) |>
+  summarise(Articles = n(), .by = YearStrata) |>
+  
+  ggplot() +
+  geom_col(aes(x = YearStrata, y = Articles), fill = "darkslategrey") +
+  labs(title = "Number of articles by year strata",
+       x = "Year Strata", y = "Number of articles")
+```
+
+## Publication journals
+
+```{r StudyDetails_journals}
+#| echo: false
+
+journalsTable <- studyDetails_clean |>
+  summarise(Articles = n(), .by = "Journal") |>
+  arrange(-Articles, Journal) 
+```
+
+`{r} nrow(journalsTable)` unique journals are represented in the sample - `{r} nrow(filter(journalsTable, Articles >1))` journals have more than one article.
+
+```{r StudyDetails_journalsTable}
+#| echo: false
+reactable(journalsTable, defaultPageSize = 8)
+```
+
+## Authorship countries
+
+```{r StudyDetails_countries}
+#| echo: false
+
+countriesTable <- studyDetails_clean |>
+  summarise(Articles = n(), .by = "FirstAuthor") |>
+  arrange(-Articles)
+```
+
+Counting by the location of the first author's institution, `{r} nrow(countriesTable)` countries are represented in the sample. A strong majority of articles were published by first authors based in the United States of America.
+
+```{r StudyDetails_countriesTable}
+#| echo: false
+
+reactable(countriesTable, defaultPageSize = 8)
+```
+
+## Authorship categories
+
+```{r StudyDetails_Categories}
+#| echo: false
+ 
+authorCategories_overall <- studyDetails_clean |>
+  separate_rows(AuthorCategories, sep = ", ") |> 
+  summarise(Articles = n(),
+            Proportion = n()/nrow(studyDetails_clean),
+            .by = AuthorCategories) |>
+  mutate(Proportion = round(Proportion, 2)) |>
+  rename(Category = AuthorCategories) |>
+  arrange(-Proportion)
+```
+
+The most frequent category of authorship was academic, with `{r} max(authorCategories_overall$Proportion)` % of articles having at least one author from an academic institution.
+
+```{r StudyDetails_CategoriesTable}
+#| echo: false
+
+kable(authorCategories_overall)
+```
+
+There is limited discernible change in authorship categories over time.
+
+```{r StudyDetails_authorshipTrend}
+#| echo: false
+#| warning: false
+
+studyDetails_clean |>
+  filter(!is.na(YearStrata)) |>
+  mutate(StrataArticles = n(), .by = YearStrata) |>
+  separate_rows(AuthorCategories, sep = ", ") |> 
+  summarise(Articles = n(),
+            .by = c(AuthorCategories, YearStrata, StrataArticles)) |>
+  mutate(Proportion = Articles/StrataArticles) |>
+  mutate(YearStrata = fct(YearStrata,
+                          levels = c("2000-2005", "2006-2010",
+                                     "2011-2015", "2016-2020",
+                                     "2021-2023")),
+         AuthorCategories = fct(AuthorCategories,
+                                levels = c("Academic", "Government",
+                                           "NGO", "Private"))) |>
+  complete(AuthorCategories, YearStrata) |>
+  
+  ggplot(aes(x = YearStrata, 
+                 y = Proportion, 
+                 fill = AuthorCategories)) +
+  geom_col(position = "dodge") +
+  labs(title = "Authorship trends over time",
+       x = "Year of publication",
+       y = "Proportion of Articles") +
+  scale_fill_manual("Authorship category",
+                    values = c("darkslategrey", "darkorchid3",
+                               "cyan3", "goldenrod1"))
+```
+
+## 
+
+# Objectives and inference
+
+The stated objectives for each article were assessed and divided into four categories - each paper could fall into multiple (or zero) objective categories.
+
++---------------------+-----------------------------------------------------------------------------------+
+| Objective           | Description                                                                       |
++=====================+===================================================================================+
+| Methods             | Did authors seek to demonstrate or test specific methods for occupancy modelling? |
++---------------------+-----------------------------------------------------------------------------------+
+| Future Predictions  | Did authors make predictions beyond the study period?                             |
++---------------------+-----------------------------------------------------------------------------------+
+| Spatial Predictions | Did authors make predictions at locations where surveys were not conducted?       |
++---------------------+-----------------------------------------------------------------------------------+
+| Hypothesis testing  | Did authors seek to test specific hypotheses of species occupancy dynamics?       |
++---------------------+-----------------------------------------------------------------------------------+
+
+```{r Objectives_clean}
+#| echo: false
+
+objectives_Clean <- review_Objectives |>
+  filter(Status == "Complete") |> 
+  select(ID, Obj_Methods, Obj_Future, Obj_Spatial, Obj_Hypothesis) |>
+  rowwise() |>
+  mutate(Obj_None = case_when(all(c(Obj_Methods, Obj_Future,
+                                    Obj_Spatial, Obj_Hypothesis) == "N") ~ "Y",
+                              any(c(Obj_Methods, Obj_Future,
+                                    Obj_Spatial, Obj_Hypothesis) == "Y") ~ "N")) |>
+  pivot_longer(cols = c(Obj_Methods, Obj_Future, 
+                        Obj_Spatial, Obj_Hypothesis, Obj_None), 
+               names_to = "Objective", 
+               values_to = "Stated") |>
+  mutate(Objective = str_extract(Objective, "(?<=Obj\\_).+"),
+         Stated = case_when(Stated == "Y" ~ TRUE,
+                            Stated == "N" ~ FALSE)) |>
+  left_join(select(studyDetails_clean, ID, 
+                   Year, YearStrata), 
+            by = "ID")
+```
+
+## Frequency of objectives
+
+```{r Objectives_frequency}
+#| echo: false
+
+objectives_frequency <- objectives_Clean |>
+  mutate(Total = length(unique(ID))) |>
+  filter(Stated == TRUE) |>
+  summarise(Articles = n(),
+            .by = c(Objective, Total)) |>
+  mutate(Proportion = Articles/Total) |> 
+  arrange(-Proportion)
+```
+
+The most common objective was **Testing Hypotheses**, with `{r} round(max(objectives_frequency$Proportion), 2)`% of articles examining pre-determined relationships. Prediction, whether spatial or temporal, was rare.
+
+```{r Objectives_frequencyPlot}
+#| echo: false
+
+objectives_frequency |>
+  mutate(Objective = fct(Objective,
+                         levels = c("Hypothesis", "Methods",
+                                    "Future", "Spatial",
+                                    "None"))) |>
+  
+  ggplot() +
+  geom_col(aes(x = Objective, y = Articles, fill = Objective)) +
+  scale_fill_manual(values = c("darkorchid", "deepskyblue3",
+                               "coral2", "goldenrod", "gray60")) +
+  labs(title = "Number of articles by objective",
+       subtitle = "'None' indicates that none of the objectives were stated,\ngenerally this indicates a focus on occupancy dynamics parameters",
+       x = "Stated objective", y = "Number of articles") +
+  theme(legend.position = "none")
+
+```
+
+## Stated objectives by authorship categories
+
+Little variation was shown between the objectives of papers by different authorship categories.
+
+```{r Objective_frequencyAuthorship}
+#| echo: false
+
+objectives_frequencyAuthorship <- objectives_Clean |>
+  left_join(select(studyDetails_clean, ID, AuthorCategories), by = "ID") |>
+  separate_rows(AuthorCategories, sep = ", ") |>
+  filter(Stated == TRUE) |>
+  mutate(Total = length(unique(ID)), .by = AuthorCategories) |>
+  summarise(Articles = n(),
+            .by = c(Objective, AuthorCategories, Total)) |>
+  mutate(Proportion = Articles/Total) |>
+  complete(Objective, AuthorCategories, 
+           fill = list(Articles = 0,
+                       Proportion = 0))
+
+# Plot frequency faceted by authorship
+objectives_frequencyAuthorship |>
+  mutate(Objective = fct(Objective,
+                         levels = c("Hypothesis", "Methods",
+                                    "Future", "Spatial",
+                                    "None"))) |>
+  
+  ggplot() +
+  geom_col(aes(x = Objective, y = Proportion, fill = Objective)) +
+  scale_fill_manual(values = c("darkorchid", "deepskyblue3",
+                               "coral2", "goldenrod", "gray60")) +
+  facet_wrap(facets = vars(AuthorCategories)) +
+  labs(title = "Proportion of articles with each objective",
+       subtitle = "'None' indicates that none of the listed objectives were stated,\ngenerally this indicates a focus on simply estimating occupancy dynamics",
+       x = "Stated objective", y = "Number of articles") +
+  theme(legend.position = "bottom")
+```
+
+## Stated objective by year
+
+Objective categories have changed in frequency over time, with more variation in objectives in recent years relative to the early days of DOMs
+
+```{r Objectives_byYear}
+#| echo: false
+
+objectives_Clean |>
+  filter(!is.na(YearStrata)) |>
+  filter(Stated == TRUE) |>
+  mutate(Total = length(unique(ID)), .by = YearStrata) |>
+  summarise(Articles = n(), .by = c(Objective, YearStrata, Total)) |>
+  mutate(Proportion = Articles/Total) |>
+  complete(Objective, YearStrata, fill = list(Articles = 0, Proportion = 0)) |>
+  mutate(Objective = fct(Objective,
+                         levels = c("Hypothesis", "Methods",
+                                    "Future", "Spatial",
+                                    "None"))) |>
+  
+  ggplot() +
+  geom_col(aes(x = YearStrata, y = Proportion, fill = Objective),
+           position = "dodge") +
+  scale_fill_manual(values = c("darkorchid", "deepskyblue3",
+                               "coral2", "goldenrod", "gray60")) +
+  labs(title = "Objective categories over time",
+       subtitle = "'None' indicates that none of the listed objectives were stated,\ngenerally this indicates a focus on simply estimating occupancy dynamics",
+       y = "Proportion of articles", x = "Year Strata")
+
+```
+
+# Species and location
+
+```{r Species_clean}
+#| echo: false
+species_clean <- review_SpeciesLocation |>
+  filter(Status == "Complete") |>
+  mutate(ID_clean = str_extract(ID, "[:digit:]+"))
+```
+
+Data on focal species and the location of study areas was collected, available fields include:
+
++-----------------+--------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
+| Field           | Description                                                                                | Possible values                                                                   |
++=================+============================================================================================+===================================================================================+
+| Taxa category   | Category of study taxa; could fit into multiple categories                                 | *Bird, Mammal, Invertebrate, Herptile, Fish, Threatened, Invasive, Other*         |
++-----------------+--------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
+| Taxa number     | Number of individual species within the taxa for which models were fit                     | *Numeric*                                                                         |
++-----------------+--------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
+| IUCN status     | IUCN status for the study species; NA if multi-species or if the study species is invasive | *LC, NT, EN, CR, DD, NA*                                                          |
++-----------------+--------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
+| Threat category | Category of threats to the species; multiple per species permitted                         | *Habitat loss, Climate change, Exploitation, Invasives, Disease, Disaster, Other* |
++-----------------+--------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
+| Country         | Country/countries where the study took place                                               | *ISO 3166 country names*                                                          |
++-----------------+--------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
+| Continent       | Continent(s) where the study took place                                                    | *North America, South America, Europe, Asia, Africa, Oceania*                     |
++-----------------+--------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
+| Realm           | Biogeographic realm where the study took place                                             | *Nearctic, Palearctic, Afrotropical, Indomalayan, Australasian, Neotropical*      |
++-----------------+--------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
+| Size            | Size of the study area extent in square kilometres                                         | *\<1km, 1-10, 10-100, 100-1000, 10000-100000, 100000-1000000, 1000000+*           |
++-----------------+--------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
+
+## Taxa categories
+
+```{r Species_Taxa}
+#| echo: false
+
+species_taxaTable <- species_clean |>
+  separate_rows(Taxa_Category, sep = ", ") |>
+  mutate(Total = length(unique(ID_clean))) |>
+  select(Taxa_Category, ID_clean, Total) |>
+  distinct() |>
+  summarise(Articles = n(), 
+            Percentage = round(Articles/mean(Total), 2)*100,
+            .by = Taxa_Category) |>
+  arrange(-Articles) |>
+  rename(Taxa = Taxa_Category)
+```
+
+DOMs have been widely used for terrestrial taxa, with numerous examples modelling bird, mammal, and herptile occupancy dynamics. `{r} species_taxaTable$Articles[species_taxaTable$Taxa == "Threatened"]` articles described their focal species as threatened in some way; `{r} species_taxaTable$Articles[species_taxaTable$Taxa == "Invasive"]` fit models to invasive species.
+
+```{r Species_TaxaTable}
+#| echo: false
+
+kable(species_taxaTable)
+species_taxaTable |>
+  mutate(Taxa = fct_reorder(Taxa, Articles)) |>
+  
+  ggplot() +
+  geom_col(aes(x = Percentage, y = Taxa, fill = Taxa)) +
+  scale_fill_manual(limits = c("Bird", "Threatened", "Mammal", 
+                               "Herptile", "Invasive", "Invertebrate",
+                               "Lichen"),
+                    values = c("darkslategrey", "darkorange4", "darkslategrey", 
+                               "darkslategrey", "darkorange4", "darkslategrey", 
+                               "darkslategrey")) +
+  theme(legend.position = "none") +
+  xlim(c(0,50)) +
+  labs(title = "Modelled taxa", 
+       subtitle = "Multiple categories per article permitted",
+       y = "", x = "Percentage of articles")
+
+```
+
+## Threats to modelled taxa
+
+Of papers which describe any threats to their focal taxa, by far the most frequent threat was habitat loss.
+
+```{r Species_Threats}
+#| echo: false
+
+species_clean |>
+  filter(!Threat_Category %in% c("NA", "None"),
+         !is.na(Threat_Category)) |> 
+  separate_rows(Threat_Category, sep = ", ") |>
+  select(ID_clean, Threat_Category) |>
+  distinct() |>
+  mutate(Total = length(unique(ID_clean))) |>
+  summarise(Articles = n(), 
+            Proportion = round(Articles/mean(Total), 2),
+            .by = Threat_Category)|>
+  mutate(Threat_Category = case_when(Threat_Category == "HabitatLoss" ~ "Habitat loss",
+                                     Threat_Category == "ClimateChange" ~ "Climate change",
+                                     Threat_Category == "Other_Pollution" ~ "Pollution",
+                                     .default = Threat_Category)) |>
+  mutate(Threat_Category = fct_reorder(Threat_Category, Articles)) |>
+  
+  ggplot() +
+  geom_col(aes(x = Proportion, y = Threat_Category), fill = "darkslategrey") +
+  xlim(c(0,1)) +
+  labs(title = "Threats to study taxa",
+       subtitle = "Of articles which explicitly mention any threats",
+       x = "Proportion of articles", y = "")
+```
+
+## Threatened taxa
+
+```{r Species_IUCN}
+#| echo: false
+
+species_clean |>
+  summarise(Articles = n(), .by = IUCN_Status) |>
+  filter(!IUCN_Status %in% c("Not applicable", "NA")) |>
+  mutate(IUCN_Status = case_when(IUCN_Status == "NL" ~ "Not listed",
+                                 .default = IUCN_Status)) |>
+  mutate(IUCN_Status = fct(IUCN_Status,
+                           levels = c("LC", "NT", "VU",
+                                      "EN", "CR", "Not listed"))) |>
+  
+  ggplot() +
+  geom_col(aes(x = IUCN_Status, y = Articles, fill = IUCN_Status)) +
+  scale_fill_manual(values = c("darkslategrey", "darkorange3",
+                               "darkorange3", "darkorange3",
+                               "darkorange3", "darkslategrey")) +
+  labs(title = "IUCN Red list status",
+       subtitle = "Invasives, higher-order taxa, and grouped species excluded",
+       y = "Number of articles", x = "IUCN Red List Status") +
+  theme(legend.position = "none")
+```
+
+## Number of species
+
+```{r Species_Number}
+#| echo: false
+species_Number <- species_clean |>
+  select(ID_clean, Taxa_Number) |>
+  mutate(Taxa_Number = sum(Taxa_Number), .by = ID_clean)
+```
+
+Only approximately half of articles modelled occupancy dynamics for a single taxa. Others fit multiple occupancy models: either multi-species models where 2+ taxa were modelled in concert, or many independent models fit for a suite of taxa. The largest number of species modelled in a single paper was **`{r} max(species_Number$Taxa_Number)`**.
+
+```{r Species_NumberPlot}
+#| echo: false
+
+species_Number |>
+  mutate(NumberGroup = case_when(Taxa_Number == 1 ~ "1",
+                                 Taxa_Number %in% 2:10 ~ "2-10",
+                                 Taxa_Number %in% 11:100 ~ "11-100",
+                                 Taxa_Number > 100 ~ ">100")) |>
+  summarise(Articles = n(), .by = NumberGroup) |>
+  mutate(NumberGroup = fct(NumberGroup,
+                           levels = c("1", "2-10", "11-100", ">100"))) |>
+  
+  ggplot() +
+  geom_col(aes(x = NumberGroup, y = Articles), fill = "darkslategrey") +
+  labs(title = "Number of species modelled per article",
+       x = "Number of species", y = "Number of articles") 
+```
+
+## Study locations
+
+Consistent with authorship trends, a majority of articles conducted studies in the United States.
+
+::: panel-tabset
+## Country
+
+```{r Species_Country}
+#| echo: false 
+
+species_clean |> 
+  select(ID_clean, Country) |>
+  separate_rows(Country, sep = ", ") |> 
+  distinct() |>
+  summarise(Articles = n(), .by = Country) |>
+  arrange(-Articles) |>
+  reactable(defaultPageSize = 8)
+```
+
+## Continent
+
+```{r Species_Continent}
+#| echo: false 
+
+species_clean |> 
+  select(ID_clean, Continent) |>
+  distinct() |>
+  summarise(Articles = n(), .by = Continent) |>
+  arrange(-Articles) |>
+  reactable(defaultPageSize = 8)
+```
+
+## Realm
+
+```{r Species_Realm}
+#| echo: false 
+
+species_clean |> 
+  select(ID_clean, Realm) |>
+  distinct() |>
+  summarise(Articles = n(), .by = Realm) |>
+  arrange(-Articles) |>
+  reactable(defaultPageSize = 8)
+
+
+```
+:::
+
+```{r Species_locations}
+
+```
+
+## Study area size
+
+The size of the study area in square kilometres follows a log-normal distribution, with studies ranging from less than one to over one million square kilometres.
+
+```{r Species_sizeKM}
+#| echo: false
+
+species_clean |> 
+  select(ID_clean, Size_km) |>
+  distinct() |>
+  mutate(Size_km = case_when(Size_km == "<1" ~ "0-1",
+                             Size_km == "1000-9999" ~ "1000-10000",
+                             .default = Size_km)) |>
+  summarise(Articles = n(), .by = Size_km) |>
+  arrange(Size_km) |>
+  mutate(Size_km = fct_inorder(Size_km)) |> 
+  filter(!Size_km %in% c("Not specified", "Unspecified")) |>
+  
+  ggplot() +
+  geom_col(aes(x = Size_km, y = Articles), fill = "darkslategrey") +
+  labs(title = "Study area size",
+       x = "Study area in square kilometres", 
+       y = "Number of articles") +
+  theme(axis.text.x = element_text(angle = 60, vjust = 0.5))
+
+```
+
+# Data collection
+
++---------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
+| Field               | Description                                                              | Possible values                                                                              |
++=====================+==========================================================================+==============================================================================================+
+| Duration            | Length of study in months                                                | *Numeric*                                                                                    |
++---------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
+| Capture method      | Method of recording detections; multiple categories possible             | *Audiovisual, Search, Trapping, Bioacoustic, Camera, Citizen, Incidental*                    |
++---------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
+| Primary occasions   | Number of primary occasions                                              | *Numeric*                                                                                    |
++---------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
+| Secondary occasions | Number of secondary occasions, presented as a range where not consistent | *Numeric range*                                                                              |
++---------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
+| Secondary type      | Type of secondary occasion                                               | *Revisits, Spatial replicates, Same-visit replicates, multiple observers, time to detection* |
++---------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
+| Type of site        | How a 'site' was defined                                                 | *Point location, Grid cell, Irregular area, Transect*                                        |
++---------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
+| Number of sites     | Number of individual sites                                               | Numeric                                                                                      |
++---------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
+| Sampling method     | How sites were selected                                                  | *Random, Stratified, Grid, Preferential, Available, Exhaustive, Uniform, Transect*           |
++---------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
+
+```{r DataCollection_clean}
+#| echo: false
+#| warning: false
+
+dataCollection_clean <- review_DataCollection |>
+  filter(Status == "Complete") |>
+  mutate(ID_clean = str_extract(ID, "[:digit:]+")) |>
+  mutate(Duration = as.numeric(Duration)) |>
+  separate_wider_delim(cols = Primary_Occasions, 
+                       delim = "-",
+                       names = c("Primary_Min", "Primary_Max"),
+                       too_few = "align_start") |>
+  separate_wider_delim(cols = Secondary_Occasions, 
+                       delim = "-",
+                       names = c("Secondary_Min", "Secondary_Max"),
+                       too_few = "align_start") |>
+  separate_wider_delim(cols = Site_Number, 
+                       delim = "-",
+                       names = c("SiteNumber_Min", "SiteNumber_Max"),
+                       too_few = "align_start") |>
+  mutate(Primary_Max = if_else(is.na(Primary_Max),
+                               Primary_Min, Primary_Max),
+         Secondary_Max = if_else(is.na(Secondary_Max),
+                                 Secondary_Min, Secondary_Max),
+         SiteNumber_Max = if_else(is.na(SiteNumber_Max),
+                                  SiteNumber_Min, SiteNumber_Max)) |>
+  mutate(across(c(Primary_Min, Primary_Max, 
+                  Secondary_Min, Secondary_Max,
+                  SiteNumber_Min, SiteNumber_Max),
+                as.numeric))
+```
+
+## Study duration
+
+Study duration, defined as the length of time between the first and last survey, ranged from **`{r} min(dataCollection_clean$Duration)`** month to **`{r} max(dataCollection_clean$Duration)/12`** years, with a median of **`{r} median(dataCollection_clean$Duration)`** months.
+
+```{r DataCollection_duration}
+#| echo: false
+
+dataCollection_clean |>
+  ggplot() +
+  geom_histogram(aes(x = Duration), 
+                 binwidth = 0.1, fill = "darkslategrey") +
+  scale_x_continuous(transform = "log10", 
+                     breaks = c(1, 12, 60, 
+                                120, 240, 480), 
+                     labels = c("1 month", "1 year", "5 years", 
+                                "10 years", "20 years", "40 years")) +
+  labs(title = "Study duration distribution",
+       subtitle = "Defined as time between first and last survey",
+       y = "Frequency", x = "Study duration (log10 scale)")
+```
+
+## Number of occasions
+
+The number of sampling occasions varied considerably. The number of primary occasions ranged from just **`{r} min(dataCollection_clean$Primary_Max)`** to **`{r} max(dataCollection_clean$Primary_Max)`** with a median of **`{r} median(dataCollection_clean$Primary_Max)`**.
+
+The number of secondary occasions from **`{r} min(dataCollection_clean$Secondary_Max, na.rm = TRUE)`** to **`{r} max(dataCollection_clean$Secondary_Max, na.rm = TRUE)`** with a median of **`{r} median(dataCollection_clean$Secondary_Max, na.rm = TRUE)`**.
+
+```{r DataCollection_PrimaryOccasions}
+#| echo: false
+
+dataCollection_clean |>
+  rowwise() |>
+  mutate(Primary_Max = case_when(Primary_Max > 30 ~ 30,
+                                  .default = Primary_Max)) |>
+  
+  ggplot() +
+  geom_histogram(aes(x = Primary_Max),
+                 binwidth = 1, fill = "darkslategrey") +
+  labs(title = "Number of primary occasions",
+       x = "Number of primary occasions", y = "Number of articles") +
+  scale_x_continuous(breaks = c(1, 5, 10, 20, 30),
+                     labels = c("1", "5", "10", "20", "30+"))
+```
+
+```{r DataCollection_SecondaryOccasions}
+#| echo: false
+
+dataCollection_clean |>
+  filter(!is.na(Secondary_Max)) |>
+  rowwise() |>
+  mutate(Secondary_Max = case_when(Secondary_Max > 20 ~ 20,
+                                   .default = Secondary_Max)) |>
+  
+  ggplot() +
+  geom_histogram(aes(x = Secondary_Max),
+                 binwidth = 1, fill = "darkcyan") +
+  labs(title = "Number of secondary occasions",
+       subtitle = "Where variable, maximum number of occasions is presented",
+       x = "Number of secondary occasions", y = "Number of articles") +
+  scale_x_continuous(breaks = c(1, 5, 10, 20),
+                     labels = c("1", "5", "10", "20+"))
+```
+
+```{r DataCollection_TotalOccasions}
+#| echo: false
+
+dataCollection_clean |>
+  filter(!is.na(Secondary_Max) & !is.na(Primary_Max)) |>
+  mutate(TotalOccasions = Secondary_Max*Primary_Max) |>
+  ggplot() +
+  geom_histogram(aes(x = TotalOccasions),
+                 binwidth = 0.1,
+                 fill = "darkorchid3") +
+  labs(title = "Total number of occasions",
+       subtitle = "Product of primary and secondary occasions",
+       x = "Number of occasions (log10 scale)", y = "Number of articles") +
+  scale_x_continuous(transform = "log10",
+                     breaks = c(4, 10, 25, 50, 100, 500, 1000, 2000)) +
+  scale_y_continuous(breaks = c(1, 3, 6, 9))
+```
+
+## Data collection method
+
+The most common method for recording detections was human surveys, either structured (e.g. time-bound point counts or transects) or unstructured (searches of sites). Autonomous detection methods (camera traps & acoustic monitors) were used infrequently, despite their potential suitability.
+
+```{r DataCollection_SamplingMethod}
+#| echo: false 
+
+dataCollection_clean |>
+  mutate(Total = length(unique(ID_clean))) |>
+  separate_rows(Detection_Method, sep = ", ") |>
+  summarise(Articles = n(), 
+            .by = c(Detection_Method, Total)) |>
+  mutate(Percentage = round(Articles/Total, 2)*100) |>
+  select(Detection_Method, Articles, Percentage) |>
+  filter(!Detection_Method %in% c("66", NA, "Unspecificed",
+                                  "Survey", "Incidental")) |>
+  arrange(Percentage) |>
+  mutate(Detection_Method = case_when(Detection_Method == "AudioVisual" ~ "Human structured survey",
+                                      Detection_Method == "Search" ~ "Human unstructured search",
+                                      Detection_Method == "Trapping" ~ "Physical trapping",
+                                      Detection_Method == "Camera" ~ "Camera trapping",
+                                      Detection_Method == "Citizen" ~ "Citizen science",
+                                      Detection_Method == "Bioacoustic" ~ "Acoustic monitor")) |>
+  mutate(Detection_Method = fct_inorder(Detection_Method)) |>
+  
+  ggplot() +
+  geom_col(aes(x = Percentage, y = Detection_Method), fill = "darkslategrey") +
+  labs(title = "Detection method",
+       subtitle = "Multiple methods per article permitted",
+       x = "Percentage of articles", y = "") +
+  xlim(c(0,50))
+```
+
+## Number of sites
+
+The number of sites where surveys were conducted ranged widely from **`{r} min(dataCollection_clean$SiteNumber_Max, na.rm = TRUE)`** to **`{r} max(dataCollection_clean$SiteNumber_Max, na.rm = TRUE)`**, with a median site count of **`{r} median(dataCollection_clean$SiteNumber_Max, na.rm = TRUE)`**.
+
+```{r DataCollection_numberSites}
+#| echo: false
+
+dataCollection_clean |>
+  filter(!is.na(SiteNumber_Max)) |>
+  
+  ggplot() +
+  geom_histogram(aes(x = SiteNumber_Max), 
+                 binwidth = 0.1, 
+                 fill = "darkslategrey") +
+  scale_x_continuous(transform = "log10",
+                     breaks = c(5, 10, 25, 50, 100, 500, 1000, 10000)) +
+  labs(title = "Number of sites",
+       x = "Number of sites", y = "Number of articles")
+```
+
+## Sampling method
+
+Site selection was variable; various studies selected sites randomly, as part of a grid design, preferentially, or exhaustively. A considerable amount did not clearly specify how their study sites were determined.
+
+```{r DataCollection_Sampling}
+#| echo: false
+
+dataCollection_clean |>
+  mutate(Total = length(unique(ID_clean))) |>
+  separate_rows(Sampling_Method, sep = ", ") |>
+  mutate(Sampling_Method = case_when(Sampling_Method == "Unspecified" ~ "Not specified",
+         .default = Sampling_Method)) |>
+  summarise(Articles = n(), 
+            .by = c(Sampling_Method, Total)) |>
+  mutate(Percentage = round(Articles/Total, 2)*100) |>
+  select(-Total) |>
+  arrange(-Percentage) |>
+  kable()
+```
+
+## Study size over time
+
+There does not appear to be a discernible trend in study size (whether defined by duration, number of sites, or total number of survey occasions.
+
+::: panel-tabset
+## Year
+
+```{r DataCollection_sizeTrend}
+#| echo: false
+#| warning: false
+#| message: false
+
+dataCollection_clean |>
+  select(ID_clean, Duration, 
+         Primary_Max, Secondary_Max,
+         SiteNumber_Max) |>
+  mutate(ID_clean = as.numeric(ID_clean)) |>
+  rowwise() |>
+  mutate(TotalOccasions = Primary_Max*Secondary_Max) |>
+  left_join(select(studyDetails_clean, ID, Year), by = join_by(ID_clean == ID)) |>
+  pivot_longer(cols = c(Duration, TotalOccasions, SiteNumber_Max),
+               names_to = "Variable", values_to = "Quantity") |>
+  mutate(Variable = case_when(Variable == "Duration" ~ "Study duration (months)",
+                              Variable == "SiteNumber_Max" ~ "Number of sites",
+                              Variable == "TotalOccasions" ~ "Total survey occasions (Primary x Secondary)")) |>
+  
+  ggplot(aes(x = Year, y = Quantity, colour = Variable)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE, alpha = 0.7) +
+  scale_y_continuous(transform = "log10") +
+  xlim(c(2005, 2024)) +
+  scale_x_continuous(breaks = c(2005, 2010, 2015, 2020, 2024)) +
+  scale_colour_manual(values = c("darkslategrey", "cyan4", "darkorchid4")) +
+  facet_wrap(vars(Variable), ncol = 1, scales = "free_y") +
+  theme(legend.position = "none") +
+  labs(title = "Trend in study size",
+       x = "Year", y = "")
+```
+
+## Year Strata
+
+```{r DataCollection_Sizetrendboxplots}
+#| echo: false
+#| warning: false
+#| message: false
+
+dataCollection_clean |>
+  select(ID_clean, Duration, 
+         Primary_Max, Secondary_Max,
+         SiteNumber_Max) |>
+  mutate(ID_clean = as.numeric(ID_clean)) |>
+  rowwise() |>
+  mutate(TotalOccasions = Primary_Max*Secondary_Max) |>
+  left_join(select(studyDetails_clean, ID, YearStrata), by = join_by(ID_clean == ID)) |>
+  filter(!is.na(YearStrata)) |>
+  pivot_longer(cols = c(Duration, TotalOccasions, SiteNumber_Max),
+               names_to = "Variable", values_to = "Quantity") |>
+  mutate(Variable = case_when(Variable == "Duration" ~ "Study duration (months)",
+                              Variable == "SiteNumber_Max" ~ "Number of sites",
+                              Variable == "TotalOccasions" ~ "Total survey occasions (Primary x Secondary)")) |>
+  
+  ggplot(aes(x = YearStrata, y = Quantity, colour = Variable)) +
+  geom_point(alpha = 0.3) +
+  geom_boxplot() +
+  scale_y_continuous(transform = "log10") +
+  scale_colour_manual(values = c("darkslategrey", "cyan4", "darkorchid4")) +
+  facet_wrap(vars(Variable), ncol = 1, scales = "free_y") +
+  theme(legend.position = "none") +
+  labs(title = "Trend in study size",
+       x = "Year strata", y = "")
+```
+:::
+
+# Covariates
+
+All covariates considered for modelling were documented for each article. Details available for each covariate include:
+
++-------------+-------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Field       | Description                                     | Possible values                                                                                                                                                     |
++=============+=================================================+=====================================================================================================================================================================+
+| Parameter   | Parameter which this covariate was considered   | *Initial occupancy, colonisation, extinction, detection*                                                                                                            |
++-------------+-------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Type        | Category of covariate                           | *Environmental: Habitat type terrestrial, Habitat type aquatic, Anthropogenic, Topographic, Climate and weather, Disaster and disturbance, Hydrologic, Seasonality* |
+|             |                                                 |                                                                                                                                                                     |
+|             |                                                 | *Other: Interactions, Site geometry, Connectivity, Site-level effects, Species-level effects, Season-level effects, Survey details*                                 |
++-------------+-------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Variation   | Level of variation for the covariate            | *Site, Season, Survey*                                                                                                                                              |
++-------------+-------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Measurement | How the covariate was recorded                  | *Remotely, Observed, Intrinsic*                                                                                                                                     |
++-------------+-------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Complexity  | How the covariate was mathmatically implemented | *Linear-only, Quadratics, Interactions, Interactions and Quadratics, Other*                                                                                         |
++-------------+-------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|             |                                                 |                                                                                                                                                                     |
++-------------+-------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+```{r Covariates_clean}
+#| echo: false
+
+covariates_clean <- review_Covariates |>
+  filter(Status == "Complete") |>
+  mutate(ID_clean = str_extract(ID, "[:digit:]+")) |>
+  mutate(Covariates = str_replace(Covariates, "\\.", "\\,")) |>
+  separate_rows(Covariates, sep = ", ") |>
+  mutate(Covariates = str_to_upper(Covariates)) |>
+  separate_wider_delim(cols = Covariates, delim = "_",
+                       names = c("Type", 
+                                 "Variation",
+                                 "Measurement",
+                                 "Complexity"),
+                       too_few = "align_start", 
+                       too_many = "drop") |>
+  mutate(ParameterCategory = case_when(Parameter %in% c("InitialOccupancy",
+                                                        "InitialOccupancy_MS",
+                                                        "Occupancy",
+                                                        "Occupancy_MS") ~ "Psi",
+                                       Parameter %in% c("Colonisation",
+                                                        "Colonisation_MS") ~ "Gamma",
+                                       Parameter %in% c("Extinction",
+                                                        "Extinction_MS",
+                                                        "Persistence",
+                                                        "Persistence_MS") ~ "Eps",
+                                       Parameter %in% c("Detection",
+                                                        "Detection_FP",
+                                                        "Detection_FP_MS",
+                                                        "Detection_MS", 
+                                                        "Detection_Other") ~ "p",
+                                       .default = "Other"),
+         Type = case_when(Type %in% c("E-HTT", " E-HTT") ~ "E-HTT",
+                          Type %in% c("E-DIS", "DIS") ~ "E-DIS",
+                          Type %in% c("ANTH", "E-ANTH") ~ "E-ANTH",
+                          Type %in% c("SP", "SPEC") ~ "SP",
+                          Type %in% c("INT", " INT") ~ "INT",
+                          Type %in% c("NONE", "NA") ~ "NONE",
+                          .default = Type),
+         Variation = case_when(Variation %in% c("SY", "YS") ~ "Site-Year",
+                               Variation == "S" ~ "Site",
+                               Variation == "YSS" ~ "Site-Year-Survey",
+                               Variation == "Y" ~ "Year",
+                               Variation == "SP" ~ "Species",
+                               Variation == "U" ~ "Unclear"),
+         Measurement = case_when(Measurement == "I" ~ "Intrinsic",
+                                 Measurement == "O" ~ "Observed",
+                                 Measurement == "R" ~ "Remote",
+                                 Measurement == "U" ~ "Unclear"),
+         Complexity = case_when(Complexity %in% c("N", "NH", "N,") ~ "Linear",
+                                Complexity == "Q" ~ "Quadratic",
+                                Complexity == "I" ~ "Interaction",
+                                Complexity == "B" ~ "Quadratic + Interaction",
+                                Complexity == "O" ~ "Other"))
+```
+
+## Covariate quantity
+
+::: panel-tabset
+## Overall
+
+```{r covariates_quantityOverall}
+#| echo: false
+
+covariates_clean |>
+  filter(Type != "NONE") |>
+  summarise(Covariates = n(), .by = ID) |>
+  
+  ggplot() +
+  geom_histogram(aes(x = Covariates), 
+                 binwidth = 5,
+                 fill = "darkslategrey") +
+  labs(title = "Total number of covariates considered",
+       subtitle = "All parameters",
+       x = "Number of covariates", y = "Number of articles")
+```
+
+## By parameter
+
+```{r covariates_quantityParameter}
+#| echo: false
+
+covariates_clean |>
+  filter(Type != "NONE") |>
+  summarise(Covariates = n(), .by = c(ID, ParameterCategory)) |>
+  filter(ParameterCategory != "Other") |>
+  mutate(ParameterCategory = case_when(ParameterCategory == "Psi" ~ "Initial Occupancy",
+                                       ParameterCategory == "Gamma" ~ "Colonisation",
+                                       ParameterCategory == "Eps" ~ "Extinction",
+                                       ParameterCategory == "p" ~ "Detection")) |>
+  complete(ID, ParameterCategory, fill= list(Covariates = 0)) |>
+  mutate(ParameterCategory = fct(ParameterCategory,
+                                 levels = c("Initial Occupancy",
+                                            "Colonisation", 
+                                            "Extinction",
+                                            "Detection"))) |>
+  mutate(Covariates = case_when(Covariates > 10 ~ 10,
+                                .default = Covariates)) |>
+  
+  ggplot() +
+  geom_histogram(aes(x = Covariates, fill = ParameterCategory), 
+                 binwidth = 1) +
+  labs(title = "Total number of covariates considered",
+       x = "Number of covariates", y = "Number of articles") +
+  scale_fill_manual(values = c("darkslategrey", "darkorchid", 
+                               "cyan2", "goldenrod")) +
+  scale_x_continuous(breaks = c(0, 5, 10), 
+                     labels = c("0", "5", "10+")) +
+  facet_grid(rows = vars(ParameterCategory)) +
+  theme(legend.position = "none")
+```
+:::
+
+## Covariate categories
+
+::: column-page
+::: panel-tabset
+## Overall
+
+```{r covariate_categoriesOverall}
+#| echo: false
+
+covariates_clean |>
+  mutate(Total = length(unique(ID))) |>
+  select(ID, Type, Total) |>
+  distinct() |>
+  summarise(Articles = n(),
+            .by = c(Type, Total)) |>
+  mutate(Percentage = round(Articles/Total, 2)*100) |>
+  arrange(-Percentage) |>
+  filter(!Type %in% c("UNSPECIFIED", "UNCLEAR", "NONE", NA, "OTHER")) |>
+  mutate(Type = case_when(Type == "E-ANTH" ~ "Anthropogenic",
+                          Type == "E-CLIM" ~ "Climate/Weather",
+                          Type == "E-DIS" ~ "Disaster/Disturbance",
+                          Type == "E-HTAQ" ~ "Habitat (Aquatic)",
+                          Type == "E-HTT" ~ "Habitat (Terrestrial)",
+                          Type == "E-HYD" ~ "Hydrologic",
+                          Type == "E-SEAS" ~ "Phenologic",
+                          Type == "E-TOPO" ~ "Topographic",
+                          Type == "CONN" ~ "Connectivity",
+                          Type == "GEOM" ~ "Site geometry",
+                          Type == "INT" ~ "Biotic interaction",
+                          Type == "SEAS" ~ "Primary occasion",
+                          Type == "SITE" ~ "Site",
+                          Type == "SP" ~ "Species",
+                          Type == "SURV" ~ "Survey detail")) |>
+  mutate(Type_cat = case_when(Type %in% c("Habitat (Terrestrial)",
+                                          "Habitat (Aquatic)",
+                                          "Hydrologic", 
+                                          "Climate/Weather",
+                                          "Disaster/Disturbance",
+                                          "Topographic",
+                                          "Phenologic",
+                                          "Anthropogenic",
+                                          "Biotic interaction") ~ "Env",
+                              .default = "Other")) |>
+  mutate(Type = fct(Type,
+                    levels = c("Habitat (Terrestrial)", "Habitat (Aquatic)",
+                               "Hydrologic", "Climate/Weather",
+                               "Disaster/Disturbance", "Topographic",
+                               "Phenologic", "Anthropogenic",
+                               "Biotic interaction", "Primary occasion",
+                               "Survey detail", "Species", 
+                               "Site", "Site geometry", "Connectivity"))) |>
+  select(Type, Type_cat, Percentage) |>
+  
+  ggplot() +
+  geom_col(aes(x = Type, y = Percentage, fill = Type_cat)) +
+  labs(title = "Most frequent covariate types (All parameters)",
+       x = "", y = "Percentage of models (any parameter)") +
+  scale_fill_manual(values = c("darkslategrey", "darkorange3")) +
+  theme(axis.text.x = element_text(angle = 90, 
+                                   vjust = 0.5, hjust = 1),
+        legend.position = "none")
+```
+
+## Initial Occupancy
+
+```{r Covariate_categoriesPsi}
+#| echo: false
+
+covariates_clean |>
+  mutate(Total = length(unique(ID))) |>
+  filter(ParameterCategory == "Psi") |>
+  select(ID, Type, Total) |>
+  distinct() |>
+  summarise(Articles = n(),
+            .by = c(Type, Total)) |>
+  mutate(Percentage = round(Articles/Total, 2)*100) |>
+  arrange(-Percentage) |>
+  filter(!Type %in% c("UNSPECIFIED", "UNCLEAR", "NONE", NA, "SURV", "SEAS", "OTHER")) |>
+  mutate(Type = case_when(Type == "E-ANTH" ~ "Anthropogenic",
+                          Type == "E-CLIM" ~ "Climate/Weather",
+                          Type == "E-DIS" ~ "Disaster/Disturbance",
+                          Type == "E-HTAQ" ~ "Habitat (Aquatic)",
+                          Type == "E-HTT" ~ "Habitat (Terrestrial)",
+                          Type == "E-HYD" ~ "Hydrologic",
+                          Type == "E-SEAS" ~ "Phenologic",
+                          Type == "E-TOPO" ~ "Topographic",
+                          Type == "CONN" ~ "Connectivity",
+                          Type == "GEOM" ~ "Site geometry",
+                          Type == "INT" ~ "Biotic interaction",
+                          Type == "SEAS" ~ "Primary occasion",
+                          Type == "SITE" ~ "Site",
+                          Type == "SP" ~ "Species",
+                          Type == "SURV" ~ "Survey detail",
+                          Type == "OTHER" ~ "Other")) |>  
+  mutate(Type_cat = case_when(Type %in% c("Habitat (Terrestrial)",
+                                          "Habitat (Aquatic)",
+                                          "Hydrologic", 
+                                          "Climate/Weather",
+                                          "Disaster/Disturbance",
+                                          "Topographic",
+                                          "Phenologic",
+                                          "Anthropogenic",
+                                          "Biotic interaction") ~ "Env",
+                              .default = "Other")) |>
+  mutate(Type = fct(Type,
+                    levels = c("Habitat (Terrestrial)", "Habitat (Aquatic)",
+                               "Hydrologic", "Climate/Weather",
+                               "Disaster/Disturbance", "Topographic",
+                               "Phenologic", "Anthropogenic",
+                               "Biotic interaction", "Species", 
+                               "Site", "Site geometry", "Connectivity"))) |>
+  select(Type, Type_cat, Percentage) |>
+  
+  ggplot() +
+  geom_col(aes(x = Type, y = Percentage, fill = Type_cat)) +
+  labs(title = "Most frequent covariate types (Initial Occupancy)",
+       x = "", y = "Percentage of models") +
+  scale_fill_manual(values = c("darkslategrey", "darkorange3")) +
+  theme(axis.text.x = element_text(angle = 90, 
+                                   vjust = 0.5, hjust = 1),
+        legend.position = "none")
+```
+
+## Colonisation
+
+```{r covariates_catrgoriesGamma}
+#| echo: false
+
+covariates_clean |>
+  mutate(Total = length(unique(ID))) |>
+  filter(ParameterCategory == "Gamma") |>
+  select(ID, Type, Total) |>
+  distinct() |>
+  summarise(Articles = n(),
+            .by = c(Type, Total)) |>
+  mutate(Percentage = round(Articles/Total, 2)*100) |>
+  arrange(-Percentage) |>
+  filter(!Type %in% c("UNSPECIFIED", "UNCLEAR", "NONE", NA, "SURV", "OTHER")) |>
+  mutate(Type = case_when(Type == "E-ANTH" ~ "Anthropogenic",
+                          Type == "E-CLIM" ~ "Climate/Weather",
+                          Type == "E-DIS" ~ "Disaster/Disturbance",
+                          Type == "E-HTAQ" ~ "Habitat (Aquatic)",
+                          Type == "E-HTT" ~ "Habitat (Terrestrial)",
+                          Type == "E-HYD" ~ "Hydrologic",
+                          Type == "E-SEAS" ~ "Phenologic",
+                          Type == "E-TOPO" ~ "Topographic",
+                          Type == "CONN" ~ "Connectivity",
+                          Type == "GEOM" ~ "Site geometry",
+                          Type == "INT" ~ "Biotic interaction",
+                          Type == "SEAS" ~ "Primary occasion",
+                          Type == "SITE" ~ "Site",
+                          Type == "SP" ~ "Species",
+                          Type == "SURV" ~ "Survey detail",
+                          Type == "OTHER" ~ "Other")) |>  
+  mutate(Type_cat = case_when(Type %in% c("Habitat (Terrestrial)",
+                                          "Habitat (Aquatic)",
+                                          "Hydrologic", 
+                                          "Climate/Weather",
+                                          "Disaster/Disturbance",
+                                          "Topographic",
+                                          "Phenologic",
+                                          "Anthropogenic",
+                                          "Biotic interaction") ~ "Env",
+                              .default = "Other")) |>
+  mutate(Type = fct(Type,
+                    levels = c("Habitat (Terrestrial)", "Habitat (Aquatic)",
+                               "Hydrologic", "Climate/Weather",
+                               "Disaster/Disturbance", "Topographic",
+                               "Phenologic", "Anthropogenic",
+                               "Biotic interaction", "Species",
+                               "Primary occasion", "Site",
+                               "Site geometry", "Connectivity"))) |>
+  select(Type, Type_cat, Percentage) |>
+  
+  ggplot() +
+  geom_col(aes(x = Type, y = Percentage, fill = Type_cat)) +
+  labs(title = "Most frequent covariate types (Colonisation)",
+       x = "", y = "Percentage of models") +
+  scale_fill_manual(values = c("darkslategrey", "darkorange3")) +
+  theme(axis.text.x = element_text(angle = 90, 
+                                   vjust = 0.5, hjust = 1),
+        legend.position = "none")
+```
+
+## Extinction
+
+```{r covariates_categoryEps}
+#| echo: false
+
+covariates_clean |>
+  mutate(Total = length(unique(ID))) |>
+  filter(ParameterCategory == "Eps") |>
+  select(ID, Type, Total) |>
+  distinct() |>
+  summarise(Articles = n(),
+            .by = c(Type, Total)) |>
+  mutate(Percentage = round(Articles/Total, 2)*100) |>
+  arrange(-Percentage) |>
+  filter(!Type %in% c("UNSPECIFIED", "UNCLEAR", "NONE", NA, "SURV", "OTHER")) |>
+  mutate(Type = case_when(Type == "E-ANTH" ~ "Anthropogenic",
+                          Type == "E-CLIM" ~ "Climate/Weather",
+                          Type == "E-DIS" ~ "Disaster/Disturbance",
+                          Type == "E-HTAQ" ~ "Habitat (Aquatic)",
+                          Type == "E-HTT" ~ "Habitat (Terrestrial)",
+                          Type == "E-HYD" ~ "Hydrologic",
+                          Type == "E-SEAS" ~ "Phenologic",
+                          Type == "E-TOPO" ~ "Topographic",
+                          Type == "CONN" ~ "Connectivity",
+                          Type == "GEOM" ~ "Site geometry",
+                          Type == "INT" ~ "Biotic interaction",
+                          Type == "SEAS" ~ "Primary occasion",
+                          Type == "SITE" ~ "Site",
+                          Type == "SP" ~ "Species",
+                          Type == "SURV" ~ "Survey detail",
+                          Type == "OTHER" ~ "Other")) |>  
+  mutate(Type_cat = case_when(Type %in% c("Habitat (Terrestrial)",
+                                          "Habitat (Aquatic)",
+                                          "Hydrologic", 
+                                          "Climate/Weather",
+                                          "Disaster/Disturbance",
+                                          "Topographic",
+                                          "Phenologic",
+                                          "Anthropogenic",
+                                          "Biotic interaction") ~ "Env",
+                              .default = "Other")) |>
+  mutate(Type = fct(Type,
+                    levels = c("Habitat (Terrestrial)", "Habitat (Aquatic)",
+                               "Hydrologic", "Climate/Weather",
+                               "Disaster/Disturbance", "Topographic",
+                               "Phenologic", "Anthropogenic",
+                               "Biotic interaction", "Species",
+                               "Primary occasion", "Site",
+                               "Site geometry", "Connectivity"))) |>
+  select(Type, Type_cat, Percentage) |>
+  
+  ggplot() +
+  geom_col(aes(x = Type, y = Percentage, fill = Type_cat)) +
+  labs(title = "Most frequent covariate types (Extinction)",
+       x = "", y = "Percentage of models") +
+  scale_fill_manual(values = c("darkslategrey", "darkorange3")) +
+  theme(axis.text.x = element_text(angle = 90, 
+                                   vjust = 0.5, hjust = 1),
+        legend.position = "none")
+
+```
+
+## Detection
+
+```{r covariate_categoriesDet}
+#| echo: false
+
+covariates_clean |>
+  mutate(Total = length(unique(ID))) |>
+  filter(ParameterCategory == "p") |>
+  select(ID, Type, Total) |>
+  distinct() |>
+  summarise(Articles = n(),
+            .by = c(Type, Total)) |>
+  mutate(Percentage = round(Articles/Total, 2)*100) |>
+  arrange(-Percentage) |>
+  filter(!Type %in% c("UNSPECIFIED", "UNCLEAR", "NONE", "OTHER", NA)) |>
+  mutate(Type = case_when(Type == "E-ANTH" ~ "Anthropogenic",
+                          Type == "E-CLIM" ~ "Climate/Weather",
+                          Type == "E-DIS" ~ "Disaster/Disturbance",
+                          Type == "E-HTAQ" ~ "Habitat (Aquatic)",
+                          Type == "E-HTT" ~ "Habitat (Terrestrial)",
+                          Type == "E-HYD" ~ "Hydrologic",
+                          Type == "E-SEAS" ~ "Phenologic",
+                          Type == "E-TOPO" ~ "Topographic",
+                          Type == "CONN" ~ "Connectivity",
+                          Type == "GEOM" ~ "Site geometry",
+                          Type == "INT" ~ "Biotic interaction",
+                          Type == "SEAS" ~ "Primary occasion",
+                          Type == "SITE" ~ "Site",
+                          Type == "SP" ~ "Species",
+                          Type == "SURV" ~ "Survey detail",
+                          Type == "OTHER" ~ "Other")) |>  
+  mutate(Type_cat = case_when(Type %in% c("Habitat (Terrestrial)",
+                                          "Habitat (Aquatic)",
+                                          "Hydrologic", 
+                                          "Climate/Weather",
+                                          "Disaster/Disturbance",
+                                          "Topographic",
+                                          "Phenologic",
+                                          "Anthropogenic",
+                                          "Biotic interaction") ~ "Env",
+                              .default = "Other")) |>
+  mutate(Type = fct(Type,
+                    levels = c("Habitat (Terrestrial)", "Habitat (Aquatic)",
+                               "Hydrologic", "Climate/Weather",
+                               "Disaster/Disturbance", "Topographic",
+                               "Phenologic", "Anthropogenic",
+                               "Biotic interaction", "Species",
+                               "Primary occasion", "Site", "Survey detail",
+                               "Site geometry", "Connectivity"))) |>
+  select(Type, Type_cat, Percentage) |>
+  
+  ggplot() +
+  geom_col(aes(x = Type, y = Percentage, fill = Type_cat)) +
+  labs(title = "Most frequent covariate types (Detection)",
+       x = "", y = "Percentage of models") +
+  scale_fill_manual(values = c("darkslategrey", "darkorange3")) +
+  theme(axis.text.x = element_text(angle = 90, 
+                                   vjust = 0.5, hjust = 1),
+        legend.position = "none")
+
+```
+:::
+:::
+
+## Covariate features
+
+Aspects of each covariate are presented here as percentages; e.g., the frequency that a class of covariate had a quadratic term, or the frequency at which it was measured via remote sensing.
+
+::: column-page
+```{r Covariates_Features table}
+#| echo: false
+
+covariates_clean |> 
+  mutate(Overall_Total = length(unique(ID))) |>
+  mutate(Meas_Observed = case_when(Measurement == "Observed" ~ 1,
+                                   .default = 0),
+         Meas_Intrinsic = case_when(Measurement == "Intrinsic" ~ 1,
+                                    .default = 0),
+         Meas_Remote = case_when(Measurement == "Remote" ~ 1,
+                                 .default = 0),
+         Dynamic = case_when(Variation %in% c("Year",
+                                              "Year-Site", 
+                                              "Year-Site-Survey") ~ 1,
+                             .default =0),
+         Linear = case_when(Complexity == "Linear" ~ 1,
+                               .default = 0),
+         Quadratic = case_when(Complexity %in% c("Quadratic + Interaction",
+                                                 "Quadratic") ~ 1,
+                               .default = 0),
+         Interaction = case_when(Complexity %in% c("Quadratic + Interaction",
+                                                   "Interaction") ~ 1,
+                               .default = 0)) |>
+  summarise(Meas_Observed = sum(Meas_Observed)/n(),
+            Meas_Intrinsic = sum(Meas_Intrinsic)/n(),
+            Meas_Remote = sum(Meas_Remote)/n(),
+            Dynamic = sum(Dynamic)/n(),
+            Linear = sum(Linear)/n(),
+            Quadratic = sum(Quadratic)/n(),
+            Interaction = sum(Interaction)/n(),
+            .by = Type) |>
+  mutate(across(where(is.numeric), ~round(.x, 2))) |>
+  mutate(Type = case_when(Type == "E-ANTH" ~ "Anthropogenic",
+                          Type == "E-CLIM" ~ "Climate/Weather",
+                          Type == "E-DIS" ~ "Disaster/Disturbance",
+                          Type == "E-HTAQ" ~ "Habitat (Aquatic)",
+                          Type == "E-HTT" ~ "Habitat (Terrestrial)",
+                          Type == "E-HYD" ~ "Hydrologic",
+                          Type == "E-SEAS" ~ "Phenologic",
+                          Type == "E-TOPO" ~ "Topographic",
+                          Type == "CONN" ~ "Connectivity",
+                          Type == "GEOM" ~ "Site geometry",
+                          Type == "INT" ~ "Biotic interaction",
+                          Type == "SEAS" ~ "Primary occasion",
+                          Type == "SITE" ~ "Site",
+                          Type == "SP" ~ "Species",
+                          Type == "SURV" ~ "Survey detail",
+                          Type == "OTHER" ~ "Other"))|>
+  filter(!is.na(Type) & Type != "Other") |>
+  reactable()
+  
+```
+:::
+
+## Complexity
+
+21% of articles considered at least one quadratic term; 26% considered at least one interaction term.
+
+```{r covariates_complexity}
+#| echo: false
+
+covariates_clean |>
+  mutate(Total = length(unique(ID))) |>
+  mutate(Quadratic = case_when(Complexity %in% c("Quadratic + Interaction",
+                                                 "Quadratic") ~ 1,
+                               .default = 0),
+         Interaction = case_when(Complexity %in% c("Quadratic + Interaction",
+                                                   "Interaction") ~ 1,
+                                 .default = 0)) |>
+  select(ID, Total, Quadratic, Interaction) |>
+  distinct() |>
+  summarise(Quadratic = round(sum(Quadratic)/mean(Total), 2),
+            Interaction = round(sum(Interaction)/mean(Total),2)) |>
+  kable()
+```
+
+## Quantity of covariates by year
+
+There is no apparent trend in the quantity of covariates over time.
+
+```{r covariates_quantityYearly}
+#| echo: false
+#| message: false
+
+covariates_clean |>
+  filter(Type != "NONE") |>
+  summarise(Covariates = n(), .by = ID_clean) |>
+  mutate(ID_clean = as.numeric(ID_clean)) |>
+  left_join(select(studyDetails_clean, Year, ID), 
+            by = join_by(ID_clean == ID)) |>
+  filter(Covariates < 60) |>
+  
+  ggplot(aes(x = Year, y = Covariates)) +
+  geom_point(colour = "darkslategrey", alpha = 0.5) +
+  geom_smooth(method = "lm", colour = "darkslategrey") +
+  labs(title = "Quantities of covariates over time",
+       x = "Year", y = "Total number of covariates")
+```
+
+## Quantity of covariates by study size
+
+```{r Covariates_studysize}
+#| echo: false
+#| warning: false
+#| message: false
+
+covariates_count <- covariates_clean |>
+  filter(Type != "NONE") |>
+  summarise(Covariates = n(), .by = ID_clean) |>
+  mutate(ID_clean = as.numeric(ID_clean))
+
+dataCollection_clean |>
+  select(ID_clean, Duration, 
+         Primary_Max, Secondary_Max,
+         SiteNumber_Max) |>
+  mutate(ID_clean = as.numeric(ID_clean)) |>
+  rowwise() |>
+  mutate(TotalOccasions = Primary_Max*Secondary_Max) |>
+  left_join(select(studyDetails_clean, ID, YearStrata), by = join_by(ID_clean == ID)) |>
+  filter(!is.na(YearStrata)) |>
+  pivot_longer(cols = c(Duration, TotalOccasions, SiteNumber_Max),
+               names_to = "Variable", values_to = "Quantity") |>
+  left_join(covariates_count, by = "ID_clean") |>
+  mutate(Variable = case_when(Variable == "Duration" ~ "Study duration (months)",
+                              Variable == "SiteNumber_Max" ~ "Number of sites",
+                              Variable == "TotalOccasions" ~ "Total survey occasions (Primary x Secondary)")) |>
+  filter(Covariates < 60) |>
+  
+  ggplot(aes(x = Quantity, y = Covariates, colour = Variable)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE, alpha = 0.7) +
+  scale_x_continuous(transform = "log10") +
+  scale_colour_manual(values = c("darkslategrey", "cyan4", "darkorchid4")) +
+  facet_wrap(vars(Variable), ncol = 1, scales = "free_x") +
+  theme(legend.position = "none") +
+  labs(title = "Covariate count by study size",
+       x = "Study size (log scales)", y = "Number of covariates")
+```
+
+## Covariate count by objective
+
+```{r Covariates_objective}
+#| echo: false
+
+objectives_Clean |>
+  select(ID, Objective, Stated) |>
+  filter(Stated == TRUE) |>
+  left_join(covariates_count, by = join_by(ID == ID_clean)) |>
+  filter(Covariates < 60) |>
+  
+  ggplot() +
+  geom_boxplot(aes(x = Objective, y = Covariates, colour = Objective)) +
+  theme(legend.position = "none") +
+  labs(title = "Total covariate count by objective",
+       x = "", y = "Number of covariates") + 
+  scale_fill_manual(values = c("darkorchid", "deepskyblue3",
+                               "coral2", "goldenrod", "gray60"))
+```
+
+# Modelling
+
+Key details of the modelling process were documented.
+
++---------------+-----------------------------------------------------------+------------------------------------------------------------------------------------------------+
+| Field         | Description                                               | Possible values                                                                                |
++===============+===========================================================+================================================================================================+
+| Bayesian      | Whether the models fit were Bayesian                      | *Logical*                                                                                      |
++---------------+-----------------------------------------------------------+------------------------------------------------------------------------------------------------+
+| Prefiltering  | Which, if any, prefiltering method was used               | *Expert, Simple, Other*                                                                        |
++---------------+-----------------------------------------------------------+------------------------------------------------------------------------------------------------+
+| Selection     | Which, if any, selection method was used                  | *Single a priori, Multiple a priori, Exhaustive, Exhaustive by parameter, Forwards, Backwards* |
++---------------+-----------------------------------------------------------+------------------------------------------------------------------------------------------------+
+| Evaluation    | How models were compared and evaluated                    | *AIC, AUC, DiC, Model-averaging, Bootstrapping*                                                |
++---------------+-----------------------------------------------------------+------------------------------------------------------------------------------------------------+
+| Multi-species | Whether this was a multi-species model                    | *Logical*                                                                                      |
++---------------+-----------------------------------------------------------+------------------------------------------------------------------------------------------------+
+| Connectivity  | Whether site connectivity was incorporated into the model | *Logical*                                                                                      |
++---------------+-----------------------------------------------------------+------------------------------------------------------------------------------------------------+
+
+```{r modelling_clean}
+#| echo: false
+
+modelling_clean <- review_Modelling |>
+  filter(Status == "Complete")
+```
+
+## Selection methods
+
+```{r modelling_selection}
+#| echo: false
+
+modelling_prefilter <- modelling_clean |>
+  mutate(Total = length(unique(ID))) |>
+  summarise(Articles = n(), 
+            .by = c(Prefiltering, Total)) |>
+  rename(Method = Prefiltering) |>
+  mutate(Class = "Prefilter")
+
+modelling_clean |> 
+  mutate(Total = length(unique(ID))) |>
+  summarise(Articles = n(), 
+            .by = c(Selection, Total)) |>
+  rename(Method = Selection) |>
+  mutate(Class = "Select") |>
+  bind_rows(modelling_prefilter) |>
+  mutate(Percentage = round(Articles/Total, 2)*100) |>
+  filter(!Method %in% c("None", "APriori_m, Stepwise", "Other")) |>
+  mutate(Method = case_when(Method %in% c("Apriori_s", "APriori_s") ~ "A priori (Single)",
+                            Method == "APriori_m" ~ "A priori (Multiple)",
+                            Method == "Backwards" ~ "Stepwise (Backwards)",
+                            Method == "Forwards" ~ "Stepwise (Forwards)",
+                            Method == "Exhaustive_all" ~ "Exhaustive (True)",
+                            Method == "Exhaustive_p" ~ "Exhaustive (By parameter)",
+                            .default = Method)) |>
+  summarise(Percentage = sum(Percentage),
+            .by = c(Method, Class)) |>
+  arrange(Class, Percentage) |>
+  mutate(Method = fct_inorder(Method)) |>
+  
+  ggplot() +
+  geom_col(aes(x = Percentage, y = Method, fill = Class)) +
+  scale_fill_manual(limits = c("Prefilter", "Select"),
+                    values = c("darkorange3", "darkslategrey")) +
+  labs(title = "Covariate selection method frequency", 
+       x = "Percentage of articles", y = "") +
+  theme(legend.position = "bottom")
+```
+
+## Model selection trends
+
+```{r Modelling_trends}
+#| echo: false
+#| warning: false
+
+modelling_clean |>
+  select(ID, Selection) |>
+  mutate(ID = as.numeric(ID)) |>
+  left_join(select(studyDetails_clean, ID, YearStrata),
+            by = "ID") |>
+  filter(!is.na(YearStrata)) |>
+  mutate(Selection = case_when(Selection %in% c("APriori_s",
+                                                "Apriori_s") ~ "A priori (Single)",
+                               Selection == "APriori_m" ~ "A priori (Multiple)",
+                               
+                               .default = "Other")) |>
+  mutate(Total = n(), .by = YearStrata) |>
+  summarise(Articles = n(), .by = c(YearStrata, Selection, Total)) |>
+  mutate(Proportion = Articles/Total) |>
+  
+  ggplot() +
+  geom_col(aes(x = YearStrata, y = Articles, fill = Selection)) +
+  scale_fill_manual(values = c("goldenrod", "darkorange3", "darkorchid4")) +
+  theme(legend.position = "bottom") +
+  labs(title = "Covariate selection trends",
+       x = "Year Strata", 
+       y = "Number of articles")
+
+
+```
+
+## Frequentist vs Bayesian
+
+```{r modelling_frequentist}
+#| echo: false
+#| warning: false
+
+modelling_clean |>
+  mutate(Class = case_when(Bayesian == "Y" ~ "Bayesian",
+                           Bayesian == "N" ~ "Frequentist")) |>
+  mutate(ID = as.numeric(ID)) |>
+  left_join(select(studyDetails_clean, ID, YearStrata),
+            by = "ID") |>
+  filter(!is.na(YearStrata),
+         !is.na(Class)) |>
+  summarise(Articles = n(),
+            .by = c(YearStrata, Class)) |>
+  
+  ggplot() +
+  geom_col(aes(x = YearStrata, y = Articles, fill = Class)) +
+  scale_fill_manual(values = c("cyan4", "darkorchid3")) +
+  theme(legend.position = "bottom") +
+  labs(title = "Model type trends",
+       x = "Year Strata", 
+       y = "Number of articles")
+  
+```
