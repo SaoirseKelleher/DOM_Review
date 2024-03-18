@@ -1,8 +1,7 @@
 ---
 title: "DOM Review Summary"
 author: "Saoirse Kelleher"
-date: "March 13 2024"
-date-modifed: today
+date: today
 abstract: "A summary of results from the DOM Review, for use in interpreting outputs and writing the review manuscript. "
 abstract-title: "Summary"
 format: 
@@ -649,6 +648,25 @@ dataCollection_clean <- review_DataCollection |>
 ```
 
 ## Study duration
+
+Study duration, defined as the length of time between the first and last survey, ranged from **`{r} min(dataCollection_clean$Duration)`** month to **`{r} max(dataCollection_clean$Duration)/12`** years.
+
+```{r DataCollection_duration}
+#| echo: false
+
+dataCollection_clean |>
+  ggplot() +
+  geom_histogram(aes(x = Duration), 
+                 binwidth = 0.1, fill = "darkslategrey") +
+  scale_x_continuous(transform = "log10", 
+                     breaks = c(1, 12, 60, 
+                                120, 240, 480), 
+                     labels = c("1 month", "1 year", "5 years", 
+                                "10 years", "20 years", "40 years")) +
+  labs(title = "Study duration distribution",
+       subtitle = "Defined as time between first and last survey",
+       y = "Frequency", x = "Study duration (log10 scale)")
+```
 
 ## Number of occasions
 
