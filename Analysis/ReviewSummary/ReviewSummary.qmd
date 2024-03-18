@@ -269,7 +269,7 @@ objectives_frequency <- objectives_Clean |>
   arrange(-Proportion)
 ```
 
-The most common objective was **Testing Hypotheses**, with `{r} max(objectives_frequency$Proportion)`% of articles examining pre-determined relationships. Prediction, whether spatial or temporal, was rare.
+The most common objective was **Testing Hypotheses**, with `{r} round(max(objectives_frequency$Proportion), 2)`% of articles examining pre-determined relationships. Prediction, whether spatial or temporal, was rare.
 
 ```{r Objectives_frequencyPlot}
 #| echo: false
@@ -361,6 +361,7 @@ objectives_Clean |>
 # Species and location
 
 ```{r Species_clean}
+#| echo: false
 species_clean <- review_SpeciesLocation |>
   filter(Status == "Complete") |>
   mutate(ID_clean = str_extract(ID, "[:digit:]+"))
@@ -897,7 +898,117 @@ All covariates considered for modelling were documented for each article. Detail
 |             |                                                 |                                                                                                                                                                     |
 +-------------+-------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
+```{r Covariates_clean}
+#| echo: false
+
+covariates_clean <- review_Covariates |>
+  filter(Status == "Complete") |>
+  mutate(ID_clean = str_extract(ID, "[:digit:]+")) |>
+  mutate(Covariates = str_replace(Covariates, "\\.", "\\,")) |>
+  separate_rows(Covariates, sep = ", ") |>
+  mutate(Covariates = str_to_upper(Covariates)) |>
+  separate_wider_delim(cols = Covariates, delim = "_",
+                       names = c("Type", 
+                                 "Variation",
+                                 "Measurement",
+                                 "Complexity"),
+                       too_few = "align_start", 
+                       too_many = "drop") |>
+  mutate(ParameterCategory = case_when(Parameter %in% c("InitialOccupancy",
+                                                        "InitialOccupancy_MS",
+                                                        "Occupancy",
+                                                        "Occupancy_MS") ~ "Psi",
+                                       Parameter %in% c("Colonisation",
+                                                        "Colonisation_MS") ~ "Gamma",
+                                       Parameter %in% c("Extinction",
+                                                        "Extinction_MS",
+                                                        "Persistence",
+                                                        "Persistence_MS") ~ "Eps",
+                                       Parameter %in% c("Detection",
+                                                        "Detection_FP",
+                                                        "Detection_FP_MS",
+                                                        "Detection_MS", 
+                                                        "Detection_Other") ~ "p",
+                                       .default = "Other"),
+         Type = case_when(Type %in% c("E-HTT", " E-HTT") ~ "E-HTT",
+                          Type %in% c("E-DIS", "DIS") ~ "E-DIS",
+                          Type %in% c("ANTH", "E-ANTH") ~ "E-ANTH",
+                          Type %in% c("SP", "Spec") ~ "SP",
+                          Type %in% c("NONE", "NA") ~ "NONE",
+                          .default = Type),
+         Variation = case_when(Variation %in% c("SY", "YS") ~ "Site-Year",
+                               Variation == "S" ~ "Site",
+                               Variation == "YSS" ~ "Site-Year-Survey",
+                               Variation == "Y" ~ "Year",
+                               Variation == "SP" ~ "Species",
+                               Variation == "U" ~ "Unclear"),
+         Measurement = case_when(Measurement == "I" ~ "Intrinsic",
+                                 Measurement == "O" ~ "Observed",
+                                 Measurement == "R" ~ "Remote",
+                                 Measurement == "U" ~ "Unclear"),
+         Complexity = case_when(Complexity %in% c("N", "NH", "N,") ~ "Linear",
+                                Complexity == "Q" ~ "Quadratic",
+                                Complexity == "I" ~ "Interaction",
+                                Complexity == "B" ~ "Quadratic + Interaction",
+                                Complexity == "O" ~ "Other"))
+```
+
 ## Covariate quantity
+
+::: panel-tabset
+## Overall
+
+```{r covariates_quantityOverall}
+#| echo: false
+
+covariates_clean |>
+  filter(Type != "NONE") |>
+  summarise(Covariates = n(), .by = ID) |>
+  
+  ggplot() +
+  geom_histogram(aes(x = Covariates), 
+                 binwidth = 5,
+                 fill = "darkslategrey") +
+  labs(title = "Total number of covariates considered",
+       subtitle = "All parameters",
+       x = "Number of covariates", y = "Number of articles")
+```
+
+## By parameter
+
+```{r covariates_quantityParameter}
+#| echo: false
+
+covariates_clean |>
+  filter(Type != "NONE") |>
+  summarise(Covariates = n(), .by = c(ID, ParameterCategory)) |>
+  filter(ParameterCategory != "Other") |>
+  mutate(ParameterCategory = case_when(ParameterCategory == "Psi" ~ "Initial Occupancy",
+                                       ParameterCategory == "Gamma" ~ "Colonisation",
+                                       ParameterCategory == "Eps" ~ "Extinction",
+                                       ParameterCategory == "p" ~ "Detection")) |>
+  complete(ID, ParameterCategory, fill= list(Covariates = 0)) |>
+  mutate(ParameterCategory = fct(ParameterCategory,
+                                 levels = c("Initial Occupancy",
+                                            "Colonisation", 
+                                            "Extinction",
+                                            "Detection"))) |>
+  mutate(Covariates = case_when(Covariates > 10 ~ 10,
+                                .default = Covariates)) |>
+  
+  ggplot() +
+  geom_histogram(aes(x = Covariates, fill = ParameterCategory), 
+                 binwidth = 1) +
+  labs(title = "Total number of covariates considered",
+       x = "Number of covariates", y = "Number of articles") +
+  scale_fill_manual(values = c("darkslategrey", "darkorchid", 
+                               "cyan2", "goldenrod")) +
+  scale_x_continuous(breaks = c(0, 5, 10), 
+                     labels = c("0", "5", "10+")) +
+  facet_grid(rows = vars(ParameterCategory)) +
+  theme(legend.position = "none")
+```
+:::
 
 ## Covariate categories
 
