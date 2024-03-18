@@ -670,6 +670,60 @@ dataCollection_clean |>
 
 ## Number of occasions
 
+```{r DataCollection_PrimaryOccasions}
+#| echo: false
+
+dataCollection_clean |>
+  rowwise() |>
+  mutate(Primary_Max = case_when(Primary_Max > 30 ~ 30,
+                                  .default = Primary_Max)) |>
+  
+  ggplot() +
+  geom_histogram(aes(x = Primary_Max),
+                 binwidth = 1, fill = "darkslategrey") +
+  labs(title = "Number of primary occasions",
+       x = "Number of primary occasions", y = "Number of articles") +
+  scale_x_continuous(breaks = c(1, 5, 10, 20, 30),
+                     labels = c("1", "5", "10", "20", "30+"))
+```
+
+```{r DataCollection_SecondaryOccasions}
+#| echo: false
+
+dataCollection_clean |>
+  filter(!is.na(Secondary_Max)) |>
+  rowwise() |>
+  mutate(Secondary_Max = case_when(Secondary_Max > 20 ~ 20,
+                                   .default = Secondary_Max)) |>
+  
+  ggplot() +
+  geom_histogram(aes(x = Secondary_Max),
+                 binwidth = 1, fill = "darkcyan") +
+  labs(title = "Number of secondary occasions",
+       subtitle = "Where variable, maximum number of occasions is presented",
+       x = "Number of secondary occasions", y = "Number of articles") +
+  scale_x_continuous(breaks = c(1, 5, 10, 20),
+                     labels = c("1", "5", "10", "20+"))
+```
+
+```{r DataCollection_TotalOccasions}
+#| echo: false
+
+dataCollection_clean |>
+  filter(!is.na(Secondary_Max) & !is.na(Primary_Max)) |>
+  mutate(TotalOccasions = Secondary_Max*Primary_Max) |>
+  ggplot() +
+  geom_histogram(aes(x = TotalOccasions),
+                 binwidth = 0.1,
+                 fill = "darkorchid3") +
+  labs(title = "Total number of occasions",
+       subtitle = "Product of primary and secondary occasions",
+       x = "Number of occasions (log10 scale)", y = "Number of articles") +
+  scale_x_continuous(transform = "log10",
+                     breaks = c(4, 10, 25, 50, 100, 500, 1000, 2000)) +
+  scale_y_continuous(breaks = c(1, 3, 6, 9))
+```
+
 ## Data collection method
 
 ## Sampling method
