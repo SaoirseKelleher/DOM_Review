@@ -79,12 +79,17 @@ review_Modelling <- read_xlsx("Spreadsheets/Stage3_Spreadsheet.xlsx",
 
 Basic metadata was collected for each paper in the review, with available data including:
 
++-------------------+--------------------------------------------------+--------------------------------------+
 | Field             | Description                                      | Possible values                      |
-|-------------------|--------------------------------------------------|--------------------------------------|
++===================+==================================================+======================================+
 | Journal           | Journal which this article was published in      | *Any*                                |
++-------------------+--------------------------------------------------+--------------------------------------+
 | Year              | Year of publication                              | *Any*                                |
++-------------------+--------------------------------------------------+--------------------------------------+
 | Author country    | Nation of the first author's primary affiliation | *ISO 3166 country names*             |
++-------------------+--------------------------------------------------+--------------------------------------+
 | Author categories | Categories of affiliations for *all* authors     | *Academic, Government, NGO, Private* |
++-------------------+--------------------------------------------------+--------------------------------------+
 
 ```{r StudyDetails_Clean}
 #| include: false
@@ -215,12 +220,17 @@ studyDetails_clean |>
 
 The stated objectives for each article were assessed and divided into four categories - each paper could fall into multiple (or zero) objective categories.
 
++---------------------+-----------------------------------------------------------------------------------+
 | Objective           | Description                                                                       |
-|---------------------|-----------------------------------------------------------------------------------|
++=====================+===================================================================================+
 | Methods             | Did authors seek to demonstrate or test specific methods for occupancy modelling? |
++---------------------+-----------------------------------------------------------------------------------+
 | Future Predictions  | Did authors make predictions beyond the study period?                             |
++---------------------+-----------------------------------------------------------------------------------+
 | Spatial Predictions | Did authors make predictions at locations where surveys were not conducted?       |
++---------------------+-----------------------------------------------------------------------------------+
 | Hypothesis testing  | Did authors seek to test specific hypotheses of species occupancy dynamics?       |
++---------------------+-----------------------------------------------------------------------------------+
 
 ```{r Objectives_clean}
 #| echo: false
@@ -359,16 +369,25 @@ species_clean <- review_SpeciesLocation |>
 
 Data on focal species and the location of study areas was collected, available fields include:
 
++-----------------+--------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
 | Field           | Description                                                                                | Possible values                                                                   |
-|-----------------|--------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
++=================+============================================================================================+===================================================================================+
 | Taxa category   | Category of study taxa; could fit into multiple categories                                 | *Bird, Mammal, Invertebrate, Herptile, Fish, Threatened, Invasive, Other*         |
++-----------------+--------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
 | Taxa number     | Number of individual species within the taxa for which models were fit                     | *Numeric*                                                                         |
++-----------------+--------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
 | IUCN status     | IUCN status for the study species; NA if multi-species or if the study species is invasive | *LC, NT, EN, CR, DD, NA*                                                          |
++-----------------+--------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
 | Threat category | Category of threats to the species; multiple per species permitted                         | *Habitat loss, Climate change, Exploitation, Invasives, Disease, Disaster, Other* |
++-----------------+--------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
 | Country         | Country/countries where the study took place                                               | *ISO 3166 country names*                                                          |
++-----------------+--------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
 | Continent       | Continent(s) where the study took place                                                    | *North America, South America, Europe, Asia, Africa, Oceania*                     |
++-----------------+--------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
 | Realm           | Biogeographic realm where the study took place                                             | *Nearctic, Palearctic, Afrotropical, Indomalayan, Australasian, Neotropical*      |
++-----------------+--------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
 | Size            | Size of the study area extent in square kilometres                                         | *\<1km, 1-10, 10-100, 100-1000, 10000-100000, 100000-1000000, 1000000+*           |
++-----------------+--------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------+
 
 ## Taxa categories
 
@@ -578,16 +597,25 @@ species_clean |>
 
 # Data collection
 
++---------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
 | Field               | Description                                                              | Possible values                                                                              |
-|---------------------|--------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|
++=====================+==========================================================================+==============================================================================================+
 | Duration            | Length of study in months                                                | *Numeric*                                                                                    |
++---------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
 | Capture method      | Method of recording detections; multiple categories possible             | *Audiovisual, Search, Trapping, Bioacoustic, Camera, Citizen, Incidental*                    |
++---------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
 | Primary occasions   | Number of primary occasions                                              | *Numeric*                                                                                    |
++---------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
 | Secondary occasions | Number of secondary occasions, presented as a range where not consistent | *Numeric range*                                                                              |
++---------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
 | Secondary type      | Type of secondary occasion                                               | *Revisits, Spatial replicates, Same-visit replicates, multiple observers, time to detection* |
++---------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
 | Type of site        | How a 'site' was defined                                                 | *Point location, Grid cell, Irregular area, Transect*                                        |
++---------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
 | Number of sites     | Number of individual sites                                               | Numeric                                                                                      |
++---------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
 | Sampling method     | How sites were selected                                                  | *Random, Stratified, Grid, Preferential, Available, Exhaustive, Uniform, Transect*           |
++---------------------+--------------------------------------------------------------------------+----------------------------------------------------------------------------------------------+
 
 ```{r DataCollection_clean}
 #| echo: false
@@ -1461,11 +1489,126 @@ objectives_Clean |>
 
 Key details of the modelling process were documented.
 
++---------------+-----------------------------------------------------------+------------------------------------------------------------------------------------------------+
 | Field         | Description                                               | Possible values                                                                                |
-|---------------|-----------------------------------------------------------|------------------------------------------------------------------------------------------------|
++===============+===========================================================+================================================================================================+
 | Bayesian      | Whether the models fit were Bayesian                      | *Logical*                                                                                      |
++---------------+-----------------------------------------------------------+------------------------------------------------------------------------------------------------+
 | Prefiltering  | Which, if any, prefiltering method was used               | *Expert, Simple, Other*                                                                        |
++---------------+-----------------------------------------------------------+------------------------------------------------------------------------------------------------+
 | Selection     | Which, if any, selection method was used                  | *Single a priori, Multiple a priori, Exhaustive, Exhaustive by parameter, Forwards, Backwards* |
++---------------+-----------------------------------------------------------+------------------------------------------------------------------------------------------------+
 | Evaluation    | How models were compared and evaluated                    | *AIC, AUC, DiC, Model-averaging, Bootstrapping*                                                |
++---------------+-----------------------------------------------------------+------------------------------------------------------------------------------------------------+
 | Multi-species | Whether this was a multi-species model                    | *Logical*                                                                                      |
++---------------+-----------------------------------------------------------+------------------------------------------------------------------------------------------------+
 | Connectivity  | Whether site connectivity was incorporated into the model | *Logical*                                                                                      |
++---------------+-----------------------------------------------------------+------------------------------------------------------------------------------------------------+
+
+```{r modelling_clean}
+#| echo: false
+
+modelling_clean <- review_Modelling |>
+  filter(Status == "Complete")
+```
+
+## Selection methods
+
+```{r modelling_selection}
+#| echo: false
+
+modelling_prefilter <- modelling_clean |>
+  mutate(Total = length(unique(ID))) |>
+  summarise(Articles = n(), 
+            .by = c(Prefiltering, Total)) |>
+  rename(Method = Prefiltering) |>
+  mutate(Class = "Prefilter")
+
+modelling_clean |> 
+  mutate(Total = length(unique(ID))) |>
+  summarise(Articles = n(), 
+            .by = c(Selection, Total)) |>
+  rename(Method = Selection) |>
+  mutate(Class = "Select") |>
+  bind_rows(modelling_prefilter) |>
+  mutate(Percentage = round(Articles/Total, 2)*100) |>
+  filter(!Method %in% c("None", "APriori_m, Stepwise", "Other")) |>
+  mutate(Method = case_when(Method %in% c("Apriori_s", "APriori_s") ~ "A priori (Single)",
+                            Method == "APriori_m" ~ "A priori (Multiple)",
+                            Method == "Backwards" ~ "Stepwise (Backwards)",
+                            Method == "Forwards" ~ "Stepwise (Forwards)",
+                            Method == "Exhaustive_all" ~ "Exhaustive (True)",
+                            Method == "Exhaustive_p" ~ "Exhaustive (By parameter)",
+                            .default = Method)) |>
+  summarise(Percentage = sum(Percentage),
+            .by = c(Method, Class)) |>
+  arrange(Class, Percentage) |>
+  mutate(Method = fct_inorder(Method)) |>
+  
+  ggplot() +
+  geom_col(aes(x = Percentage, y = Method, fill = Class)) +
+  scale_fill_manual(limits = c("Prefilter", "Select"),
+                    values = c("darkorange3", "darkslategrey")) +
+  labs(title = "Covariate selection method frequency", 
+       x = "Percentage of articles", y = "") +
+  theme(legend.position = "bottom")
+```
+
+## Model selection trends
+
+```{r Modelling_trends}
+#| echo: false
+#| warning: false
+
+modelling_clean |>
+  select(ID, Selection) |>
+  mutate(ID = as.numeric(ID)) |>
+  left_join(select(studyDetails_clean, ID, YearStrata),
+            by = "ID") |>
+  filter(!is.na(YearStrata)) |>
+  mutate(Selection = case_when(Selection %in% c("APriori_s",
+                                                "Apriori_s") ~ "A priori (Single)",
+                               Selection == "APriori_m" ~ "A priori (Multiple)",
+                               
+                               .default = "Other")) |>
+  mutate(Total = n(), .by = YearStrata) |>
+  summarise(Articles = n(), .by = c(YearStrata, Selection, Total)) |>
+  mutate(Proportion = Articles/Total) |>
+  
+  ggplot() +
+  geom_col(aes(x = YearStrata, y = Articles, fill = Selection)) +
+  scale_fill_manual(values = c("goldenrod", "darkorange3", "darkorchid4")) +
+  theme(legend.position = "bottom") +
+  labs(title = "Covariate selection trends",
+       x = "Year Strata", 
+       y = "Number of articles")
+
+
+```
+
+## Frequentist vs Bayesian
+
+```{r modelling_frequentist}
+#| echo: false
+#| warning: false
+
+modelling_clean |>
+  mutate(Class = case_when(Bayesian == "Y" ~ "Bayesian",
+                           Bayesian == "N" ~ "Frequentist")) |>
+  mutate(ID = as.numeric(ID)) |>
+  left_join(select(studyDetails_clean, ID, YearStrata),
+            by = "ID") |>
+  filter(!is.na(YearStrata),
+         !is.na(Class)) |>
+  summarise(Articles = n(),
+            .by = c(YearStrata, Class)) |>
+  
+  ggplot() +
+  geom_col(aes(x = YearStrata, y = Articles, fill = Class)) +
+  scale_fill_manual(values = c("cyan4", "darkorchid3")) +
+  theme(legend.position = "bottom") +
+  labs(title = "Model type trends",
+       x = "Year Strata", 
+       y = "Number of articles")
+  
+```
