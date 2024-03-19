@@ -1,27 +1,10 @@
 project:
-  type: manuscript
+  title: "DOM Review"
   execute-dir: project
-  output-dir: Writing
-  render:
-    - domReview.qmd
-    - Randomisation/Randomise_Papers.qmd
-    
-manuscript:
-  article: domReview.qmd
-  notebooks: 
-    - notebook: Randomisation/Randomise_Papers.qmd
-      title: Paper Randomisation
-  resources:
-    - Spreadsheets/Stage3_Spreadsheet.xlsx
 
-
-format:
+format: 
   html:
     theme: minty
-  docx: default
 
-execute:
-  freeze: true
-
-
+editor: visual
 
