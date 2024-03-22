@@ -1,5 +1,5 @@
 ---
-title: Dynamic occupancy models review
+title: "Twenty years of dynamic occupancy modelling – what’s been done, and where to next?"
 date: today
 authors:
   - name: Saoirse Kelleher
@@ -10,38 +10,99 @@ authors:
   - name: Natalie Briscoe
     affiliation: University of Melbourne
   - name: Gurutzeta Guillera-Arroita
-    affiliation: Consejo Superior de Investigaciones Científicas (CSIC)
+    affiliation: Pyrenean Institute of Ecology, Spanish National Research Council
   - name: Jane Elith
     affiliation: University of Melbourne
 
-abstract: >
-  Dynamic occupancy models allow researchers to estimate species occupancy across space and time while accounting for imperfect detection.
+abstract: |
+  In the twenty years since their introduction, the dynamic occupancy model has become an important tool for describing trends in species occupancy across landscapes and throughout time while accounting for imperfect detection. 
+
+  We present a retrospective of the first two decades of dynamic occupancy modelling based on the results of a systematic review of models fit to field data. We describe how authors have used these models to describe patterns of occupancy for a diverse range of study systems and focal taxa, dedicating particular emphasis to how authors engaged with modelling decisions such as covariate selection and model evaluation. Modelling approaches vary considerably within the literature, and objective metrics of model performance are rarely estimated. 
+  
+  From these results we consider what the future of dynamic occupancy modelling may hold. Key questions remain on how the modelling process influences parameter estimates and model performance. Considerably more emphasis must be placed on evaluating models via processes such as out-of-sample validation. Further opportunities also abound; newly proliferating data types such as bioacoustics and camera traps present new questions around model design as well as new ways to study occupancy at scales which have not been historically possible. The suitability of dynamic occupancy models to generating predictions, as an alternative to static models, is another area which has been historically under-emphasised.
   
 bibliography: references.bib
 embed-resources: true
 ---
 
-## Introduction
+# Introduction
 
+The dynamic implementation of the occupancy model was introduced two decades ago in @mackenzie2003. Since then, the model has become a popular tool for ecologists seeking to describe occupancy dynamics while accounting for imperfect detection, generating hundreds of articles describing model uses and inspiring popular software tools for their implementation [@kery2016].
 
-## Methods
+The dynamic occupancy model (DOM) fills an important niche in the ecological modelling landscape as an approachable midpoint between purely correlative species distributions models and more complex process-based models. Data input requirements are achievable for many research programs, and estimates of occupancy dynamic parameters (i.e., colonisation and extinction) are of use in addressing many key ecological questions. Furthermore, the capacity to control for imperfect detection addresses a ubiquitous issue with field ecological data. A description of the basic model form is presented in **Box 1.**
 
+When implementing DOMs, authors must make several key decisions during the modelling process. The duration of primary and secondary sampling occasions has implications both in describing the frame of reference for model outputs as well as in determining whether the closure assumption is fulfilled, and numerous authors have described the importance of this decision.
 
-## Results
+The selection of covariates has been discussed in considerably less detail. Each of the four model parameters (Initial occupancy, colonisation, extinction, and detection) can accept covariates to account for heterogeneity. The determination of which covariates to include can be challenging.
 
+*INTRO OUTLINE*
 
-## Discussion
+drive the past v future angle; how have they been built&used and how can they be in the future?
 
+-   DOMs were developed 20 years ago, they are popular and useful
+
+-   What is a DOM? \[put in figures\]
+
+-   Key assumptions
+
+-   Modelling decisions as they relate to the key assumptions
+
+-   Closure assumption & primary/secondary occasions
+
+-   Heterogeneity and covariates
+
+-   Which covariates should we use?
+
+-   How do we select covariates?
+
+-   & how do we evaluate our models?
+
+-   
+
+-   We review articles which fit DOMs
+
+-   Emphasised model building process
+
+-   Synthesis on what further research needs to be done
+
+-   what new potential opportunities exist?
+
+# Methods
+
+# Results
+
+# Discussion
+
+## Use cases
+
+### Observing trends
+
+### Hypothesis testing
+
+### Generating predictions
+
+## Modelling
+
+### Covariates
+
+#### Covariate types
+
+#### Complexity
+
+### Model selection
+
+#### Bayesian implementation
+
+#### Frequentist implementations
+
+### Model evaluation
+
+### 
+
+## Future opportunities
+
+### Data types
+
+### Prediction
 
 ## Conclusions
-
-
-
-
-
-
-
-
-
-
-
