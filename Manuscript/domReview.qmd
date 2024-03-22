@@ -31,9 +31,15 @@ The dynamic implementation of the occupancy model was introduced two decades ago
 
 The dynamic occupancy model (DOM) fills an important niche in the ecological modelling landscape as an approachable midpoint between purely correlative species distributions models and more complex process-based models. Data input requirements are achievable for many research programs, and estimates of occupancy dynamic parameters (i.e., colonisation and extinction) are of use in addressing many key ecological questions. Furthermore, the capacity to control for imperfect detection addresses a ubiquitous issue with field ecological data. A description of the basic model form is presented in **Box 1.**
 
+Over the past few decades the dynamic occupancy model and its extensions have been used to address a broad range of research questions and objectives. Authors have assessed patterns and trends of occupancy for threatened species, tested specific hypotheses on the drivers of occupancy, and generated predictions of occupancy under future conditions. These models are well-suited to non-equilibrium situations such as recovering, declining, or invasives species, where assumptions of conventional species distribution models cannot be met.
+
+Dynamic occupancy models have three fundamental assumptions; i) that sites are closed to changes in occupancy between primary sampling occasions, ii) that all heterogeneity in occupancy, occupancy dynamics, and detection is accounted for by covariates, and iii) that detections are independent from one another. Much has been discussed with respect to the first assumption, the closure assumption. Considerably less has been said regarding heterogeneity and the implications of inadequately modelling it.
+
 When implementing DOMs, authors must make several key decisions during the modelling process. The duration of primary and secondary sampling occasions has implications both in describing the frame of reference for model outputs as well as in determining whether the closure assumption is fulfilled, and numerous authors have described the importance of this decision.
 
 The selection of covariates has been discussed in considerably less detail. Each of the four model parameters (Initial occupancy, colonisation, extinction, and detection) can accept covariates to account for heterogeneity. The determination of which covariates to include can be challenging.
+
+We present a comprehensive overview of how the dynamic occupancy model has been applied in its first two decades, with a look to the key questions which remain on how DOM can best be used to address ecological questions.
 
 *INTRO OUTLINE*
 
