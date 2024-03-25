@@ -1,5 +1,5 @@
 ---
-title: Dynamic occupancy models review
+title: "Twenty years of dynamic occupancy modelling – what’s been done, and where to next?"
 date: today
 authors:
   - name: Saoirse Kelleher
@@ -10,38 +10,121 @@ authors:
   - name: Natalie Briscoe
     affiliation: University of Melbourne
   - name: Gurutzeta Guillera-Arroita
-    affiliation: Consejo Superior de Investigaciones Científicas (CSIC)
+    affiliation: Pyrenean Institute of Ecology, Spanish National Research Council
   - name: Jane Elith
     affiliation: University of Melbourne
 
-abstract: >
-  Dynamic occupancy models allow researchers to estimate species occupancy across space and time while accounting for imperfect detection.
+abstract: |
+  In the twenty years since their introduction, the dynamic occupancy model has become an important tool for describing trends in species occupancy across landscapes and throughout time while accounting for imperfect detection. 
+
+  We present a retrospective of the first two decades of dynamic occupancy modelling based on the results of a systematic review of models fit to field data. We describe how authors have used these models to describe patterns of occupancy for a diverse range of study systems and focal taxa, dedicating particular emphasis to how authors engaged with modelling decisions such as covariate selection and model evaluation. Modelling approaches vary considerably within the literature, and objective metrics of model performance are rarely estimated. 
+  
+  From these results we consider what the future of dynamic occupancy modelling may hold. Key questions remain on how the modelling process influences parameter estimates and model performance. Considerably more emphasis must be placed on evaluating models via processes such as out-of-sample validation. Further opportunities also abound; newly proliferating data types such as bioacoustics and camera traps present new questions around model design as well as new ways to study occupancy at scales which have not been historically possible. The suitability of dynamic occupancy models to generating predictions, as an alternative to static models, is another area which has been historically under-emphasised.
   
 bibliography: references.bib
 embed-resources: true
 ---
 
-## Introduction
+# Introduction
 
+The dynamic implementation of the occupancy model was introduced two decades ago in @mackenzie2003. Since then, the model has become a popular tool for ecologists seeking to describe occupancy dynamics while accounting for imperfect detection, generating hundreds of articles describing model uses and inspiring popular software tools for their implementation [@kery2016].
 
-## Methods
+The dynamic occupancy model (DOM) fills an important niche in the ecological modelling landscape as an approachable midpoint between purely correlative species distributions models and more complex process-based models. Data input requirements are achievable for many research programs, and estimates of occupancy dynamic parameters (i.e., colonisation and extinction) are of use in addressing many key ecological questions. Furthermore, the capacity to control for imperfect detection addresses a ubiquitous source of bias and uncertainty in field ecological data. A description of the basic model form is presented in **Box 1.**
 
+## How are they used
 
-## Results
+Outputs of dynamic occupancy model may be put to many uses. In many cases, simple estimates of the ecological parameters (i.e. occupancy, colonisation, or extinction) can aid in describing understanding changes in range dynamics. In other cases, estimates of covariates relating to these parameters are used to test hypotheses, for example, the influence of forest fire on the probability of local extinction. Less frequently, DOMs are used to make predictions of site occupancy either across unsurveyed sites or into the future under predictions of future conditions or management actions.
 
+These models are particularly well-suited to non-equilibrium situations such as recovering, declining, or invasives species, where assumptions of conventional species distribution models cannot be met.
 
-## Discussion
+## What does this article do
 
+We present a comprehensive overview of how the dynamic occupancy model has been applied in its first two decades, with a look to the key questions which remain on how DOM can best be used to address ecological questions.
 
-## Conclusions
+# History of the dynamic occupancy model
 
+## Precursors
 
+Dynamic occupancy models originate in the mask-recapture model literature with roots in the robust sampling design, which is also used in the Jolly-Seber and other related models. In the case of the dynamic occupancy model the unit of inference is the site, not the individual.
 
+DOMs bear similarities to the Incidence-Function or Hanksi models frequently used in the study of island biogeography, with similar probabilities of colonisation and extinction; DOMs are typically not spatially-explicit, however.
 
+## Variants
 
+Various parameterisations of the standard dynamic occupancy have been described, the most frequent being those described by MacKenzie and Nichols. The former estimates probabilities of initial occupancy, colonisation, extinction, and detection and derives probabilities of yearly occupancy. The latter directly estimates probabilities of occupancy, local extinction, and detection; colonisation is then estimated as a derived parameter.
 
+The Bayesian implementation of the dynamic occupancy model was described by Nichols.
 
+## Model extensions
 
+The dynamic occupancy model has been extended numerous times, to make it suitable for multiple scales, multiple species, and to accommodate for false positives. An in-depth discussion of model extensions is presented in Bailey 2014.
 
+# Review of published implementations
 
+## Systematic review methodology
 
+We conducted a systematic review of articles fitting the dynamic occupancy model to ecological field data. Our initial focus was on a set of four related terms: "dynamic occupancy model", "occupancy dynamics model," "multi-season occupancy model," and "incidence function model." For each of these, the first 100 articles listed on Google Scholar were downloaded. For each combination of search term and time strata (2000-2005, 2006-2010, 2011-2015, 2016-2021), a random sample of 5 articles or 25% of articles (whichever was greater) was selected for analysis. Inclusion criteria were as follows:
+
+-   Models were fit on field-collected ecological data.
+
+-   Models estimated site occupancy and detection probability over multiple time-steps.
+
+-   Models were Markovian, in that occupancy of one year was conditioned on the previous year.
+
+Articles which did not meet the criteria were removed and replaced by another article from the same strata where available. Very few papers from the "incidence-function model" or "occupancy dynamics model" fit the search criteria, and authors deemed that consensus in the names of this model is low and that additional papers were required. A second sample was drawn from articles citing MacKenzie 2003; 15 papers from each aforementioned time strata as well as 15 additional papers from 2022-2023 were analysed. Articles which did not fit the criteria were again replaced from the same strata.
+
+**\[figure 1: review diagram\]**
+
+## Study systems
+
+Dynamic occupancy models are flexible models suitable across spatial scales. Authors have fit them to data from areas as small as a single square kilometre and as large as entire continents. Interpretation of occupancy does shift depending on the spatial scale and density of sites.
+
+DOMs are taxonomically diverse. Many studies have focused on threatened species and invasive taxa.
+
+Many DOMs have fit more than a single species. Some of these are independent single species models, some are hierarchical joint estimations, and some are interactive models.
+
+**\[figure 2: diversity in study systems\]**
+
+## Data collection
+
+Survey design is considerably varied. The shortest data sets were for under a month, the longest were 40 years.
+
+There were multiple types of secondary occasions. Most common were revisits, but others have used time to detection, multiple observers, or spatial replicates.
+
+Most data was collected in either structured or unstructured data. Some models incorporated citizen science data effectively.
+
+A few papers used autonomous detection data, like cameras and bioacoustics.
+
+## Model development and evaluation
+
+Model complexity varied quite a bit. Many had low numbers of parameters - particularly on ecological parameters.
+
+Selection was similarly rare. Lots of models were defined a-priori, without structured model selection.
+
+Despite lots of data, model evaluation was quite rare. There is no goodness of fit test, but what about out of sample validation.
+
+## Objectives and authorship
+
+Four objective categories were keyed out.
+
+Hypothesis testing and parameter estimation was common.
+
+Future predictions and spatial mapping was fairly rare.
+
+# Future priorities for dynamic occupancy models
+
+## Model selection and evaluation
+
+Unclear how much model selection matters.
+
+Testing hypotheses is not an excuse for not doing model selection.
+
+Can model evaluation be better reported, especially since many studies have so much data?
+
+## Continuous detection data
+
+Autonomous data has lots of opportunities. Offers more choice in selecting primary and secondary sampling occasions; also requires more thought to disentangle short and long term occupancy.
+
+## Predictions
+
+Predictions were rare, but they're a big opportunity - particularly for SDM users. DOMs may better account for non-equilibrium states, plus they handle imperfect detection. There have been some excellent examples.
