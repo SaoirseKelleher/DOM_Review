@@ -63,18 +63,68 @@ The dynamic occupancy model has been extended numerous times, to make it suitabl
 
 ## Systematic review methodology
 
+We conducted a systematic review of articles fitting the dynamic occupancy model to ecological field data. Our initial focus was on a set of four related terms: "dynamic occupancy model", "occupancy dynamics model," "multi-season occupancy model," and "incidence function model." For each of these, the first 100 articles listed on Google Scholar were downloaded. For each combination of search term and time strata (2000-2005, 2006-2010, 2011-2015, 2016-2021), a random sample of 5 articles or 25% of articles (whichever was greater) was selected for analysis. Inclusion criteria were as follows:
+
+-   Models were fit on field-collected ecological data.
+
+-   Models estimated site occupancy and detection probability over multiple time-steps.
+
+-   Models were Markovian, in that occupancy of one year was conditioned on the previous year.
+
+Articles which did not meet the criteria were removed and replaced by another article from the same strata where available. Very few papers from the "incidence-function model" or "occupancy dynamics model" fit the search criteria, and authors deemed that consensus in the names of this model is low and that additional papers were required. A second sample was drawn from articles citing MacKenzie 2003; 15 papers from each aforementioned time strata as well as 15 additional papers from 2022-2023 were analysed. Articles which did not fit the criteria were again replaced from the same strata.
+
+**\[figure 1: review diagram\]**
+
 ## Study systems
+
+Dynamic occupancy models are flexible models suitable across spatial scales. Authors have fit them to data from areas as small as a single square kilometre and as large as entire continents. Interpretation of occupancy does shift depending on the spatial scale and density of sites.
+
+DOMs are taxonomically diverse. Many studies have focused on threatened species and invasive taxa.
+
+Many DOMs have fit more than a single species. Some of these are independent single species models, some are hierarchical joint estimations, and some are interactive models.
+
+**\[figure 2: diversity in study systems\]**
 
 ## Data collection
 
-## Objectives and authorship
+Survey design is considerably varied. The shortest data sets were for under a month, the longest were 40 years.
+
+There were multiple types of secondary occasions. Most common were revisits, but others have used time to detection, multiple observers, or spatial replicates.
+
+Most data was collected in either structured or unstructured data. Some models incorporated citizen science data effectively.
+
+A few papers used autonomous detection data, like cameras and bioacoustics.
 
 ## Model development and evaluation
+
+Model complexity varied quite a bit. Many had low numbers of parameters - particularly on ecological parameters.
+
+Selection was similarly rare. Lots of models were defined a-priori, without structured model selection.
+
+Despite lots of data, model evaluation was quite rare. There is no goodness of fit test, but what about out of sample validation.
+
+## Objectives and authorship
+
+Four objective categories were keyed out.
+
+Hypothesis testing and parameter estimation was common.
+
+Future predictions and spatial mapping was fairly rare.
 
 # Future priorities for dynamic occupancy models
 
 ## Model selection and evaluation
 
+Unclear how much model selection matters.
+
+Testing hypotheses is not an excuse for not doing model selection.
+
+Can model evaluation be better reported, especially since many studies have so much data?
+
 ## Continuous detection data
 
+Autonomous data has lots of opportunities. Offers more choice in selecting primary and secondary sampling occasions; also requires more thought to disentangle short and long term occupancy.
+
 ## Predictions
+
+Predictions were rare, but they're a big opportunity - particularly for SDM users. DOMs may better account for non-equilibrium states, plus they handle imperfect detection. There have been some excellent examples.
