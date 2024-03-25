@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2024-03-22">
+<meta name="dcterms.date" content="2024-03-25">
 
 <title>Twenty years of dynamic occupancy modelling – what’s been done, and where to next?</title>
 <style>
@@ -3063,10 +3063,10 @@ From these results we consider what the future of dynamic occupancy modelling ma
 <meta name="citation_author" content="Natalie Briscoe">
 <meta name="citation_author" content="Gurutzeta Guillera-Arroita">
 <meta name="citation_author" content="Jane Elith">
-<meta name="citation_publication_date" content="2024-03-22">
-<meta name="citation_cover_date" content="2024-03-22">
+<meta name="citation_publication_date" content="2024-03-25">
+<meta name="citation_cover_date" content="2024-03-25">
 <meta name="citation_year" content="2024">
-<meta name="citation_online_date" content="2024-03-22">
+<meta name="citation_online_date" content="2024-03-25">
 <meta name="citation_language" content="en">
 <meta name="citation_reference" content="citation_title=Literate programming;,citation_author=Donald E. Knuth;,citation_publication_date=1984-05;,citation_cover_date=1984-05;,citation_year=1984;,citation_fulltext_html_url=https://doi.org/10.1093/comjnl/27.2.97;,citation_issue=2;,citation_doi=10.1093/comjnl/27.2.97;,citation_issn=0010-4620;,citation_volume=27;,citation_journal_title=Comput. J.;,citation_publisher=Oxford University Press, Inc.;">
 <meta name="citation_reference" content="citation_title=Estimating site occupancy, colonization, and local extinction when a species is detected imperfectly;,citation_author=Darryl I. MacKenzie;,citation_author=James D. Nichols;,citation_author=James E. Hines;,citation_author=Melinda G. Knutson;,citation_author=Alan B. Franklin;,citation_publication_date=2003-08;,citation_cover_date=2003-08;,citation_year=2003;,citation_fulltext_html_url=http://doi.wiley.com/10.1890/02-3090;,citation_issue=8;,citation_doi=10.1890/02-3090;,citation_volume=84;,citation_language=en;,citation_journal_title=Ecology;">
@@ -3129,7 +3129,7 @@ From these results we consider what the future of dynamic occupancy modelling ma
                 <div>
             <div class="quarto-title-meta-heading">Published</div>
             <div class="quarto-title-meta-contents">
-              <p class="date">March 22, 2024</p>
+              <p class="date">March 25, 2024</p>
             </div>
           </div>
           
@@ -3159,29 +3159,30 @@ From these results we consider what the future of dynamic occupancy modelling ma
    
   <ul>
   <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
-  <li><a href="#methods" id="toc-methods" class="nav-link" data-scroll-target="#methods">Methods</a></li>
-  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">Results</a></li>
-  <li><a href="#discussion" id="toc-discussion" class="nav-link" data-scroll-target="#discussion">Discussion</a>
+  <li><a href="#introduction-1" id="toc-introduction-1" class="nav-link" data-scroll-target="#introduction-1">Introduction</a>
   <ul class="collapse">
-  <li><a href="#use-cases" id="toc-use-cases" class="nav-link" data-scroll-target="#use-cases">Use cases</a>
-  <ul class="collapse">
-  <li><a href="#observing-trends" id="toc-observing-trends" class="nav-link" data-scroll-target="#observing-trends">Observing trends</a></li>
-  <li><a href="#hypothesis-testing" id="toc-hypothesis-testing" class="nav-link" data-scroll-target="#hypothesis-testing">Hypothesis testing</a></li>
-  <li><a href="#generating-predictions" id="toc-generating-predictions" class="nav-link" data-scroll-target="#generating-predictions">Generating predictions</a></li>
+  <li><a href="#how-are-they-used" id="toc-how-are-they-used" class="nav-link" data-scroll-target="#how-are-they-used">How are they used</a></li>
+  <li><a href="#what-does-this-article-do" id="toc-what-does-this-article-do" class="nav-link" data-scroll-target="#what-does-this-article-do">What does this article do</a></li>
   </ul></li>
-  <li><a href="#modelling" id="toc-modelling" class="nav-link" data-scroll-target="#modelling">Modelling</a>
+  <li><a href="#history-of-the-dynamic-occupancy-model" id="toc-history-of-the-dynamic-occupancy-model" class="nav-link" data-scroll-target="#history-of-the-dynamic-occupancy-model">History of the dynamic occupancy model</a>
   <ul class="collapse">
-  <li><a href="#covariates" id="toc-covariates" class="nav-link" data-scroll-target="#covariates">Covariates</a></li>
-  <li><a href="#model-selection" id="toc-model-selection" class="nav-link" data-scroll-target="#model-selection">Model selection</a></li>
-  <li><a href="#model-evaluation" id="toc-model-evaluation" class="nav-link" data-scroll-target="#model-evaluation">Model evaluation</a></li>
-  <li><a href="#section" id="toc-section" class="nav-link" data-scroll-target="#section"></a></li>
+  <li><a href="#precursors" id="toc-precursors" class="nav-link" data-scroll-target="#precursors">Precursors</a></li>
+  <li><a href="#variants" id="toc-variants" class="nav-link" data-scroll-target="#variants">Variants</a></li>
+  <li><a href="#model-extensions" id="toc-model-extensions" class="nav-link" data-scroll-target="#model-extensions">Model extensions</a></li>
   </ul></li>
-  <li><a href="#future-opportunities" id="toc-future-opportunities" class="nav-link" data-scroll-target="#future-opportunities">Future opportunities</a>
+  <li><a href="#review-of-published-implementations" id="toc-review-of-published-implementations" class="nav-link" data-scroll-target="#review-of-published-implementations">Review of published implementations</a>
   <ul class="collapse">
-  <li><a href="#data-types" id="toc-data-types" class="nav-link" data-scroll-target="#data-types">Data types</a></li>
-  <li><a href="#prediction" id="toc-prediction" class="nav-link" data-scroll-target="#prediction">Prediction</a></li>
+  <li><a href="#systematic-review-methodology" id="toc-systematic-review-methodology" class="nav-link" data-scroll-target="#systematic-review-methodology">Systematic review methodology</a></li>
+  <li><a href="#study-systems" id="toc-study-systems" class="nav-link" data-scroll-target="#study-systems">Study systems</a></li>
+  <li><a href="#data-collection" id="toc-data-collection" class="nav-link" data-scroll-target="#data-collection">Data collection</a></li>
+  <li><a href="#objectives-and-authorship" id="toc-objectives-and-authorship" class="nav-link" data-scroll-target="#objectives-and-authorship">Objectives and authorship</a></li>
+  <li><a href="#model-development-and-evaluation" id="toc-model-development-and-evaluation" class="nav-link" data-scroll-target="#model-development-and-evaluation">Model development and evaluation</a></li>
   </ul></li>
-  <li><a href="#conclusions" id="toc-conclusions" class="nav-link" data-scroll-target="#conclusions">Conclusions</a></li>
+  <li><a href="#future-priorities-for-dynamic-occupancy-models" id="toc-future-priorities-for-dynamic-occupancy-models" class="nav-link" data-scroll-target="#future-priorities-for-dynamic-occupancy-models">Future priorities for dynamic occupancy models</a>
+  <ul class="collapse">
+  <li><a href="#model-selection-and-evaluation" id="toc-model-selection-and-evaluation" class="nav-link" data-scroll-target="#model-selection-and-evaluation">Model selection and evaluation</a></li>
+  <li><a href="#continuous-detection-data" id="toc-continuous-detection-data" class="nav-link" data-scroll-target="#continuous-detection-data">Continuous detection data</a></li>
+  <li><a href="#predictions" id="toc-predictions" class="nav-link" data-scroll-target="#predictions">Predictions</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -3197,74 +3198,70 @@ From these results we consider what the future of dynamic occupancy modelling ma
 
 <section id="introduction" class="level1">
 <h1>Introduction</h1>
-<p>The dynamic implementation of the occupancy model was introduced two decades ago in <span class="citation" data-cites="mackenzie2003">MacKenzie et al. (<a href="#ref-mackenzie2003" role="doc-biblioref">2003</a>)</span>. Since then, the model has become a popular tool for ecologists seeking to describe occupancy dynamics while accounting for imperfect detection, generating hundreds of articles describing model uses and inspiring popular software tools for their implementation <span class="citation" data-cites="kery2016">(<a href="#ref-kery2016" role="doc-biblioref">Kery and Chandler 2016</a>)</span>.</p>
-<p>The dynamic occupancy model (DOM) fills an important niche in the ecological modelling landscape as an approachable midpoint between purely correlative species distributions models and more complex process-based models. Data input requirements are achievable for many research programs, and estimates of occupancy dynamic parameters (i.e., colonisation and extinction) are of use in addressing many key ecological questions. Furthermore, the capacity to control for imperfect detection addresses a ubiquitous issue with field ecological data. A description of the basic model form is presented in <strong>Box 1.</strong></p>
+<p>Over the past few decades the dynamic occupancy model and its extensions have been used to address a broad range of research questions and objectives. Authors have assessed patterns and trends of occupancy for threatened species, tested specific hypotheses on the drivers of occupancy, and generated predictions of occupancy under future conditions. These models are well-suited to non-equilibrium situations such as recovering, declining, or invasives species, where assumptions of conventional species distribution models cannot be met.</p>
+<p>Dynamic occupancy models have three fundamental assumptions; i) that sites are closed to changes in occupancy between primary sampling occasions, ii) that all heterogeneity in occupancy, occupancy dynamics, and detection is accounted for by covariates, and iii) that detections are independent from one another. Much has been discussed with respect to the first assumption, the closure assumption. Considerably less has been said regarding heterogeneity and the implications of inadequately modelling it.</p>
 <p>When implementing DOMs, authors must make several key decisions during the modelling process. The duration of primary and secondary sampling occasions has implications both in describing the frame of reference for model outputs as well as in determining whether the closure assumption is fulfilled, and numerous authors have described the importance of this decision.</p>
 <p>The selection of covariates has been discussed in considerably less detail. Each of the four model parameters (Initial occupancy, colonisation, extinction, and detection) can accept covariates to account for heterogeneity. The determination of which covariates to include can be challenging.</p>
+<p>We present a comprehensive overview of how the dynamic occupancy model has been applied in its first two decades, with a look to the key questions which remain on how DOM can best be used to address ecological questions.</p>
 </section>
-<section id="methods" class="level1">
-<h1>Methods</h1>
+<section id="introduction-1" class="level1">
+<h1>Introduction</h1>
+<p>The dynamic implementation of the occupancy model was introduced two decades ago in <span class="citation" data-cites="mackenzie2003">MacKenzie et al. (<a href="#ref-mackenzie2003" role="doc-biblioref">2003</a>)</span>. Since then, the model has become a popular tool for ecologists seeking to describe occupancy dynamics while accounting for imperfect detection, generating hundreds of articles describing model uses and inspiring popular software tools for their implementation <span class="citation" data-cites="kery2016">(<a href="#ref-kery2016" role="doc-biblioref">Kery and Chandler 2016</a>)</span>.</p>
+<p>The dynamic occupancy model (DOM) fills an important niche in the ecological modelling landscape as an approachable midpoint between purely correlative species distributions models and more complex process-based models. Data input requirements are achievable for many research programs, and estimates of occupancy dynamic parameters (i.e., colonisation and extinction) are of use in addressing many key ecological questions. Furthermore, the capacity to control for imperfect detection addresses a ubiquitous source of bias and uncertainty in field ecological data. A description of the basic model form is presented in <strong>Box 1.</strong></p>
+<section id="how-are-they-used" class="level2">
+<h2 class="anchored" data-anchor-id="how-are-they-used">How are they used</h2>
+<p>Outputs of dynamic occupancy model may be put to many uses. In many cases, simple estimates of the ecological parameters (i.e. occupancy, colonisation, or extinction) can aid in describing understanding changes in range dynamics. In other cases, estimates of covariates relating to these parameters are used to test hypotheses, for example, the influence of forest fire on the probability of local extinction. Less frequently, DOMs are used to make predictions of site occupancy either across unsurveyed sites or into the future under predictions of future conditions or management actions.</p>
 </section>
-<section id="results" class="level1">
-<h1>Results</h1>
-</section>
-<section id="discussion" class="level1">
-<h1>Discussion</h1>
-<section id="use-cases" class="level2">
-<h2 class="anchored" data-anchor-id="use-cases">Use cases</h2>
-<section id="observing-trends" class="level3">
-<h3 class="anchored" data-anchor-id="observing-trends">Observing trends</h3>
-</section>
-<section id="hypothesis-testing" class="level3">
-<h3 class="anchored" data-anchor-id="hypothesis-testing">Hypothesis testing</h3>
-</section>
-<section id="generating-predictions" class="level3">
-<h3 class="anchored" data-anchor-id="generating-predictions">Generating predictions</h3>
+<section id="what-does-this-article-do" class="level2">
+<h2 class="anchored" data-anchor-id="what-does-this-article-do">What does this article do</h2>
+<p>We present a comprehensive overview of how the dynamic occupancy model has been applied in its first two decades, with a look to the key questions which remain on how DOM can best be used to address ecological questions.</p>
 </section>
 </section>
-<section id="modelling" class="level2">
-<h2 class="anchored" data-anchor-id="modelling">Modelling</h2>
-<section id="covariates" class="level3">
-<h3 class="anchored" data-anchor-id="covariates">Covariates</h3>
-<section id="covariate-types" class="level4">
-<h4 class="anchored" data-anchor-id="covariate-types">Covariate types</h4>
+<section id="history-of-the-dynamic-occupancy-model" class="level1">
+<h1>History of the dynamic occupancy model</h1>
+<section id="precursors" class="level2">
+<h2 class="anchored" data-anchor-id="precursors">Precursors</h2>
 </section>
-<section id="complexity" class="level4">
-<h4 class="anchored" data-anchor-id="complexity">Complexity</h4>
+<section id="variants" class="level2">
+<h2 class="anchored" data-anchor-id="variants">Variants</h2>
 </section>
-</section>
-<section id="model-selection" class="level3">
-<h3 class="anchored" data-anchor-id="model-selection">Model selection</h3>
-<section id="bayesian-implementation" class="level4">
-<h4 class="anchored" data-anchor-id="bayesian-implementation">Bayesian implementation</h4>
-</section>
-<section id="frequentist-implementations" class="level4">
-<h4 class="anchored" data-anchor-id="frequentist-implementations">Frequentist implementations</h4>
+<section id="model-extensions" class="level2">
+<h2 class="anchored" data-anchor-id="model-extensions">Model extensions</h2>
 </section>
 </section>
-<section id="model-evaluation" class="level3">
-<h3 class="anchored" data-anchor-id="model-evaluation">Model evaluation</h3>
+<section id="review-of-published-implementations" class="level1">
+<h1>Review of published implementations</h1>
+<section id="systematic-review-methodology" class="level2">
+<h2 class="anchored" data-anchor-id="systematic-review-methodology">Systematic review methodology</h2>
 </section>
-<section id="section" class="level3">
-<h3 class="anchored" data-anchor-id="section"></h3>
+<section id="study-systems" class="level2">
+<h2 class="anchored" data-anchor-id="study-systems">Study systems</h2>
+</section>
+<section id="data-collection" class="level2">
+<h2 class="anchored" data-anchor-id="data-collection">Data collection</h2>
+</section>
+<section id="objectives-and-authorship" class="level2">
+<h2 class="anchored" data-anchor-id="objectives-and-authorship">Objectives and authorship</h2>
+</section>
+<section id="model-development-and-evaluation" class="level2">
+<h2 class="anchored" data-anchor-id="model-development-and-evaluation">Model development and evaluation</h2>
 </section>
 </section>
-<section id="future-opportunities" class="level2">
-<h2 class="anchored" data-anchor-id="future-opportunities">Future opportunities</h2>
-<section id="data-types" class="level3">
-<h3 class="anchored" data-anchor-id="data-types">Data types</h3>
+<section id="future-priorities-for-dynamic-occupancy-models" class="level1">
+<h1>Future priorities for dynamic occupancy models</h1>
+<section id="model-selection-and-evaluation" class="level2">
+<h2 class="anchored" data-anchor-id="model-selection-and-evaluation">Model selection and evaluation</h2>
 </section>
-<section id="prediction" class="level3">
-<h3 class="anchored" data-anchor-id="prediction">Prediction</h3>
+<section id="continuous-detection-data" class="level2">
+<h2 class="anchored" data-anchor-id="continuous-detection-data">Continuous detection data</h2>
 </section>
-</section>
-<section id="conclusions" class="level2 unnumbered">
+<section id="predictions" class="level2 unnumbered">
 
 
 </section>
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">Conclusions</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">Predictions</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
 <div id="ref-kery2016" class="csl-entry" role="listitem">
 Kery, Marc, and Richard Chandler. 2016. <span>“Dynamic Occupancy Models in Unmarked,”</span> 24.
 </div>

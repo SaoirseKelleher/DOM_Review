@@ -27,10 +27,6 @@ embed-resources: true
 
 # Introduction
 
-The dynamic implementation of the occupancy model was introduced two decades ago in @mackenzie2003. Since then, the model has become a popular tool for ecologists seeking to describe occupancy dynamics while accounting for imperfect detection, generating hundreds of articles describing model uses and inspiring popular software tools for their implementation [@kery2016].
-
-The dynamic occupancy model (DOM) fills an important niche in the ecological modelling landscape as an approachable midpoint between purely correlative species distributions models and more complex process-based models. Data input requirements are achievable for many research programs, and estimates of occupancy dynamic parameters (i.e., colonisation and extinction) are of use in addressing many key ecological questions. Furthermore, the capacity to control for imperfect detection addresses a ubiquitous issue with field ecological data. A description of the basic model form is presented in **Box 1.**
-
 Over the past few decades the dynamic occupancy model and its extensions have been used to address a broad range of research questions and objectives. Authors have assessed patterns and trends of occupancy for threatened species, tested specific hypotheses on the drivers of occupancy, and generated predictions of occupancy under future conditions. These models are well-suited to non-equilibrium situations such as recovering, declining, or invasives species, where assumptions of conventional species distribution models cannot be met.
 
 Dynamic occupancy models have three fundamental assumptions; i) that sites are closed to changes in occupancy between primary sampling occasions, ii) that all heterogeneity in occupancy, occupancy dynamics, and detection is accounted for by covariates, and iii) that detections are independent from one another. Much has been discussed with respect to the first assumption, the closure assumption. Considerably less has been said regarding heterogeneity and the implications of inadequately modelling it.
@@ -41,74 +37,44 @@ The selection of covariates has been discussed in considerably less detail. Each
 
 We present a comprehensive overview of how the dynamic occupancy model has been applied in its first two decades, with a look to the key questions which remain on how DOM can best be used to address ecological questions.
 
-*INTRO OUTLINE*
+# Introduction
 
-drive the past v future angle; how have they been built&used and how can they be in the future?
+The dynamic implementation of the occupancy model was introduced two decades ago in @mackenzie2003. Since then, the model has become a popular tool for ecologists seeking to describe occupancy dynamics while accounting for imperfect detection, generating hundreds of articles describing model uses and inspiring popular software tools for their implementation [@kery2016].
 
--   DOMs were developed 20 years ago, they are popular and useful
+The dynamic occupancy model (DOM) fills an important niche in the ecological modelling landscape as an approachable midpoint between purely correlative species distributions models and more complex process-based models. Data input requirements are achievable for many research programs, and estimates of occupancy dynamic parameters (i.e., colonisation and extinction) are of use in addressing many key ecological questions. Furthermore, the capacity to control for imperfect detection addresses a ubiquitous source of bias and uncertainty in field ecological data. A description of the basic model form is presented in **Box 1.**
 
--   What is a DOM? \[put in figures\]
+## How are they used
 
--   Key assumptions
+Outputs of dynamic occupancy model may be put to many uses. In many cases, simple estimates of the ecological parameters (i.e. occupancy, colonisation, or extinction) can aid in describing understanding changes in range dynamics. In other cases, estimates of covariates relating to these parameters are used to test hypotheses, for example, the influence of forest fire on the probability of local extinction. Less frequently, DOMs are used to make predictions of site occupancy either across unsurveyed sites or into the future under predictions of future conditions or management actions.
 
--   Modelling decisions as they relate to the key assumptions
+## What does this article do
 
--   Closure assumption & primary/secondary occasions
+We present a comprehensive overview of how the dynamic occupancy model has been applied in its first two decades, with a look to the key questions which remain on how DOM can best be used to address ecological questions.
 
--   Heterogeneity and covariates
+# History of the dynamic occupancy model
 
--   Which covariates should we use?
+## Precursors
 
--   How do we select covariates?
+## Variants
 
--   & how do we evaluate our models?
+## Model extensions
 
--   
+# Review of published implementations
 
--   We review articles which fit DOMs
+## Systematic review methodology
 
--   Emphasised model building process
+## Study systems
 
--   Synthesis on what further research needs to be done
+## Data collection
 
--   what new potential opportunities exist?
+## Objectives and authorship
 
-# Methods
+## Model development and evaluation
 
-# Results
+# Future priorities for dynamic occupancy models
 
-# Discussion
+## Model selection and evaluation
 
-## Use cases
+## Continuous detection data
 
-### Observing trends
-
-### Hypothesis testing
-
-### Generating predictions
-
-## Modelling
-
-### Covariates
-
-#### Covariate types
-
-#### Complexity
-
-### Model selection
-
-#### Bayesian implementation
-
-#### Frequentist implementations
-
-### Model evaluation
-
-### 
-
-## Future opportunities
-
-### Data types
-
-### Prediction
-
-## Conclusions
+## Predictions
