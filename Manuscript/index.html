@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.549">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2024-03-25">
+
+<title>Twenty years of dynamic occupancy modelling – what’s been done, and where to next?</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+<meta name="citation_title" content="Twenty years of dynamic occupancy modelling – what’s been done, and where to next?">
+<meta name="citation_abstract" content="In the twenty years since their introduction, the dynamic occupancy model has become an important tool for describing trends in species occupancy across landscapes and throughout time while accounting for imperfect detection.
+
+We present a retrospective of the first two decades of dynamic occupancy modelling based on the results of a systematic review of models fit to field data. We describe how authors have used these models to describe patterns of occupancy for a diverse range of study systems and focal taxa, dedicating particular emphasis to how authors engaged with modelling decisions such as covariate selection and model evaluation. Modelling approaches vary considerably within the literature, and objective metrics of model performance are rarely estimated.
+
+From these results we consider what the future of dynamic occupancy modelling may hold. Key questions remain on how the modelling process influences parameter estimates and model performance. Considerably more emphasis must be placed on evaluating models via processes such as out-of-sample validation. Further opportunities also abound; newly proliferating data types such as bioacoustics and camera traps present new questions around model design as well as new ways to study occupancy at scales which have not been historically possible. The suitability of dynamic occupancy models to generating predictions, as an alternative to static models, is another area which has been historically under-emphasised.
+">
+<meta name="citation_author" content="Saoirse Kelleher">
+<meta name="citation_author" content="Natalie Briscoe">
+<meta name="citation_author" content="Gurutzeta Guillera-Arroita">
+<meta name="citation_author" content="Jane Elith">
+<meta name="citation_publication_date" content="2024-03-25">
+<meta name="citation_cover_date" content="2024-03-25">
+<meta name="citation_year" content="2024">
+<meta name="citation_online_date" content="2024-03-25">
+<meta name="citation_language" content="en">
+<meta name="citation_reference" content="citation_title=Literate programming;,citation_author=Donald E. Knuth;,citation_publication_date=1984-05;,citation_cover_date=1984-05;,citation_year=1984;,citation_fulltext_html_url=https://doi.org/10.1093/comjnl/27.2.97;,citation_issue=2;,citation_doi=10.1093/comjnl/27.2.97;,citation_issn=0010-4620;,citation_volume=27;,citation_journal_title=Comput. J.;,citation_publisher=Oxford University Press, Inc.;">
+<meta name="citation_reference" content="citation_title=Estimating site occupancy, colonization, and local extinction when a species is detected imperfectly;,citation_author=Darryl I. MacKenzie;,citation_author=James D. Nichols;,citation_author=James E. Hines;,citation_author=Melinda G. Knutson;,citation_author=Alan B. Franklin;,citation_publication_date=2003-08;,citation_cover_date=2003-08;,citation_year=2003;,citation_fulltext_html_url=http://doi.wiley.com/10.1890/02-3090;,citation_issue=8;,citation_doi=10.1890/02-3090;,citation_volume=84;,citation_language=en;,citation_journal_title=Ecology;">
+<meta name="citation_reference" content="citation_title=Dynamic occupancy models in unmarked;,citation_author=Marc Kery;,citation_author=Richard Chandler;,citation_publication_date=2016;,citation_cover_date=2016;,citation_year=2016;,citation_language=en;">
+<meta name="citation_reference" content="citation_title=A capture-recapture design robust to unequal probability of capture;,citation_author=Kenneth H. Pollock;,citation_publication_date=1982;,citation_cover_date=1982;,citation_year=1982;,citation_fulltext_html_url=https://www.jstor.org/stable/3808568;,citation_issue=3;,citation_doi=10.2307/3808568;,citation_volume=46;,citation_journal_title=The Journal of Wildlife Management;">
+</head>
+
+<body>
+
+<header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Twenty years of dynamic occupancy modelling – what’s been done, and where to next?</h1>
+          </div>
+
+    
+    <div class="quarto-title-meta-container">
+      <div class="quarto-title-meta-column-start">
+            <div class="quarto-title-meta-author">
+          <div class="quarto-title-meta-heading">Authors</div>
+          <div class="quarto-title-meta-heading">Affiliations</div>
+          
+                <div class="quarto-title-meta-contents">
+            <p class="author">Saoirse Kelleher <a href="mailto:saoirse.kelleher@student.unimelb.edu.au" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> <a href="https://orcid.org/0000-0002-4614-5753" class="quarto-title-author-orcid"> <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo1N0NEMjA4MDI1MjA2ODExOTk0QzkzNTEzRjZEQTg1NyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDozM0NDOEJGNEZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDozM0NDOEJGM0ZGNTcxMUUxODdBOEVCODg2RjdCQ0QwOSIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IE1hY2ludG9zaCI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkZDN0YxMTc0MDcyMDY4MTE5NUZFRDc5MUM2MUUwNEREIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjU3Q0QyMDgwMjUyMDY4MTE5OTRDOTM1MTNGNkRBODU3Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+84NovQAAAR1JREFUeNpiZEADy85ZJgCpeCB2QJM6AMQLo4yOL0AWZETSqACk1gOxAQN+cAGIA4EGPQBxmJA0nwdpjjQ8xqArmczw5tMHXAaALDgP1QMxAGqzAAPxQACqh4ER6uf5MBlkm0X4EGayMfMw/Pr7Bd2gRBZogMFBrv01hisv5jLsv9nLAPIOMnjy8RDDyYctyAbFM2EJbRQw+aAWw/LzVgx7b+cwCHKqMhjJFCBLOzAR6+lXX84xnHjYyqAo5IUizkRCwIENQQckGSDGY4TVgAPEaraQr2a4/24bSuoExcJCfAEJihXkWDj3ZAKy9EJGaEo8T0QSxkjSwORsCAuDQCD+QILmD1A9kECEZgxDaEZhICIzGcIyEyOl2RkgwAAhkmC+eAm0TAAAAABJRU5ErkJggg=="></a></p>
+          </div>
+                <div class="quarto-title-meta-contents">
+                    <p class="affiliation">
+                        University of Melbourne
+                      </p>
+                  </div>
+                      <div class="quarto-title-meta-contents">
+            <p class="author">Natalie Briscoe </p>
+          </div>
+                <div class="quarto-title-meta-contents">
+                    <p class="affiliation">
+                        University of Melbourne
+                      </p>
+                  </div>
+                      <div class="quarto-title-meta-contents">
+            <p class="author">Gurutzeta Guillera-Arroita </p>
+          </div>
+                <div class="quarto-title-meta-contents">
+                    <p class="affiliation">
+                        Pyrenean Institute of Ecology, Spanish National Research Council
+                      </p>
+                  </div>
+                      <div class="quarto-title-meta-contents">
+            <p class="author">Jane Elith </p>
+          </div>
+                <div class="quarto-title-meta-contents">
+                    <p class="affiliation">
+                        University of Melbourne
+                      </p>
+                  </div>
+                    </div>
+        
+        <div class="quarto-title-meta">
+
+                      
+                <div>
+            <div class="quarto-title-meta-heading">Published</div>
+            <div class="quarto-title-meta-contents">
+              <p class="date">March 25, 2024</p>
+            </div>
+          </div>
+          
+                
+              </div>
+      </div>
+      <div class="quarto-title-meta-column-end quarto-other-formats-target">
+      <div class="quarto-alternate-formats"><div class="quarto-title-meta-heading">Other Formats</div><div class="quarto-title-meta-contents"><p><a href="domReview.docx"><i class="bi bi-file-word"></i>MS Word</a></p></div></div></div>
+    </div>
+
+    <div>
+      <div class="abstract">
+        <div class="block-title">Abstract</div>
+        <p>In the twenty years since their introduction, the dynamic occupancy model has become an important tool for describing trends in species occupancy across landscapes and throughout time while accounting for imperfect detection.</p>
+        <p>We present a retrospective of the first two decades of dynamic occupancy modelling based on the results of a systematic review of models fit to field data. We describe how authors have used these models to describe patterns of occupancy for a diverse range of study systems and focal taxa, dedicating particular emphasis to how authors engaged with modelling decisions such as covariate selection and model evaluation. Modelling approaches vary considerably within the literature, and objective metrics of model performance are rarely estimated.</p>
+        <p>From these results we consider what the future of dynamic occupancy modelling may hold. Key questions remain on how the modelling process influences parameter estimates and model performance. Considerably more emphasis must be placed on evaluating models via processes such as out-of-sample validation. Further opportunities also abound; newly proliferating data types such as bioacoustics and camera traps present new questions around model design as well as new ways to study occupancy at scales which have not been historically possible. The suitability of dynamic occupancy models to generating predictions, as an alternative to static models, is another area which has been historically under-emphasised.</p>
+      </div>
+    </div>
+
+
+    <div class="quarto-other-links-text-target">
+    </div>  </div>
+</header><div id="quarto-content" class="page-columns page-rows-contents page-layout-article toc-left">
+<div id="quarto-sidebar-toc-left" class="sidebar toc-left">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
+  <ul class="collapse">
+  <li><a href="#how-are-they-used" id="toc-how-are-they-used" class="nav-link" data-scroll-target="#how-are-they-used">How are they used</a></li>
+  <li><a href="#what-does-this-article-do" id="toc-what-does-this-article-do" class="nav-link" data-scroll-target="#what-does-this-article-do">What does this article do</a></li>
+  </ul></li>
+  <li><a href="#history-of-the-dynamic-occupancy-model" id="toc-history-of-the-dynamic-occupancy-model" class="nav-link" data-scroll-target="#history-of-the-dynamic-occupancy-model">History of the dynamic occupancy model</a>
+  <ul class="collapse">
+  <li><a href="#precursors" id="toc-precursors" class="nav-link" data-scroll-target="#precursors">Precursors</a></li>
+  <li><a href="#variants" id="toc-variants" class="nav-link" data-scroll-target="#variants">Variants</a></li>
+  <li><a href="#model-extensions" id="toc-model-extensions" class="nav-link" data-scroll-target="#model-extensions">Model extensions</a></li>
+  </ul></li>
+  <li><a href="#review-of-published-implementations" id="toc-review-of-published-implementations" class="nav-link" data-scroll-target="#review-of-published-implementations">Review of published implementations</a>
+  <ul class="collapse">
+  <li><a href="#systematic-review-methodology" id="toc-systematic-review-methodology" class="nav-link" data-scroll-target="#systematic-review-methodology">Systematic review methodology</a></li>
+  <li><a href="#study-systems" id="toc-study-systems" class="nav-link" data-scroll-target="#study-systems">Study systems</a></li>
+  <li><a href="#data-collection" id="toc-data-collection" class="nav-link" data-scroll-target="#data-collection">Data collection</a></li>
+  <li><a href="#objectives-and-authorship" id="toc-objectives-and-authorship" class="nav-link" data-scroll-target="#objectives-and-authorship">Objectives and authorship</a></li>
+  <li><a href="#model-development-and-evaluation" id="toc-model-development-and-evaluation" class="nav-link" data-scroll-target="#model-development-and-evaluation">Model development and evaluation</a></li>
+  </ul></li>
+  <li><a href="#future-priorities-for-dynamic-occupancy-models" id="toc-future-priorities-for-dynamic-occupancy-models" class="nav-link" data-scroll-target="#future-priorities-for-dynamic-occupancy-models">Future priorities for dynamic occupancy models</a>
+  <ul class="collapse">
+  <li><a href="#model-selection-and-evaluation" id="toc-model-selection-and-evaluation" class="nav-link" data-scroll-target="#model-selection-and-evaluation">Model selection and evaluation</a></li>
+  <li><a href="#continuous-detection-data" id="toc-continuous-detection-data" class="nav-link" data-scroll-target="#continuous-detection-data">Continuous detection data</a></li>
+  <li><a href="#predictions" id="toc-predictions" class="nav-link" data-scroll-target="#predictions">Predictions</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+</div>
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+  
+
+
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<p>The dynamic implementation of the occupancy model was introduced two decades ago in <span class="citation" data-cites="mackenzie2003">MacKenzie et al. (<a href="#ref-mackenzie2003" role="doc-biblioref">2003</a>)</span>. Since then, the model has become a popular tool for ecologists seeking to describe occupancy dynamics while accounting for imperfect detection, generating hundreds of articles describing model uses and inspiring popular software tools for their implementation <span class="citation" data-cites="kery2016">(<a href="#ref-kery2016" role="doc-biblioref">Kery and Chandler 2016</a>)</span>.</p>
+<p>The dynamic occupancy model (DOM) fills an important niche in the ecological modelling landscape as an approachable midpoint between purely correlative species distributions models and more complex process-based models. Data input requirements are achievable for many research programs, and estimates of occupancy dynamic parameters (i.e., colonisation and extinction) are of use in addressing many key ecological questions. Furthermore, the capacity to control for imperfect detection addresses a ubiquitous source of bias and uncertainty in field ecological data. A description of the basic model form is presented in <strong>Box 1.</strong></p>
+<section id="how-are-they-used" class="level2">
+<h2 class="anchored" data-anchor-id="how-are-they-used">How are they used</h2>
+<p>Outputs of dynamic occupancy model may be put to many uses. In many cases, simple estimates of the ecological parameters (i.e.&nbsp;occupancy, colonisation, or extinction) can aid in describing understanding changes in range dynamics. In other cases, estimates of covariates relating to these parameters are used to test hypotheses, for example, the influence of forest fire on the probability of local extinction. Less frequently, DOMs are used to make predictions of site occupancy either across unsurveyed sites or into the future under predictions of future conditions or management actions.</p>
+<p>These models are particularly well-suited to non-equilibrium situations such as recovering, declining, or invasives species, where assumptions of conventional species distribution models cannot be met.</p>
+</section>
+<section id="what-does-this-article-do" class="level2">
+<h2 class="anchored" data-anchor-id="what-does-this-article-do">What does this article do</h2>
+<p>We present a comprehensive overview of how the dynamic occupancy model has been applied in its first two decades, with a look to the key questions which remain on how DOM can best be used to address ecological questions.</p>
+</section>
+</section>
+<section id="history-of-the-dynamic-occupancy-model" class="level1">
+<h1>History of the dynamic occupancy model</h1>
+<section id="precursors" class="level2">
+<h2 class="anchored" data-anchor-id="precursors">Precursors</h2>
+<p>Dynamic occupancy models originate in the mask-recapture model literature with roots in the robust sampling design, which is also used in the Jolly-Seber and other related models. In the case of the dynamic occupancy model the unit of inference is the site, not the individual.</p>
+<p>DOMs bear similarities to the Incidence-Function or Hanksi models frequently used in the study of island biogeography, with similar probabilities of colonisation and extinction; DOMs are typically not spatially-explicit, however.</p>
+</section>
+<section id="variants" class="level2">
+<h2 class="anchored" data-anchor-id="variants">Variants</h2>
+<p>Various parameterisations of the standard dynamic occupancy have been described, the most frequent being those described by MacKenzie and Nichols. The former estimates probabilities of initial occupancy, colonisation, extinction, and detection and derives probabilities of yearly occupancy. The latter directly estimates probabilities of occupancy, local extinction, and detection; colonisation is then estimated as a derived parameter.</p>
+<p>The Bayesian implementation of the dynamic occupancy model was described by Nichols.</p>
+</section>
+<section id="model-extensions" class="level2">
+<h2 class="anchored" data-anchor-id="model-extensions">Model extensions</h2>
+<p>The dynamic occupancy model has been extended numerous times, to make it suitable for multiple scales, multiple species, and to accommodate for false positives. An in-depth discussion of model extensions is presented in Bailey 2014.</p>
+</section>
+</section>
+<section id="review-of-published-implementations" class="level1">
+<h1>Review of published implementations</h1>
+<section id="systematic-review-methodology" class="level2">
+<h2 class="anchored" data-anchor-id="systematic-review-methodology">Systematic review methodology</h2>
+</section>
+<section id="study-systems" class="level2">
+<h2 class="anchored" data-anchor-id="study-systems">Study systems</h2>
+</section>
+<section id="data-collection" class="level2">
+<h2 class="anchored" data-anchor-id="data-collection">Data collection</h2>
+</section>
+<section id="objectives-and-authorship" class="level2">
+<h2 class="anchored" data-anchor-id="objectives-and-authorship">Objectives and authorship</h2>
+</section>
+<section id="model-development-and-evaluation" class="level2">
+<h2 class="anchored" data-anchor-id="model-development-and-evaluation">Model development and evaluation</h2>
+</section>
+</section>
+<section id="future-priorities-for-dynamic-occupancy-models" class="level1">
+<h1>Future priorities for dynamic occupancy models</h1>
+<section id="model-selection-and-evaluation" class="level2">
+<h2 class="anchored" data-anchor-id="model-selection-and-evaluation">Model selection and evaluation</h2>
+</section>
+<section id="continuous-detection-data" class="level2">
+<h2 class="anchored" data-anchor-id="continuous-detection-data">Continuous detection data</h2>
+</section>
+<section id="predictions" class="level2 unnumbered">
+
+
+</section>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">Predictions</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-kery2016" class="csl-entry" role="listitem">
+Kery, Marc, and Richard Chandler. 2016. <span>“Dynamic Occupancy Models in Unmarked,”</span> 24.
+</div>
+<div id="ref-mackenzie2003" class="csl-entry" role="listitem">
+MacKenzie, Darryl I., James D. Nichols, James E. Hines, Melinda G. Knutson, and Alan B. Franklin. 2003. <span>“Estimating Site Occupancy, Colonization, and Local Extinction When a Species Is Detected Imperfectly.”</span> <em>Ecology</em> 84 (8): 2200–2207. <a href="https://doi.org/10.1890/02-3090">https://doi.org/10.1890/02-3090</a>.
+</div>
+</div></section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -6,7 +6,7 @@ manuscript:
 
 format:
   html:
-    theme: yeti
+    theme: simplex
   docx: default
 
 execute:
