@@ -1,6 +1,7 @@
 ---
-title: "Twenty years of dynamic occupancy modelling --- what’s been done, and where to next?"
+title: "Twenty years of dynamic occupancy models: a review of applications and a look towards the future"
 date: today
+
 authors:
   - name: Saoirse Kelleher
     affiliation: University of Melbourne
@@ -13,138 +14,308 @@ authors:
     affiliation: Pyrenean Institute of Ecology, Spanish National Research Council
   - name: Jane Elith
     affiliation: University of Melbourne
+    
+abstract: | 
+  Dynamic occupancy models are an increasingly important tool for the analysis of wildlife occurence data due to their favourable balance of complexity and ease of implementation. Uses of this model class are diverse, including explorations of the drivers of occupancy as well as predictions of species distributions across landscapes and into the future. The application of these models does require careful navigation of the modelling process including important decisions on structure, covariate inclusion, and assessment of model performance.
   
-bibliography: references.bib
+  In this article we present a systematic review of implementations of the dynamic occupancy model, with particular emphasis on how authors have approached the modelling process. Our findings indicate that authors have found this model class suitable for a considerably diverse set of ecological questions and have successfully fit models to data collected under a wide range of conditions, highlighting the high degree of flexibility available. However, the manner of application appears to be quite variable: approaches to covariate selection vary considerably, and model complexity generally speaking is low. The implications of these decisions as they relate to model outputs are yet to be explored in detail and should be a priority for future research.
+
 embed-resources: true
+bibliography: references.bib
 ---
 
 # Introduction
 
-Since its introduction two decades ago by @mackenzie2003, the dynamic multi-season occupancy model has become an important tool for analysis of species occupancy throughout space and time. Dynamic occupancy models (DOMs) represent a happy medium in the ecological modelling landscape. In explicitly estimating the processes which guide occupancy (i.e., colonisation and extinction) this model class offers more advanced insights than simpler static models of species distribution which have noted deficits in their ability to describe non-equilibrium states **\[cite\]**. The capacity to account for imperfect detection provides a strong additional benefit given the near-ubiquity of this source of bias in ecological field data. Even with these advantages, data input requirements for DOMs remain achievable for many research programs, particularly compared to other more complex process-explicit models.
+Since its introduction two decades ago by @mackenzie2003 the dynamic multi-season occupancy model has become an important tool for the analysis of species occurrence throughout space and time. In the ecological modelling landscape dynamic occupancy models (DOMs) occupy a favourable position between model complexity and ease of data collection. In explicitly estimating the processes which guide occupancy while accounting for imperfect detection, the model class offers more advanced insights than simpler static species distribution models; despite this, input data requirements remain achievable compared to other more complex process-explicit models.
 
-Potential use cases of this model class are wide-ranging. Simple estimates of occupancy through time have value in many monitoring programs, particularly for threatened or invasive species where distributions are likely to exist in a non-equilibrium state **\[cite?\]**. These models can also be used in hypothesis testing of specific relationships, with examples including the effect of fire on extinction probability and the influence of species interactions on occupancy **\[cite,cite\]**. A less frequently pursued yet promising application of DOMs lies in their ability to make predictions, either to unsurveyed areas or into the future [@briscoe2021; @kéry2013a].
+The use-cases of this model class are wide-ranging, and overlap considerably with other models such as species distribution models [@elith2009] and stochastic patch occupancy models [@gutiérrez-arellano]. Estimates of occupancy through time are independently valuable for many monitoring programs, and DOMs are a particularly favourable choice when species are not detected perfectly [@guillera-arroita2017]. DOMs may also be used in testing specific hypotheses of relationships between occupancy and the environment, or in identifying the drivers of occupancy in a system. Although infrequently applied thus far, a promising application of DOMs is their use to make predictions to unsurveyed sites or into the future [@briscoe2021; @kéry2013a]. In each of these use cases, authors must navigate the modelling process and make important decisions on aspects of model structure, the process of determining which covariates to incorporate, and the critical assessment of model outputs such as parameter estimates or predictions.
 
-This review aims to provide an overview of the first two decades of the dynamic occupancy models, including its development and how authors have implemented it in their investigations of ecological questions. We present key guidelines for authors seeking to build these models in their work, and outline the key priorities and opportunities for future research incorporating this flexible and important model class.
+This review seeks to provide an overview dynamic occupancy model's first two decades of use. We discuss the DOMs key features, limitations, and implementation process, before presenting a systematic review of articles implementing the model. Based on these results, we present key considerations for authors seeking to build these models in their work and outline priorities and opportunities for future research involving this flexible and important model class.
 
-### The dynamic occupancy model
+## Model form
 
-Dynamic occupancy models jointly describe two processes: the ecological process of site occupancy describing the presence or absence of a species at a given site in a given point in time; and the observational process of detection describing whether a species is observed given that a site is occupied. The basic model form as described by @mackenzie2003 is depicted in @fig-modelform. Under this parameterisation sites exist in either occupied or unoccupied states which they may transition between through time. Occupancy state in the first time-step is given by the initial occupancy parameter, and in ensuing time-steps occupancy is described as a Markovian process governed by probabilities of colonisation and extinction. Given that a site is occupied, the probability of observing the species during a survey is given by the detection parameter. Under this formulation, it is assumed that false-positive detections do not occur.
+Dynamic occupancy models unite two processes: the ecological process of site occupancy describing the presence or absence of a species at a site at any point in time, and the observational process of detection describing whether a species is observed given that a site is occupied. The basic model form as described by @mackenzie2003 is depicted in @fig-modelform. Under this parameterisation, sites exist in either occupied or unoccupied states and may transition between these states between each time-step. Occupancy state in the first time-step is given by the initial occupancy parameter, and in ensuing time-steps occupancy is described as a Markovian process governed by probabilities of colonisation and extinction. Given that a site is occupied, the probability of observing the species during a survey is given by the detection parameter. Under this formulation, it is assumed that false-positive detections do not occur.
 
-![The original parameterisation of the dynamic occupancy model. The ecological process of occupancy is guided by the initial occupancy, colonisation, and extinction parameters; the observational process is guided only by the detection parameter.](Figures/ModelForm.png){#fig-modelform width="1000"}
+![The original parameterisation of the dynamic occupancy model as described by @mackenzie2003. The ecological process of occupancy is guided by the initial occupancy, colonisation, and extinction parameters; the observational process is guided only by the detection parameter.](Figures/ModelForm.png){#fig-modelform width="1000"}
 
-To disentangle the ecological and observation processes and estimate the detection parameter, the DOM relies on a hierarchical sampling design shown in @fig-surveys. Under this design, observations at a site occur during distinct, time-bound seasons in which sites are considered 'closed' to changes in occupancy. Within seasons multiple observations are conducted, which permit estimation of the probability of detection conditional on occupancy. These repeat observations may be conducted by a variety of methods. Most frequently surveys are simply repeated on separate occasions, although alternative methods exist. These include surveys conducted at multiple locations within a site **\[cite\]**, use of multiple observers during a survey **\[cite\]**, or by recording time elapsed before a detection is recorded **\[cite\]**.
+To disentangle the ecological and observation processes and estimate the probability of detection, the DOM relies on a hierarchical sampling design based on Pollock's robust design [@pollock1982] and depicted in @fig-surveys. Under this design, observations at a site occur during distinct, time-bound seasons in which sites are considered 'closed' to changes in occupancy. Within seasons multiple observations are conducted, which permit estimation of the probability of detection conditional on occupancy. Most frequently these observations are collected by revisiting the site on separate occasions, although alternative methods to generate repeat observations exist [@mackenzie2005]. These alternatives include surveys conducted at multiple locations within a site, use of multiple observers during a survey, or recording of the time elapsed before a detection is recorded.
 
 ![The sampling design of the dynamic occupancy model.](Figures/SurveyDesign.png){#fig-surveys fig-align="center" width="589"}
 
-Dynamic occupancy models require a few assumptions with important implications for users.
+## Key assumptions
 
-1.  **False positive detections do not occur.** While this assumption can be safely met in some studies, it is not guaranteed when working with more cryptic species. Several authors have commented on the perils of not accounting for false positives where they occur (@miller2015, @mcclintock2010). Furthermore, @berigan2019 notes that in some cases genuine identifications of a species may be considered false positives if they do not represent the right kind of occupancy - in this case, transient individuals where the authors were interested in breeding occupany. Extensions to the dynamic occupancy model which account for false positive error are available (@royle2006, @miller2011, @miller2013) and should be carefully considered where this assumption cannot be met.
+Dynamic occupancy models require a small number of assumptions with important implications for users.
 
-2.  **Sites are closed to changes in occupancy between seasons.** This assumption, best known as the 'closure assumption,' has also been subject to considerable discussion on the bias which is introduced when it is violated (@rota2009, @otto2013). Closure is dependent not only on the behaviour of the species, but also the definition of occupancy used by researchers — short seasons may represent dynamics more representative of species 'use,' and @valente2017 discusses the difficultly in distinguishing temporary emigration and local extinction. Model extensions to relax the closure assumption have been developed, including @kendall2013 's approach using staggered arrival and depature periods between sites. More pertinent for most studies, however, is a careful consideration of ecologically and observationally relevant seasons which will allow the estimation of an appropriate 'type' of occupancy, whether that be shorter or longer term.
+1.  **False positive detections do not occur.** While this assumption can be safely met in some studies, it is not guaranteed when working with more cryptic species. Several authors have commented on the perils of not accounting for false positives where they occur [@miller2015; @mcclintock2010]. Furthermore, @berigan2019 notes that in some cases genuine identifications of a species may be considered false positives if they do not represent the intended definition of occupancy - in the authors' case, transient individuals where the authors were interested in breeding occupancy. Extensions to the dynamic occupancy model which account for false positive error are available [@royle2006; @miller2011; @miller2013] and should be carefully considered where this assumption cannot be met.
 
-3.  **No modelled heterogeneity in ecological or observational parameters.** Relative to the former two assumptions, considerably less research has been conducted on the impact of unmodelled heterogeneity on parameter estimates. Particularly at larger spatial scales, environmental factors are near-guaranteed to influence species occupancy and observation.
+2.  **Sites are closed to changes in occupancy between seasons.** This assumption, best known as the 'closure assumption,' has also been subject to considerable discussion on the bias which is introduced when it is violated [@rota2009; @otto2013]. Closure is dependent not only on the behaviour of the species, but also the definition of occupancy used by researchers — short seasons may represent dynamics more representative of species 'use,' and @valente2017 discusses the difficultly in distinguishing temporary emigration and local extinction. Model extensions to relax the closure assumption have been developed, including @kendall2013 's approach using staggered arrival and departure periods between sites. More pertinent for most studies, however, is a careful consideration of ecologically and observationally relevant seasons which will allow the estimation of an appropriate 'type' of occupancy, whether that be shorter or longer term.
+
+3.  **No modelled heterogeneity in ecological or observational parameters.** Relative to the former two assumptions, considerably less research has been conducted on the impact of modelled heterogeneity on parameter estimates [@mackenzie2017]. Environmental factors are near-guaranteed to influence species occupancy and observation in any system, particularly at larger spatial scales. While studies should attempt to incorporate the key drivers of occupancy via inclusion of covariates, there is limited discussion on the best methods to achieve this and the implications of failure to capture this variation.
+
+## Model extensions
+
+The DOM has been frequently extended over the years, with alternate parameterisations available to better address many needs. In addition to the false-positive implementations previously discussed, prominent model extensions include multi-state DOMs which allow sites to exist in states other than occupied and unoccupied [@nichols2007], multi-scale models describing occupancy at multiple spatial scales [@nichols2008], and multi-species models permitting joint estimation of species with interactions [@devarajan2020]. For an in-depth discussion of additional model extensions and their applications see @bailey2014.
 
 # Methods
 
-## Article solicitation
+## Article collection
 
-This review is focused on the dynamic, multi-season, implementation of the occupancy model of @mackenzie2003. To qualify for inclusion articles must fit a model which fulfils these criteria: i) multiple sites which can exist in at least two states, including an occupied and unoccupied states; ii) multiple survey periods, between which sites may change state conditional on the prior survey period's occupancy state and at least one transition probability; iii) contains at least one detection parameter; iv) uses real (i.e., not simulated) field ecological data.
+This systematic review is focused on the dynamic, multi-season, implementation of the occupancy model of @mackenzie2003. To qualify for inclusion articles must have fit a model which fulfils these criteria: i) describes multiple sites which can exist in at least two states, including an occupied and unoccupied states; ii) has multiple survey periods, between which sites may change state conditional on the prior survey period's occupancy state and at least one transition probability; iii) contains at least one detection parameter; and iv) uses real (i.e., not simulated) field ecological data.
 
-Papers were solicited for inclusion in two stages. In a preliminary analysis, four search strings ("dynamic occupancy model," "occupancy dynamics model," "incidence function model," and "multi-season occupancy model" were fed into Google Scholar **\[cite\]**. Up to 100 articles were downloaded for each string in order of appearance. Articles were divided into four temporal strata: 2000-2005, 2006-2010, 2011-2015, and 2016-2021. For each combination of search string and year strata, either a random 25% or 5 articles (whichever was greater) were processed. Articles which did not meet inclusion criteria were replaced with another from the same search string and strata where possible.
+Papers were gather for inclusion in two stages.
 
-After completion of the preliminary sample authors recognised significant uncertainty in how the model of interest was described, particularly in their first decade of use, and noted that the incidence-function model is a distinct model class **\[cite\].** To increase sample size, a complete list of articles which have cited @mackenzie2003 was downloaded from Web of Science. Articles in this list were split into the same year strata, plus an additional 2022-2023 category. 15 articles were drawn from each strata and again processed with replacement from their strata.
+1.  In a preliminary analysis, four search strings ("dynamic occupancy model," "occupancy dynamics model," "incidence function model," and "multi-season occupancy model" were entered into Google Scholar. Up to 100 articles were downloaded for each string in order of appearance. Articles were divided into four temporal strata: 2000-2005, 2006-2010, 2011-2015, and 2016-2021. For each combination of search string and year strata, a random 25% or 5 articles (whichever was greater) was processed. Articles which did not meet inclusion criteria were replaced with another from the same search string and strata where possible.After completion of the preliminary sample authors recognised significant uncertainty in how the model of interest was described, particularly in their first decade of use, and noted that the incidence-function model is best interpreted as a distinct model class**.**
 
-Details on methods for each article were recorded in detail, including the full suite of covariates considered for inclusion in modelling. The full spreadsheet of reviewed articles is available in **Appendix I**.
+2.  To increase sample size a secondary sample of articles was generated, using the complete list of articles which have cited @mackenzie2003 (downloaded via Web of Science). Articles in this list were split into the same year strata, plus an additional 2022-2023 category. 15 articles were drawn from each strata and again processed with replacement from their strata.
 
-## Analysis
+## Article processing
 
-For each included article we collected data collected on authorship, stated research objectives, study taxa and field survey locations, data collection methods, covariates, and model selection and evaluation. Particular emphasis was placed on the covariates considered by authors, with no distinction between covariates which were or were not included in final models. As we were principally interested in the modelling process, our analysis did not directly explore final models or the results generated by those models. A spreadsheet of reviewed articles and collected data is provided in Appendix I.
+For each included article data was collected on authorship, stated research objectives, study taxa and field survey locations, data collection methods, covariates, and model selection and evaluation. A full spreadsheet of data collected is given in **Appendix I.**
+
+### Authorship
+
+To assess patterns of authorship, the location of each articles first author's first-listed affiliation was denoted. For *all* authors[,]{.underline} each affiliation was denoted as one of four categories: academic institutions, governmental organisations and institutes, non-governmental organisations, and private sector companies.
+
+### Objectives
+
+For each article five non-exclusive research objectives were indicated based on the authors' stated aims: 'Estimating parameters,' where authors express interest in estimates of site occupancy, colonisation, or extinction; 'Testing hypotheses,' where authors explore *specific* relationships between covariates and model parameters; 'identifying drivers,' where authors attempt to find *which* covariates influence model parameters; 'generating predictions,' where which authors estimate model parameters either for unsurveyed sites or under possible future conditions; and 'methods development,' where authors introduce or test aspects of dynamic occupancy models.
+
+### Taxa and study areas
+
+Focal taxa were divided into broad categories (bird, mammal, etc.). Taxa were denoted as threatened either where the authors refer to them as so or where the species is listed on the IUCN red list (IUCN 2024) - this determination was made to account for unlisted sub-species or species of local concern. Study areas are defined as the intended area of inference for a given study in which all sites are contained; size of these areas are reported as orders of magnitude in square kilometres to partly account for uncertainty in reporting.
+
+### Covariates
+
+Particular emphasis was placed on the covariates considered by authors, with no distinction between covariates which were or were not included in final models. For each parameter all covariates were recorded in broad mutually-excluded categories. For each of these covariates, data was collected on whether the covariate was remotely collected or required direct observation, whether polynomial terms were considered, whether interaction terms included this covariate were considered, and whether the covariate was dynamic – i.e, varied between seasons.
+
+### Model selection and evaluation
+
+To describe the complex model selection process, non-exclusive categories were applied to each article including: 'A priori,' where only one model is considered; 'candidate suite,' where a predefined set of models are considered; 'procedural,' where covariates are selected parameter-by-parameter; 'exhaustive,' where all possible model combinations are fit; 'simple precursors,' where selection is predicated on results of another, simpler model implementation; and 'other.'
+
+Model evaluation was similarly categorised - options in this case included 'relative fit,' for relative metrics of fit such as AIC; 'model averaging,' where model weights are applied to candidate models; 'goodness of fit,' where absolute metrics of fit are used; 'out-of-sample validation' and 'in-sample-validation,' where predictive performance is evaluated using in-sample or out-of-sample data respectively.
 
 # Results
 
-A total of **\[number\]** articles were included in the review, **\[number\]** from the preliminary sample and **\[number\]** from the secondary sample. Based on the acceptance rate from the secondary sample, an estimated **\[hit number\]** of the **\[total number\]** articles citing @mackenzie2003 would have met inclusion criteria. Total published articles have increased considerably over time.
+A total of 84 articles were included in this review, 47 from the preliminary sample and 37from the secondary sample. Based on the acceptance rate from the secondary sample, an estimated 448 of the 1066 articles citing @mackenzie2003 would have met inclusion criteria.
 
-![Estimated coverage of articles included in this review](Figures/CoveragePlot.jpeg){#fig-coverage}
+![Estimated coverage of articles included in this review, estimated based upon the secondary sample's rate of inclusion for each strata.](Figures/CoveragePlot.jpeg){#fig-coverage}
 
-Articles were published with first-authors from a total of **\[number\]** countries, with authors from the United States producing **\[zz\]**% of articles. **\[x\]**% of articles had at least one author based at an academic institution, **\[y\]**% had authors at government institutions, and \[**z\]**% had authors from non-profit organisations.
+Articles were published with first-authors from a total of 15countries, with authors from the United States producing 64% of articles. 86% of articles had at least one author based at an academic institution, 46% had authors at government institutions, and 25% had authors from non-profit organisations.
 
 ## Study locations, focal species, and data collection
 
-Data for DOMs were collected from study areas on all continents and in **\[xx\]** countries, with the United States again representing a majority of the total articles published. These study areas ranged in size from less than 1 to over 1 million square kilometres (@fig-StudyDetails a).
+![An overview of study areas, focal species, and data collection for reviewed articles.](Figures/ReviewBox.png){#fig-StudyDetails}
 
-Focal species were largely vertebrate taxa, although 6 articles fit models to invertebrates. A single non-animal taxa was represented in the sample, from an article fitting a DOM to a rare species of lichen @belinchón2017. [aa%] of articles modelled threatened taxa, and \[bb%\] modelled species invasive to the study area. The majority of articles (50, X%) fit single-species DOMs to one taxa. Of the remainder, 26 (X%) fit independent single-species models to more than one taxa. 8 articles fit (X%) multi-species implementations with explicit interactions between species (@fig-StudyDetails b).
+Data for DOMs were collected from study areas on all continents and in 21 countries, with studies in the United States again representing a majority of the total articles published. These study areas ranged in size from less than 1 to over 1 million square kilometres (@fig-StudyDetails a).
 
-Data used to fit dynamic occupancy models included human survey data such as transects or point counts (X% of articles), live-trapping data (X%), camera traps (X%) or bioacoustic monitors (Y%), and citizen science data (Z%); some articles incorporate multiple detection methods to build their detection datasets. Study duration, defined as the time elapsed between the first and last surveys conducted, ranged from 1 month to 40 years with the median study running for X years. The number of seasons ranged from 2 to Y with a median of Z; the number of observations per season ranged from X to Y with a median of Z. The number of sites surveyed per article ranged from X% to Y%, with the median study including Z sites (@fig-StudyDetails c).
+Focal species were largely vertebrate taxa, although 6 articles fit models to invertebrates. A single non-animal taxa was represented in the sample, from an article fitting a DOM to a rare species of lichen @belinchón2017. 35% of articles modelled threatened taxa, and 10% modelled species invasive to the study area. The majority of articles (50, 60%) fit single-species DOMs to one taxa. Of the remainder, 26 (31%) fit independent single-species models to more than one taxa. 8 articles fit (10%) multi-species implementations with explicit interactions between species (@fig-StudyDetails b).
 
-![](Figures/ReviewBox.png){#fig-StudyDetails}
+Data used to fit dynamic occupancy models included human survey data such as transects or point counts (69% of articles), live-trapping data (20%), camera traps (12%) or bioacoustic monitors (1%), and citizen science data (12%); some articles incorporate multiple detection methods to build their detection datasets. Study duration, defined as the time elapsed between the first and last surveys conducted, ranged from 1 month to 40 years with the median study running for 39 months. The number of seasons ranged from 2 to 204 with a median of 5; the number of observations per season ranged from 2 to 153 with a median of 5. The number of sites surveyed per article ranged from 7 to 9394, with the median study including 98 sites (@fig-StudyDetails c).
 
 ## Covariates
 
-A summary of the covariates classes considered in the review sample is presented in @tbl-covariates. The most frequent
+A summary of covariates considered in the review sample is presented in @tbl-covariates. For each category of covariate relative frequency and characteristics are given. For all categories, the rate of consideration of polynomial terms does not exceed 16%, and the rate of consideration of interactions does not exceed 34%.
 
-| Covariate type | Proportion of articles considering | Proportion including on Initial Occupancy | Proportion dynamic | Proportion directly observed | Frequency of interaction terms | Frequency of polynomial terms |
-|-----------|-----------|-----------|-----------|-----------|-----------|-----------|
-|                |                                    |                                           |                    |                              |                                |                               |
-|                |                                    |                                           |                    |                              |                                |                               |
-|                |                                    |                                           |                    |                              |                                |                               |
-|                |                                    |                                           |                    |                              |                                |                               |
-|                |                                    |                                           |                    |                              |                                |                               |
-|                |                                    |                                           |                    |                              |                                |                               |
-|                |                                    |                                           |                    |                              |                                |                               |
-|                |                                    |                                           |                    |                              |                                |                               |
-|                |                                    |                                           |                    |                              |                                |                               |
-|                |                                    |                                           |                    |                              |                                |                               |
+::: column-page-inset
+```{r covariate table}
+#| echo: false
+#| message: false
+#| label: tbl-covariates
+#| tbl-cap: "Attributes of covariates found in dynamic occupancy models"
 
-: Covariates considered in dynamic occupancy models {#tbl-covariates}
+library(tidyverse)
+library(gt)
 
-![](Figures/CovParamPlot.jpeg){#fig-covariates}
+covTable <- read_csv("Figures/CovariateTable.csv")
 
-### Complexity
+covTable |>
+  arrange(Category, -Overall_Proportion) |>
+  gt(rowname_col = "Type") |>
+  tab_header("Covariate attributes") |>
+  tab_row_group(
+    label = md("Environmental covariates"),
+    rows = Category == "Environmental",
+    id = "Env"
+  ) |>
+  tab_row_group(
+    label = md("Other covariates"),
+    rows = Category == "Other",
+    id = "Other"
+  ) |>
+  tab_style(
+    style = cell_fill(color = "#82AD8E"),
+    locations = cells_row_groups(groups = "Env")
+  ) |>
+  tab_style(
+    style = list(
+      cell_fill(color = "gray70")
+    ),
+    locations = cells_row_groups(groups = "Other")
+  ) |>
+  row_group_order(groups = c("Env", "Other")) |>
+  tab_spanner(label = "Articles with covariate on:",
+              columns = c("Overall_Proportion", "InitOcc_Proportion",
+                          "Colonisation_Proportion", 
+                          "Extinction_Proportion",
+                          "Detection_Proportion"),
+              id = "articles") |>
+  tab_spanner(label = "Covariates which are:",
+              columns = c(Proportion_Dynamic, Proportion_Observed,
+                          Proportion_Polynomial, Proportion_Interact),
+              id = "covariates") |>
+   cols_label(
+    Overall_Proportion = "Any parameter",
+    InitOcc_Proportion = "Initial Occ.",
+    Colonisation_Proportion = "Colonisation",
+    Extinction_Proportion = "Extinction",
+    Detection_Proportion = "Detection",
+    Proportion_Dynamic = "Dynamic",
+    Proportion_Observed = "Directly observed",
+    Proportion_Polynomial = "Polynomial",
+    Proportion_Interact = "Interactive"
+  ) |>
+  cols_hide(Category) |>
+  fmt_percent(decimals = 0) |>
+  sub_missing(missing_text = "-")|>
+  tab_style(style = cell_fill(color = "lavender"),
+            locations = cells_body(columns = Overall_Proportion,
+                                   rows = Overall_Proportion == max(Overall_Proportion, na.rm = TRUE))) |>
+    tab_style(style = cell_fill(color = "lavender"),
+            locations = cells_body(columns = InitOcc_Proportion,
+                                   rows = InitOcc_Proportion == max(InitOcc_Proportion, na.rm = TRUE))) |>
+    tab_style(style = cell_fill(color = "lavender"),
+            locations = cells_body(columns = Colonisation_Proportion,
+                                   rows = Colonisation_Proportion == max(Colonisation_Proportion, na.rm = TRUE))) |>
+    tab_style(style = cell_fill(color = "lavender"),
+            locations = cells_body(columns = Extinction_Proportion,
+                                   rows = Extinction_Proportion == max(Extinction_Proportion, na.rm = TRUE))) |>
+    tab_style(style = cell_fill(color = "lavender"),
+            locations = cells_body(columns = Detection_Proportion,
+                                   rows = Detection_Proportion == max(Detection_Proportion, na.rm = TRUE))) |>
+    tab_style(style = cell_fill(color = "lavender"),
+            locations = cells_body(columns = Proportion_Dynamic,
+                                   rows = Proportion_Dynamic == max(Proportion_Dynamic, na.rm = TRUE))) |>
+    tab_style(style = cell_fill(color = "lavender"),
+            locations = cells_body(columns = Proportion_Observed,
+                                   rows = Proportion_Observed == max(Proportion_Observed, na.rm = TRUE))) |>
+    tab_style(style = cell_fill(color = "lavender"),
+            locations = cells_body(columns = Proportion_Polynomial,
+                                   rows = Proportion_Polynomial == max(Proportion_Polynomial, na.rm = TRUE))) |>
+    tab_style(style = cell_fill(color = "lavender"),
+            locations = cells_body(columns = Proportion_Interact,
+                                   rows = Proportion_Interact == max(Proportion_Interact, na.rm = TRUE))) |>
+  as_raw_html()
+  
+```
+:::
 
-![](Figures/ModelComplexity.png){#fig-complexity}
+Quantity of covariates considered varies considerably both between articles and between parameters as shown in @fig-covariates. Of the four standard model parameters, models were least likely to consider covariates for initial occupancy (35% of articles with zero covariates considered), and most likely to consider them for detection (81% of articles with at least one covariate considered).
 
-### Selection and evaluation
+![Distribution of covariate quantity considered for model parameters across articles.](Figures/CovParamPlot.jpeg){#fig-covariates}
 
-Bayesian models were far less likely to implement a model selection protocol compared to frequentist models: 30% of the former fit only a single model defined *a priori,* compared to 10% of the latter (@fig-selection). In frequentist models, stepwise selection protocols were the most popular choice. The vast majority of frequentist models (XX%) used AIC or AICc to identify the best model.
+Model complexity varies with the stated objectives of articles, with those interested in making predictions and identifying drivers of occupancy being more likely to consider a larger number of covariates (@tbl-objectives). These articles were also more likely to incorporate polynomial and interactive terms. Articles with objectives involving methods development considered fewer and less complex covariates.
+
+<div>
+
+```{r Objectives table}
+#| echo: false
+#| message: false
+#| label: tbl-objectives
+#| tbl-cap: "Complexity of models by article objective"
+
+objTable <- read_csv("Figures/ObjectiveTable.csv")
+
+objTable |>
+  mutate(Objective = fct(Objective,
+                         levels = c("Hypothesis", "Drivers", "Parameters",
+                                    "Methods", "Predict", "Any"))) |>
+  arrange(Objective) |>
+  mutate(Objective = case_when(Objective == "Hypothesis" ~ "Testing hypotheses",
+                               Objective == "Drivers" ~ "Identifying drivers",
+                               Objective == "Predict" ~ "Making predictions",
+                               Objective == "Methods" ~ "Developing methods",
+                               Objective == "Parameters" ~ "Estimating parameters",
+                               Objective == "Any" ~ "Any objective")) |>
+  gt(rowname_col = "Objective") |>
+  tab_header("Model complexity by article objectives") |>
+  tab_spanner(label = "Articles",
+              columns = c("Articles", "ArticlesProp"),
+              id = "articles") |>
+  tab_spanner(label = "Percent with:",
+              columns = c("ProbPoly", "ProbInt",
+                          "ProbEval", "ProbSelect"),
+              id = "percents") |>
+  cols_label(Articles = "n", ArticlesProp = "%",
+             MedianCovs = "Median covariates considered",
+             ProbPoly = "Polynomial terms",
+             ProbInt = "Interaction terms",
+             ProbEval = "Objective evaluation",
+             ProbSelect = "Model selection") |>
+  fmt_percent(columns = c(ArticlesProp, 
+                          ProbPoly, ProbInt, 
+                          ProbEval, ProbSelect),
+              decimals = 0) |>
+  tab_style(style = list(cell_fill(color = "gray80"),
+                         cell_text(style = "italic")),
+            locations = cells_body(rows = Objective == "Any objective")) |>
+  tab_style(style = cell_fill(color = "lavender"),
+            locations = cells_body(columns = MedianCovs,
+                                   rows = MedianCovs == max(MedianCovs, na.rm = TRUE))) |>
+  tab_style(style = cell_fill(color = "lavender"),
+            locations = cells_body(columns = ProbPoly,
+                                   rows = ProbPoly == max(ProbPoly, na.rm = TRUE))) |>
+  tab_style(style = cell_fill(color = "lavender"),
+            locations = cells_body(columns = ProbInt,
+                                   rows = ProbInt == max(ProbInt, na.rm = TRUE))) |>
+  tab_style(style = cell_fill(color = "lavender"),
+            locations = cells_body(columns = ProbEval,
+                                   rows = ProbEval == max(ProbEval, na.rm = TRUE))) |>
+  tab_style(style = cell_fill(color = "lavender"),
+            locations = cells_body(columns = ProbSelect,
+                                   rows = ProbSelect == max(ProbSelect, na.rm = TRUE))) |>
+  as_raw_html()
+```
+
+</div>
+
+Bayesian models were far less likely to implement a model selection protocol compared to frequentist models: 70% of the former fit only a single model defined *a priori,* compared to 10% of the latter (@fig-selection). In frequentist models, procedural selection protocols in which parameters are fixed one by one were the most popular choice. Nearly all frequentist models used AIC or AICc to identify their best model.
 
 ![](Figures/SelectionFigure.jpeg){#fig-selection}
 
-Objective evaluation of model fit was rare throughout the sample, regardless of selection protocol. XX% of articles calculated non-relative metrics, either via in-sample validation, bootstrapped goodness-of-fit tests, or out-of-sample validation.
+Objective evaluation of model fit was rare throughout the sample regardless of selection protocol. Just 8% of articles calculated non-relative metrics, either via in-sample validation, bootstrapped goodness-of-fit tests, or out-of-sample validation.
 
 # Discussion
 
-### Usage of dynamic occupancy models
+### Applications of dynamic occupancy models
 
-Our review sample displays considerable diversity in implementations of dynamic occupancy models with widespread representation from mammals, birds, and herptiles. This assemblage contrasts with the related stochastic patch occupancy models (SPOMs, @gutiérrez-arellano), where the majority of models are fit to invertebrates, plants, and fungi. This may reflect SPOMs lack of consideration for imperfect detection and assumption of discrete habitat patches, limitations which are unlikely to be fulfilled by most vertebrate taxa.
+DOMs display great variation of scale in all senses. Analyses in our samples range from the hyper-local at individual parks [@zúñiga-vega2019] to continental-scale studies \[@zuckerberg2011\]. Similar diversity in study duration and site quantity indicates further emphasises the breadth of studies which DOMs may be fit to. Method of species detection also need not be a limitation for the implementation of DOMs, as articles in our sample show that many approaches may be coerced into data suitable for this model class. While studies pre-designed to match hierarchical data inputs may be simplest to align with model assumptions, post-hoc manipulation of other data such as long-term citizen monitoring programs \[@zuckerberg2011; @peach2019\], disparate agency modelling programs [@mcgowan2020], or camera trapping data [@davis2018] is feasible with careful consideration. Detections from multiple sources, with associated variation in efficiency, have also been incorporated by authors [@warrier2020; @pitman2017].
 
-DOMs also display great variation in scale, from local studies with a handful of sites to continental-scale studies spanning decades.
+Reviewed implementations of dynamic occupancy models show widespread representation from mammals, birds, and herptiles. This assemblage contrasts with the related stochastic patch occupancy models (SPOMs, @gutiérrez-arellano), where the majority of models are fit to invertebrates, plants, and fungi. This difference may reflect SPOMs' assumption of perfect detection and discrete habitat patches, limitations which are unlikely to be fulfilled by most vertebrate taxa. Aside from differences in assumptions around detection, SPOMs also differ from DOMs in that they are generally spatially explicit, with probabilities of colonisation and extinction dependent on patch size and the occupancy state of nearby patches. Where desired, these features may also added to dynamic occupancy models — @sutherland2014 presents an implementation which may be considered a fusion of the DOM and SPOM methods, and several other authors incorporate patch characteristics aspects into their models as covariates [@duggan2011; @broms2016].
 
-Several types of detection data have been successfully incorporated DOMs. This flexibility may be one of the more notable aspects of dynamic occupancy models; while the heirarchical data inputs may be more complex than those required by other models of species distributions, authors have been able to successfully manipulate datasets from many sources to meet requirements.
+While objectives vary in our sample, DOMs are rarely used to extrapolate beyond study areas — use of prediction remains the least popular use-case in our sample. Articles which do make predictions provide some of the most directly applicable outputs found in the review sample: @mcgowan2020 provides projections for a threatened species under multiple putative management scenarios, and @pollentier2021 generates maps of distributions more frequently associated with species distribution models (SDMs). DOMs offer advantages over other SDMs for this purpose, particularly where populations are assumed not to be at equilibrium as is the case for many threatened and invasive species. By explicitly accounting for changes in occupancy (i.e., colonisation and extinction) DOMs may better capture future range contraction or expansion — an aspect of prediction where other SDMs may struggle.
 
 ### Practices in the modelling process
 
-Model selection approaches diverge between Bayesian and frequentist implementations of the model. While model selection will naturally look different between these two categories, it is unclear what effect a lack of model selection may have on the outputs produced by Bayesian models and it is likely that Bayesian model selection approaches should be further explored @hooten2015.
+A diverse set of covariates were identified in the model sample reflecting the diversity of systems and ecological questions described by DOMs. Notably, many models lack covariates on the initial occupancy parameter, raising questions on how the parameterisation of the model in it's first time-step may affect the quality of estimates at later time-steps. The distinction in covariates considered for the ecological parameters vs those considered for detection is also of note: ecological parameters more frequently contained covariates describing environmental features, where detection more frequently contained more structural covariates such as season. Covariate complexity is relatively low across the board, with only a fraction of models implementing either non-linear responses to covariates or interactions between covariates. While this addition complexity does have implications for model selection, it may be necessary to accurately describe many ecological relationships.
 
-Notably, the popular sequential approach to model selection (where one sub-model is assessed at a time) may not provide optimal results as shown in @morin2020. Considerably more research is required on this topic to clarify how authors should best approach the model building process.
+Model selection approaches diverge between Bayesian and frequentist implementations of the model. While model selection will naturally be practised differently between these two categories, it is unclear what effect a lack of model selection may have on the outputs produced by Bayesian models, and it is likely that Bayesian model selection approaches should be further explored @hooten2015. Model selection approaches in the Frequentist applications show limited consensus, although most do consider multiple models. Notably, @morin2020 found that the popular procedural approaches to model selection (where one sub-model is assessed at a time) may not provide optimal results. Considerably more research is required on this topic to clarify how authors should best approach covariate selection.
 
 ### Key considerations for model users
 
 Implementation of dynamic occupancy models requires considerable thought to ensure that model outputs correspond with author expectations and ecological realities. Based upon our review of the existing literature we discuss key questions authors should carefully engage with during the modelling process.
 
-1.  **Are seasons ecologically meaningful, and how do they affect the definition of occupancy?** As previously discussed, the duration of the season has important implications for both the reliability and proper interpretation of model results. Seasons which are not ecologically meaningful may run afoul of the closure assumption resulting in associated biases. Also relevant is how the definition of 'occupancy' may shift with season length and life-history of a species — for many species, occupancy within a year and within a week may be considerably different concepts, with shorter intervals more closely relating to the idea of 'use.' With the increasing proliferation of continuous detection methods such as camera traps and acoustic monitors where the definition of 'season' is to some degree arbitrary, it is increasingly important to thoughtfully consider how this element of the DOM is defined.
+1.  **Are seasons ecologically meaningful, and how do they affect the definition of occupancy?** As previously discussed, the duration of the season has important implications for both the reliability and proper interpretation of model results. Seasons which are not ecologically meaningful may run afoul of the closure assumption resulting in associated biases. Also relevant is how the definition of 'occupancy' may shift with season length and life-history of a species — for many species, occupancy within a year and within a week may be considerably different concepts, with shorter intervals more closely relating to the idea of 'use.' With the proliferation of continuous detection methods such as camera traps and acoustic monitors where the definition of 'season' is to some degree arbitrary, it is increasingly important to thoughtfully consider how this element of the DOM is defined.
 
 2.  **Are key drivers of occupancy and detection incorporated?** While it is effectively impossible to *fully* describe heterogeneity across a landscape, authors should make their best efforts to capture the drivers of occupancy and detection most likely to influence their study species. This is true even when another covariate is of principal interest to investigators — failure to include other major determinants of occupancy is likely to bias parameter estimates. One place where this is of particular importance is in determining drivers of detection, which is not only subject to observational conditions but also ecological determinants which may cause the species to spend more time at a location and thus be more frequently available for detection.
 
-3.  **Ensure covariates reflect ecological complexity.** Many ecological relationships are non-linear and may require polynomials terms to be accurately represented. This is particularly true at large spatial scales where a larger portion of a species ecological niche is shown in surveyed data. Authors should question whether a linear term is sufficient to capture hypothetical relationships in their study systems and consider quadratic terms where appropriate.
+3.  **Ensure covariates reflect ecological complexity.** Many ecological relationships are non-linear and may require polynomial terms to be accurately represented. This is particularly true at large spatial scales where a larger portion of a species ecological niche is represented in surveyed data. Authors should question whether a linear term is sufficient to capture hypothetical relationships in their study systems, and consider quadratic terms as well as interactions between covariates where appropriate.
 
-4.   **Consider model evaluation.** Model evaluation remains rare in ecological research relative to other fields embracing complex modelling, likely due to a reluctance to 'throw away' data for use in testing. This concept should be challenged, particularly for larger scale long-term projects where reserving a fraction of data for testing is unlikely to substantially reduce precision of parameter estimates. For studies where this is genuinely not possible, reporting results of goodness-of-fit tests may still provide valuable information to readers.
+4.  **Consider model evaluation.** Model evaluation remains rare in ecological research relative to other fields embracing complex modelling, likely due to a reluctance to 'throw away' data for use in testing. This concept should be challenged, particularly for larger scale long-term projects where reserving a fraction of data for testing is unlikely to substantially reduce precision of parameter estimates. For studies where this is genuinely not possible, reporting results of goodness-of-fit tests may still provide valuable information to readers.
 
 ### Priorities for future research
 
-Work on dynamic occupancy modelling over the past 20 years has developed this model class into an important tool for describing species distributions and ecological relationships. Historically, methods-development research for dynamic occupancy models has focused on questions of model structure — namely ideas around the closure assumption and imperfect detection. This emphasis likely reflects the DOM's roots in the mark-recapture literature, where these topics have been discussed for several decades. Considerably less emphasis has been placed on the relation of model parameters to environmental factors via covariates and the model selection processes used to do so. This stands in stark contrast to related correlative species distribution models, where these topics have been the subject of considerable research over the years. There are opportunities for the DOM literature to learn from species distribution models, and more targeted research on the influence of the model selection process is necessary.
+Work on dynamic occupancy modelling over the past 20 years has developed this model class into an important tool for describing species distributions and ecological relationships. Historically, methods-development research for dynamic occupancy models has focused on questions of model structure — namely ideas around the closure assumption and imperfect detection. This emphasis likely reflects the DOM's roots in the mark-recapture literature, where these topics have been discussed for several decades. Considerably less emphasis has been placed on the relation of model parameters to environmental factors via covariates and the model selection processes used to do so, despite this being an objective in a considerable fraction of studies fitting DOMs. This stands in stark contrast to related correlative species distribution models, where these topics have been the subject of considerable research over the years. There are opportunities for the DOM literature to learn from species distribution models, and more targeted research on the influence of the model selection process is necessary.
 
-The use of DOMs in prediction has remained fairly limited despite significant potential for this use-case. Papers in our sample which have taken advantage of this potential included @mcgowan2020 who used DOMs to make predictions of black rail distributions under various management scenarios, and @saunders2020, who validated predictions from ecological niche models using continent-scale DOMs. Further implementations of these models may benefit from the aforementioned necessary research on model selection to ensure robust outputs.
+An important opportunity for future research relates to autonomous detection methods, such as camera traps and bio-acoustic monitors — these technologies have permitted collection of enormous quantities of data particularly well-suited to dynamic occupancy models, but have also raised additional questions around their implementation. The definition of seasons is of increased importance for these data types, where division of data into 'seasons' and 'observations' is arbitrary. Further research should explore the implications of this phenomenon and the additional modelling opportunities made possible by this novel data type.
 
-A final opportunity for future research relates to autonomous detection methods, such as camera traps and bio-acoustic monitors — these technologies have permitted collection of enormous quantities of data particularly well-suited to dynamic occupancy models, but have also raised additional questions. The definition of seasons is of increased importance for these data types, where division of data into 'seasons' and 'observations' is arbitrary. Further research should explore the implications of this phenomenon and additional modelling opportunities made possible by this novel data type.
-
-The past two decades have shown that dynamic occupancy models are an excellent tool for addressing a wide range of ecological questions relating to species occupancy throughout space and time. The flexibility afforded by model extensions and the considerable advantages of the class over other species distribution models is likely to ensure that these models continue to increase in popularity. Given their strong use on threatened taxa and excellent potential to support environemental management, it is important that research continues to support model users in creating the most reliable models possible.
+The past two decades have shown that dynamic occupancy models are an excellent tool for addressing a wide range of ecological questions relating to species occupancy throughout space and time. The flexibility afforded by model extensions and the considerable advantages of the class over other species distribution models is likely to ensure that these models continue to increase in popularity. Given their strong use on threatened taxa and excellent potential to support environmental management, it is important that research continues to support model users in creating the most reliable models possible.

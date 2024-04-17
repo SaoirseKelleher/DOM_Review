@@ -62,6 +62,7 @@ countries_map <- countries_shp |>
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         axis.text = element_blank(), axis.ticks = element_blank()) 
+countries_map
 
 ggsave("Manuscript/Figures/StudiesMap.jpeg", countries_map)
 ```
@@ -79,9 +80,12 @@ sampleCoverage <- read_xlsx("Randomisation/SecondSampleRanks.xlsx") |>
   mutate(HitRate = Accept/(Accept+Reject)) |>
   mutate(EstRemaining = Unread*HitRate)
 
+prelimCoverage <- review_Data |>
+  filter(Query != "Mackenzie") |>
+  summarise(Prelim = n(), .by = Strata)
+  
+
 sampleCoveragePlot <- sampleCoverage |>
-  pivot_longer(c(Accept, EstRemaining),
-               names_to = "Category", values_to = "Articles") |>
   mutate(Group = case_when(Group == "MacKenzie Cited_2000:2005" ~ "2000-2005",
                            Group == "MacKenzie Cited_2006:2010" ~ "2006-2010",
                            Group == "MacKenzie Cited_2011:2015" ~ "2011-2015",
@@ -92,15 +96,21 @@ sampleCoveragePlot <- sampleCoverage |>
                               "2011-2015",
                               "2016-2021",
                               "2022-2023"))) |>
+  left_join(prelimCoverage, by = join_by("Group" == "Strata")) |>
+  pivot_longer(c(Accept, Prelim, EstRemaining),
+               names_to = "Category", values_to = "Articles") |>
+  mutate(Category = fct(Category,
+                        levels = c("Prelim", "Accept", "EstRemaining"))) |>
   
   ggplot() +
   geom_col(aes(x = Group, y = Articles, fill = Category),
            colour = "white", width = 1,
            position = position_stack(reverse = TRUE)) +
-  scale_fill_manual(limits = c("Accept", "EstRemaining"),
-                    values = c("turquoise4", "gray70"),
-                    labels = c("Processed", "Estimated")) +
-  scale_y_continuous(limits = c(0, 250), 
+  scale_fill_manual("",
+                    limits = c("Prelim", "Accept", "EstRemaining"),
+                    values = c("darkslategray", "turquoise4", "gray70"),
+                    labels = c("Preliminary", "Secondary", "Estimated articles")) +
+  scale_y_continuous(limits = c(0, 300), 
                      expand = c(0,0)) +
   labs(title = "Estimated published articles fitting Dynamic Occupancy Models",
        x = "", y = "") +
@@ -109,14 +119,28 @@ sampleCoveragePlot <- sampleCoverage |>
         title = element_text(size = 14),
         axis.text = element_text(size = 13),
         legend.text = element_text(size = 13))
+sampleCoveragePlot
 
 ggsave("Manuscript/Figures/CoveragePlot.jpeg", sampleCoveragePlot,
        width = 9, height = 4)
+sampleCoverage
+```
+
+## Authorship
+
+```{r Authorship}
+
+review_Data |>
+  
+
+
 ```
 
 ## Focal species bar plot
 
 ```{r Focal species bar plot}
+#| fig-height: 4
+#| fig-width: 8
 
 speciesCounts <- review_Data |>
   select(Taxa, Invasive, Threatened) |>
@@ -143,16 +167,21 @@ speciesCounts <- review_Data |>
 speciesPlot <- speciesCounts |>
   ggplot() +
   geom_col(aes(y = Taxa, x = Values, fill = Category)) +
-  scale_fill_manual(values = c("darkslategray", "goldenrod", "firebrick4")) +
+  scale_fill_manual(values = c("#2E848E", "gray70", "#896EA3")) +
   labs(x = "", y = "") +
   scale_x_continuous(expand = c(0, 1)) +
-  theme(legend.position = "top",
-        axis.text.y = element_text(size = 15),
+  theme(legend.position = "none",
+        axis.text.y = element_text(size = 24),
         axis.ticks.y = element_blank(),
-        axis.text.x = element_text(size = 10), 
-        panel.grid = element_blank())
+        axis.text.x = element_blank(), 
+        axis.ticks.x = element_blank(),
+        panel.grid = element_blank(),
+        panel.background = element_rect(fill='transparent', color=NA),
+        plot.background = element_rect(fill='transparent', color=NA))
+speciesPlot
 
-ggsave("Manuscript/Figures/SpeciesPlot.jpeg", speciesPlot, width = 7, height = 5)
+ggsave("Manuscript/Figures/SpeciesPlot.png", speciesPlot, 
+       width = 8, height = 4, bg = "transparent")
 ```
 
 ## Taxa quantity statistics
@@ -175,6 +204,8 @@ review_Data |>
 ## Survey size figures
 
 ```{r Study area size}
+#| fig-width: 7
+#| fig-height: 5
 
 studyArea <- review_Data |>
   summarise(Articles = n(), .by = StudyArea) |>
@@ -184,45 +215,66 @@ studyArea <- review_Data |>
                                     "100-1000", "1000-10000", "10000-100000", 
                                     "100000-1000000", "1000000+")))
 
-  studyAreaPlot <- ggplot(studyArea) +
-    geom_col(aes(y = StudyArea, x = Articles), fill = "darkslategray") +
-    labs(title = "Study Area (square kilometres)", x = "Articles", y = "") +
-    scale_x_reverse(expand = c(0,0)) +
-    scale_y_discrete(position = "right") +
+ studyAreaPlot <- ggplot(studyArea) +
+    geom_col(aes(x = StudyArea, y = Articles), fill = "#2E848E") +
+    labs(title = "", x = "", y = "") +
+    scale_y_continuous(expand = c(0,0)) +
+    scale_x_discrete(labels = c("0-1", "1-10", "10-100",
+                                "100-\n1000", "1000-\n10000",
+                                "10000-\n100000", "100000-\n1000000",
+                                "1000000+")) +
     theme(panel.grid = element_blank(),
-          axis.text = element_text(size = 15), 
-          axis.title = element_text(size = 14),
-          title = element_text(size = 15), 
-          axis.ticks.y = element_blank())
+          panel.background = element_rect(fill='transparent', color=NA),
+          plot.background = element_rect(fill='transparent', color=NA),
+          axis.text.x = element_text(size = 23,
+                                     angle = 90,
+                                     vjust = 0.5, hjust = 1),
+          axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.title.y = element_text(size = 20),
+          title = element_text(size = 15),
+          axis.ticks.x = element_blank())
+  studyAreaPlot
   
-  ggsave("Manuscript/Figures/StudyAreaPlot.jpeg", studyAreaPlot)
+  ggsave("Manuscript/Figures/StudyAreaPlot.png",
+         studyAreaPlot,
+         width = 7, height = 5,
+         bg='transparent') 
 
 ```
 
 ```{r Duration fig}
+#| fig-height: 7
+#| fig-width: 4
 
-durationPlot <- ggplot(review_Data) +
-  geom_histogram(aes(x = Duration), binwidth = 0.2, fill = "turquoise4") +
-  geom_vline(aes(xintercept = median(Duration)), 
-             colour = "gray30", linetype = 2, linewidth = 3) +
-  scale_x_continuous(transform = "log10", 
+ durationPlot <- ggplot(review_Data) +
+  geom_histogram(aes(y = Duration), binwidth = 0.2, fill = "#2E848E") +
+  geom_hline(aes(yintercept = median(Duration)), 
+             colour = "gray80", linetype = 2, linewidth = 3) +
+  scale_y_continuous(transform = "log10", 
                      breaks = c(1, 12, 60, 
                                 120, 240, 480), 
                      labels = c("1 month", "1 year", "5 years", 
                                 "10 years", "20 years", "40 years")) +
-  scale_y_continuous(expand = c(0, 0)) + 
-  labs(title = "Study duration", x = "", y = "") +
+  scale_x_continuous(expand = c(0, 0)) + 
+  labs(title = "", x = "", y = "") +
   theme(panel.grid = element_blank(),
+        panel.background = element_rect(fill='transparent', color=NA),
+        plot.background = element_rect(fill='transparent', color=NA),
         title = element_text(size = 13), 
-        axis.text.y = element_blank(),
-        axis.ticks.y = element_blank(),
-        axis.text.x = element_text(size = 16, angle = 70, 
-                                   hjust = 1, vjust = 1))
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.y = element_text(size = 20))
+durationPlot
+ 
 ggsave("Manuscript/Figures/Duration.jpeg", durationPlot, 
        height = 4, width = 7)
 ```
 
 ```{r Sites fig}
+#| fig-width: 7
+#| fig-height: 4
+
 sitesPlot <- review_Data |>
   mutate(Sites = as.numeric(Sites)) |>
   
@@ -240,6 +292,8 @@ sitesPlot <- review_Data |>
         axis.ticks.y = element_blank(),
         axis.text.x = element_text(size = 16, angle = 70, 
                                    hjust = 1, vjust = 1))
+sitesPlot
+
 ggsave("Manuscript/Figures/Sites.jpeg", sitesPlot, 
        height = 4, width = 7)
 ```
@@ -283,148 +337,245 @@ covariates_clean <- covariate_Data |>
                                 Complexity == "O" ~ "Other"))
 ```
 
-```{r Covs by param}
+```{r Covariate type table}
+covType_overall <- covariates_clean |>
+  select(ID, Type) |>
+  mutate(Included = 1, Total = length(unique(ID))) |>
+  distinct() |>
+  complete(ID, Type, fill = list(Included = 0)) |>
+  summarise(Articles = sum(Included),
+            Total = max(Total, na.rm = TRUE),
+            .by = Type) |>
+  mutate(Proportion = round(Articles/Total, 2)) |>
+  select(Type, Overall_Proportion = Proportion)
 
-covParamPlot <- covariates_clean |>
+
+covType_psi <- covariates_clean |>
+  filter(Parameter == "InitialOccupancy") |>
+  select(ID, Type) |>
+  mutate(Included = 1, Total = length(unique(ID))) |>
+  distinct() |>
+  complete(ID, Type, fill = list(Included = 0)) |>
+  summarise(Articles = sum(Included),
+            Total = max(Total, na.rm = TRUE),
+            .by = Type) |>
+  mutate(Proportion = round(Articles/Total, 2)) |>
+  select(Type, InitOcc_Proportion = Proportion)
+
+covType_gamma <- covariates_clean |>
+  filter(Parameter == "Colonisation") |>
+  select(ID, Type) |>
+  mutate(Included = 1, Total = length(unique(ID))) |>
+  distinct() |>
+  complete(ID, Type, fill = list(Included = 0)) |>
+  summarise(Articles = sum(Included),
+            Total = max(Total, na.rm = TRUE),
+            .by = Type) |>
+  mutate(Proportion = round(Articles/Total, 2)) |>
+  select(Type, Colonisation_Proportion = Proportion)
+
+covType_epsilon <- covariates_clean |>
+  filter(Parameter == "Extinction") |>
+  select(ID, Type) |>
+  mutate(Included = 1, Total = length(unique(ID))) |>
+  distinct() |>
+  complete(ID, Type, fill = list(Included = 0)) |>
+  summarise(Articles = sum(Included),
+            Total = max(Total, na.rm = TRUE),
+            .by = Type) |>
+  mutate(Proportion = round(Articles/Total, 2)) |>
+  select(Type, Extinction_Proportion = Proportion)
+
+covType_detection <- covariates_clean |>
+  filter(Parameter == "Detection") |>
+  select(ID, Type) |>
+  mutate(Included = 1, Total = length(unique(ID))) |>
+  distinct() |>
+  complete(ID, Type, fill = list(Included = 0)) |>
+  summarise(Articles = sum(Included),
+            Total = max(Total, na.rm = TRUE),
+            .by = Type) |>
+  mutate(Proportion = round(Articles/Total, 2)) |>
+  select(Type, Detection_Proportion = Proportion)
+
+
+covObserved <- covariates_clean |>
+  filter(Type != "NONE") |>
+  mutate(Observed = case_when(Measurement == "Observed" ~ 1,
+                              .default = 0)) |>
+  mutate(Total = n(), .by = Type) |>
+  summarise(Observed = sum(Observed),
+            .by = c(Type, Total)) |>
+  mutate(Proportion_Observed = round(Observed/Total, 2)) |>
+  select(Type, Proportion_Observed)
+
+covDynamic <- covariates_clean |>
+  filter(Type != "NONE") |>
+  filter(Parameter %in% c("Detection", "Colonisation", "Detection")) |>
+  mutate(Dynamic = case_when(Variation %in% c("Year",
+                                              "Site-Year",
+                                              "Site-Year-Survey") ~ 1,
+                              .default = 0)) |>
+  mutate(Total = n(), .by = Type) |>
+  summarise(Dynamic = sum(Dynamic),
+            .by = c(Type, Total)) |>
+  mutate(Proportion_Dynamic = round(Dynamic/Total, 2)) |>
+  select(Type, Proportion_Dynamic)
+
+covPolynomial <- covariates_clean |>
+  filter(Type != "NONE") |>
+  mutate(Polynomial = case_when(Complexity %in% c("Quadratic",
+                                                  "Quadratic + Interaction",
+                                                  "Other") ~ 1,
+                                .default = 0)) |>
+  mutate(Total = n(), .by = Type) |>
+  summarise(Polynomial = sum(Polynomial),
+            .by = c(Type, Total)) |>
+  mutate(Proportion_Polynomial = round(Polynomial/Total, 2)) |>
+  select(Type, Proportion_Polynomial)
+
+covInteract <- covariates_clean |>
+  filter(Type != "NONE") |>
+  mutate(Interact = case_when(Complexity %in% c("Interaction",
+                                                  "Quadratic + Interaction") ~ 1,
+                                .default = 0)) |>
+  mutate(Total = n(), .by = Type) |>
+  summarise(Interact = sum(Interact),
+            .by = c(Type, Total)) |>
+  mutate(Proportion_Interact = round(Interact/Total, 2)) |>
+  select(Type, Proportion_Interact)
+
+covType_table <- covType_overall |>
+  full_join(covType_psi, by = "Type") |>
+  full_join(covType_gamma, by = "Type") |>
+  full_join(covType_epsilon, by = "Type") |>
+  full_join(covType_detection, by = "Type") |>
+  full_join(covDynamic, by = "Type") |>
+  full_join(covObserved, by = "Type") |>
+  full_join(covPolynomial, by = "Type") |>
+  full_join(covInteract, by = "Type") |>
+  
+  filter(!Type %in% c("NONE", "OTHER", "SP", "UNSPECIFIED", "SITE")) |>
+  mutate(Category = case_when(Type %in% c("E-ANTH", "E-CLIM", "E-DIS",
+                                          "E-HTAQ", "E-HTT", "E-HYD",
+                                          "E-SEAS", "E-TOPO", "INT") ~ "Environmental",
+                              .default = "Other")) |>
   mutate(Type = case_when(Type == "E-ANTH" ~ "Anthropogenic",
                           Type == "E-CLIM" ~ "Climate/Weather",
                           Type == "E-DIS" ~ "Disaster/Disturbance",
                           Type == "E-HTAQ" ~ "Habitat (Aquatic)",
                           Type == "E-HTT" ~ "Habitat (Terrestrial)",
                           Type == "E-HYD" ~ "Hydrologic",
-                          Type == "E-SEAS" ~ "Phenologic",
-                          Type == "E-TOPO" ~ "Topographic",
+                          Type == "E-SEAS" ~ "Phenology",
+                          Type == "E-TOPO" ~ "Topography",
                           Type == "CONN" ~ "Connectivity",
+                          Type == "INT" ~ "Biotic Interaction",
                           Type == "GEOM" ~ "Site geometry",
-                          Type == "INT" ~ "Biotic interaction",
-                          Type == "SEAS" ~ "Primary occasion",
-                          Type == "SITE" ~ "Site",
-                          Type == "SP" ~ "Species",
-                          Type == "SURV" ~ "Survey detail",
-                          .default = Type)) |>
-  mutate(Type_cat = case_when(Type %in% c("Habitat (Terrestrial)",
-                                          "Habitat (Aquatic)",
-                                          "Hydrologic", 
-                                          "Climate/Weather",
-                                          "Disaster/Disturbance",
-                                          "Topographic",
-                                          "Phenologic",
-                                          "Anthropogenic",
-                                          "Biotic interaction") ~ "Env",
-                              .default = "Other")) |>
-  summarise(Covariates = case_when("NONE" %in% Type ~ 0,
-                                   .default = n()), 
-            .by = c(ID, Parameter, Type_cat)) |>
-  filter(Parameter != "Occupancy") |>
-  complete(nesting(ID, Parameter), 
-           Type_cat, fill = list(Covariates = 0)) |>
-  mutate(Parameter = fct(Parameter, 
-                         levels = c("InitialOccupancy",
-                                    "Colonisation", "Extinction",
-                                    "Detection"))) |>
-  
-  ggplot() +
-  geom_boxplot(aes(x = Covariates, y = Type_cat, 
-                   colour = Type_cat, fill = Type_cat),
-               alpha = 0.5, outliers = FALSE, staplewidth = 0.5) +
-  facet_grid(rows = vars(Parameter), switch = "y") +
-  scale_colour_manual("Covariate type",
-                      values = c("seagreen4", "darkslategray"),
-                      labels = c("Environmental", "Other")) +
-  scale_fill_manual("Covariate type",
-                      values = c("seagreen4", "darkslategray"),
-                      labels = c("Environmental", "Other")) +
-  labs(title = "Covariate quantity by parameter", 
-       x = "Number of covariates considered", y = "") +
-  theme(strip.text.y.left = element_text(angle = 0, size = 14, hjust = 1),
-        axis.text.y = element_blank(), axis.ticks.y = element_blank(),
-        legend.position = "bottom",
-        title = element_text(size = 13),
-        axis.title.x = element_text(size = 13),
-        legend.text = element_text(size = 13)) 
+                          Type == "SEAS" ~ "Season",
+                          Type == "SURV" ~ "Survey effect"))
 
-ggsave("Manuscript/Figures/CovParamPlot.jpeg", covParamPlot,
-       width = 7, height = 5)
+kable(covType_table)
+write_csv(covType_table, "Manuscript/Figures/CovariateTable.csv")
 ```
 
-```{r Covs by objective}
+```{r Objectives table}
 
-covariates_clean |>
+objs_df <- review_Data |> 
+  select(ID, Parameters, Hypothesis, Drivers, Predict, Methods, 
+         Selection, Evaluation) |>
+  mutate(Any = "Y") |>
+  pivot_longer(c(Parameters, Hypothesis, Drivers, Predict, Methods, Any),
+               names_to = "Objective", values_to = "Included") |>
+  filter(Included == "Y")
+
+covs_summary <- covariates_clean |>
+  mutate(Polynomial = case_when(Complexity %in% c("Quadratic",
+                                                  "Quadratic + Interaction",
+                                                  "Other") ~ 1,
+                                .default = 0)) |>
+  mutate(Interact = case_when(Complexity %in% c("Interaction",
+                                                  "Quadratic + Interaction") ~ 1,
+                                .default = 0)) |>
+  select(ID, Parameter, Type, Polynomial, Interact) |>
+  summarise(Covs = case_when("NONE" %in% Type ~ 0,
+                             .default = n()),
+            Polynomial = max(Polynomial),
+            Interact = max(Interact),
+            .by = c(ID, Parameter)) |>
+  summarise(Covariates = sum(Covs),
+            Polynomial = max(Polynomial),
+            Interact = max(Interact),
+            .by = ID)
+
+objTable <- objs_df |>
+  left_join(covs_summary, by = "ID") |>
+  mutate(OverallTotal = length(unique(ID))) |>
+  mutate(ObjTotal = length(unique(ID)),
+         .by = Objective) |>
+  mutate(ObjEval = case_when(str_detect(Evaluation, "GOF") ~ 1,
+                             str_detect(Evaluation, "InSampleVal") ~ 1,
+                             str_detect(Evaluation, "OutSampleVal") ~ 1,
+                             .default = 0)) |>
+  mutate(Select = case_when(Selection != "APrioriS" ~ 1,
+                            .default = 0)) |>
+  summarise(ObjTotal = mean(ObjTotal),
+            OverallTotal = mean(OverallTotal),
+            MedianCovs = median(Covariates, na.rm = TRUE),
+            Poly = sum(Polynomial), Int = sum(Interact), 
+            Eval = sum(ObjEval), Select = sum(Select),
+            .by = Objective)|>
+  mutate(ObjProportion = ObjTotal/OverallTotal,
+         ProbPoly = Poly/ObjTotal,
+         ProbInt = Int/ObjTotal,
+         ProbEval = Eval/ObjTotal,
+         ProbSelect = Select/ObjTotal) |>
+  select(Objective, Articles = ObjTotal, ArticlesProp = ObjProportion,
+         MedianCovs, ProbPoly, ProbInt, ProbEval, ProbSelect) 
+kable(objTable)
+
+write_csv(objTable, "Manuscript/Figures/ObjectiveTable.csv")
+```
+
+```{r Covs by param}
+
+covParamData <- covariates_clean |>
   summarise(Covariates = case_when("NONE" %in% Type ~ 0,
                                    .default = n()), 
             .by = c(ID, Parameter)) |>
-  summarise(Covariates = sum(Covariates),
-            .by = ID) |>
-  left_join(review_Data, by = "ID") |>
-  mutate(Predict = if_else(Spatial == "Y" | Future == "Y",
-                           "Y", "N")) |>
-  pivot_longer(c(Hypothesis, Methods, Parameters, Predict),
-               names_to = "Objective", values_to = "ObjIncluded") |>
-  filter(ObjIncluded == "Y") |>
-  summarise(MedianCovs = median(Covariates), n = n(),
-            .by = Objective)
-
-```
-
-```{r percent polynomial}
-
-covariates_clean |>
-  mutate(Polynomial = case_when(Complexity %in% c("Quadratic", "Quadratic + Interaction") ~ 1,
-                                .default = 0),
-         Interaction = case_when(Complexity %in% c("Interaction", "Quadratic + Interaction") ~ 1,
-                                .default = 0)) |>
-  summarise(Polynomial = max(Polynomial),
-            Interaction = max(Interaction),
-            .by = ID) |>
-  left_join(review_Data, by = "ID") |>
-  mutate(Predict = if_else(Spatial == "Y" | Future == "Y",
-                           "Y", "N")) |>
-  pivot_longer(c(Hypothesis, Methods, Parameters, Predict),
-               names_to = "Objective", values_to = "ObjIncluded") |>
-  filter(ObjIncluded == "Y") |>
-  summarise(Polynomial = sum(Polynomial)/n(),
-            Interaction = sum(Interaction)/n(),
-            n = n(),
-            .by = Objective)
-
-```
-
-```{r select}
-
-review_Data |>
-  separate_longer_delim(Selection, ", ") |>  
-  mutate(Predict = if_else(Spatial == "Y" | Future == "Y",
-                           "Y", "N")) |>
-  pivot_longer(c(Hypothesis, Methods, Parameters, Predict),
-               names_to = "Objective", values_to = "ObjIncluded") |>
-  filter(ObjIncluded == "Y") |>
-  mutate(total = length(unique(ID)),
-         .by = Objective) |>
-  summarise(n = n(), total = mean(total),
-            .by = c(Objective, Selection)) |>
-  mutate(frac = 1-(n/total)) |>
-  filter(Selection == "APrioriS")
+  filter(Parameter != "Occupancy") |>
+  mutate(Parameter = case_when(Parameter == "InitialOccupancy" ~ "Initial Occupancy",
+                               .default = Parameter)) |>
+  mutate(Parameter = fct(Parameter, 
+                         levels = c("Initial Occupancy",
+                                    "Colonisation", "Extinction",
+                                    "Detection"))) |>
+  mutate(Covariates = case_when(Covariates > 15 ~ 15,
+                                .default = Covariates)) |>
+  mutate(MedianCovs = mean(Covariates),
+         .by = Parameter)
   
+covParamPlot <- covParamData |>
+  ggplot() +
+  geom_histogram(aes(x = Covariates, fill = Parameter), binwidth = 1) +
+  facet_grid(rows = vars(Parameter), switch = "y") +
+  labs(title = "Covariate quantity by parameter", 
+       x = "Number of covariates considered", y = "") +
+  scale_x_continuous(breaks = c(0, 5, 10, 15),
+                     labels = c("0", "5", "10", "15+")) +
+  scale_y_continuous(position = "right") +
+  scale_fill_manual(values = c("turquoise4", "turquoise4", "turquoise4", "orchid4")) +
+  theme(strip.text.y.left = element_text(angle = 0, size = 12, hjust = 1),
+        panel.grid = element_blank(),
+        #axis.text.y = element_blank(), axis.ticks.y = element_blank(),
+        legend.position = "none",
+        title = element_text(size = 13),
+        axis.text = element_text(size = 13),
+        axis.title.x = element_text(size = 13),
+        legend.text = element_text(size = 13)) 
+covParamPlot
 
-```
-
-```{r eval}
-
-review_Data |>
-  separate_longer_delim(Evaluation, ", ") |>  
-  mutate(Predict = if_else(Spatial == "Y" | Future == "Y",
-                           "Y", "N")) |>
-  pivot_longer(c(Hypothesis, Methods, Parameters, Predict),
-               names_to = "Objective", values_to = "ObjIncluded") |>
-  filter(ObjIncluded == "Y") |>
-  mutate(total = length(unique(ID)),
-         .by = Objective) |>
-  summarise(n = n(), total = mean(total),
-            .by = c(Objective, Evaluation)) |>
-  mutate(frac = n/total) |>
-  arrange(Objective)
-
-
+ggsave("Manuscript/Figures/CovParamPlot.jpeg", covParamPlot,
+       width = 7, height = 5)
 ```
 
 ```{r Selection fig}
@@ -458,11 +609,11 @@ selectFigure <- selectData |>
   scale_y_continuous(limits = c(0, 0.8), expand = c(0, 0)) +
   scale_x_discrete(labels = c("Single\nmodel",
                               "Candidate\nsuite",
-                              "Stepwise\nselection",
+                              "Procedural\nselection",
                               "Exhaustive\nselection",
-                              "Simple", "Other\nmethod")) +
+                              "Simple\nprecursor", "Other\nmethod")) +
   labs(title = "Model selection methods",
-       x = "", y = "Fraction of articles") +
+       x = "", y = "Proportion of articles") +
   theme(panel.grid = element_blank(),
         legend.position = "none",
         plot.title = element_text(hjust = 0.5, size = 15),
@@ -470,7 +621,7 @@ selectFigure <- selectData |>
         axis.text.y = element_text(size = 13),
         axis.text.x = element_text(size = 11),
         axis.title.y = element_text(size = 13)) 
-
+selectFigure
 ggsave("Manuscript/Figures/SelectionFigure.jpeg",
        selectFigure, width = 10, height = 4)
 ```
