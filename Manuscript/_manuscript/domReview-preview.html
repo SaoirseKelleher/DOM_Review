@@ -1,49 +1,172 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+    <meta charset="utf-8">
+    <meta name="generator" content="quarto-1.4.553">
 
-<meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.553">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="dcterms.date" content="2024-06-27">
 
-<meta name="dcterms.date" content="2024-06-27">
+    <title>Twenty years of dynamic occupancy models: a review of applications and a look towards the future</title>
+    <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      div.columns{display: flex; gap: min(4vw, 1.5em);}
+      div.column{flex: auto; overflow-x: auto;}
+      div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+      ul.task-list{list-style: none;}
+      ul.task-list li input[type="checkbox"] {
+        width: 0.8em;
+        margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+        vertical-align: middle;
+      }
+      /* CSS for syntax highlighting */
+      pre > code.sourceCode { white-space: pre; position: relative; }
+      pre > code.sourceCode > span { line-height: 1.25; }
+      pre > code.sourceCode > span:empty { height: 1.2em; }
+      .sourceCode { overflow: visible; }
+      code.sourceCode > span { color: inherit; text-decoration: inherit; }
+      div.sourceCode { margin: 1em 0; }
+      pre.sourceCode { margin: 0; }
+      @media screen {
+      div.sourceCode { overflow: auto; }
+      }
+      @media print {
+      pre > code.sourceCode { white-space: pre-wrap; }
+      pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+      }
+      pre.numberSource code
+        { counter-reset: source-line 0; }
+      pre.numberSource code > span
+        { position: relative; left: -4em; counter-increment: source-line; }
+      pre.numberSource code > span > a:first-child::before
+        { content: counter(source-line);
+          position: relative; left: -1em; text-align: right; vertical-align: baseline;
+          border: none; display: inline-block;
+          -webkit-touch-callout: none; -webkit-user-select: none;
+          -khtml-user-select: none; -moz-user-select: none;
+          -ms-user-select: none; user-select: none;
+          padding: 0 4px; width: 4em;
+        }
+      pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+      div.sourceCode
+        {   }
+      @media screen {
+      pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+      }
+      /* CSS for citations */
+      div.csl-bib-body { }
+      div.csl-entry {
+        clear: both;
+        margin-bottom: 0em;
+      }
+      .hanging-indent div.csl-entry {
+        margin-left:2em;
+        text-indent:-2em;
+      }
+      div.csl-left-margin {
+        min-width:2em;
+        float:left;
+      }
+      div.csl-right-inline {
+        margin-left:2em;
+        padding-left:1em;
+      }
+      div.csl-indent {
+        margin-left: 2em;
+      }    </style>
 
-<title>Twenty years of dynamic occupancy models: a review of applications and a look towards the future</title>
-<style>
-code{white-space: pre-wrap;}
-span.smallcaps{font-variant: small-caps;}
-div.columns{display: flex; gap: min(4vw, 1.5em);}
-div.column{flex: auto; overflow-x: auto;}
-div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-ul.task-list{list-style: none;}
-ul.task-list li input[type="checkbox"] {
-  width: 0.8em;
-  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
-  vertical-align: middle;
-}
-/* CSS for citations */
-div.csl-bib-body { }
-div.csl-entry {
-  clear: both;
-  margin-bottom: 0em;
-}
-.hanging-indent div.csl-entry {
-  margin-left:2em;
-  text-indent:-2em;
-}
-div.csl-left-margin {
-  min-width:2em;
-  float:left;
-}
-div.csl-right-inline {
-  margin-left:2em;
-  padding-left:1em;
-}
-div.csl-indent {
-  margin-left: 2em;
-}</style>
+    <style>
+      body.hypothesis-enabled #quarto-embed-header {
+        padding-right: 36px;
+      }
 
+      #quarto-embed-header {
+        height: 3em;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: solid 1px;
+      }
 
+      #quarto-embed-header h6 {
+        font-size: 1.1em;
+        padding-top: 0.6em;
+        margin-left: 1em;
+        margin-right: 1em;
+        font-weight: 400;
+      }
+
+      #quarto-embed-header a.quarto-back-link,
+      #quarto-embed-header a.quarto-download-embed {
+        font-size: 0.8em;
+        margin-top: 1em;
+        margin-bottom: 1em;
+        margin-left: 1em;
+        margin-right: 1em;
+      }
+
+      .quarto-back-container {
+        padding-left: 0.5em;
+        display: flex;
+      }
+
+      .headroom {
+          will-change: transform;
+          transition: transform 200ms linear;
+      }
+
+      .headroom--pinned {
+          transform: translateY(0%);
+      }
+
+      .headroom--unpinned {
+          transform: translateY(-100%);
+      }      
+    </style>
+
+    <script>
+    window.document.addEventListener("DOMContentLoaded", function () {
+
+      var header = window.document.querySelector("#quarto-embed-header");
+      const titleBannerEl = window.document.querySelector("body > #title-block-header");
+      if (titleBannerEl) {
+        titleBannerEl.style.paddingTop = header.clientHeight + "px";
+      }
+      const contentEl = window.document.getElementById('quarto-content');
+      for (const child of contentEl.children) {
+        child.style.paddingTop = header.clientHeight + "px";
+        child.style.marginTop = "1em";
+      }
+
+      // Use the article root if the `back` call doesn't work. This isn't perfect
+      // but should typically work
+      window.quartoBackToArticle = () => {
+        var currentUrl = window.location.href;
+        window.history.back();
+        setTimeout(() => {
+            // if location was not changed in 100 ms, then there is no history back
+            if(currentUrl === window.location.href){              
+                // redirect to site root
+                window.location.href = "index.html";
+            }
+        }, 100);
+      }
+
+      const headroom = new window.Headroom(header, {
+        tolerance: 5,
+        onPin: function () {
+        },
+        onUnpin: function () {
+        },
+      });
+      headroom.init();
+    });
+    </script>
+
+    
+<script src="site_libs/manuscript-notebook/headroom.min.js"></script>
 <script src="site_libs/clipboard/clipboard.min.js"></script>
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -57,9 +180,8 @@ div.csl-indent {
 <script src="site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
 <link href="site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
 <link href="site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
-
-
-<meta name="citation_title" content="Twenty years of dynamic occupancy models: a review of applications and a look towards the future">
+     
+      <meta name="citation_title" content="Twenty years of dynamic occupancy models: a review of applications and a look towards the future">
 <meta name="citation_abstract" content="Describing patterns of species occupancy across landscapes and throughout time is a fundamental aspect of much ecological research. The dynamic multi-season occupancy model is an important tool for analysing wildlife occurence data -- by explicitly estimating colonisation and extinction probabilities while accounting for imperfect detection, it strikes a favourable balance between realism and feasibility. These models can be used in similar ways to more conventional species distribution models, which can struggle to deal with imperfect detection and non-equilibrium populations.
 
 We present a review of applications of the dynamic occupancy model in the twenty years since its initial publication. Our findings indicate that this model demonstrates exceptional flexibility with suitability to address a wide range of ecological questions, and that it may have  broader potential than commonly thought. We also note that practices in fitting dynamic occupancy models are highly variable, and that the existing literature lacks clear answers for best practices. This contrasts with the strong focus on modelling practices in the species distribution model literature, which we suggest may be a valuable resource for improving how authors implement dynamic occupancy models.
@@ -162,9 +284,16 @@ We present a review of applications of the dynamic occupancy model in the twenty
 <meta name="citation_reference" content="citation_title=Assessing the fit of site-occupancy models;,citation_author=Darryl I. MacKenzie;,citation_author=Larissa L. Bailey;,citation_publication_date=2004-09-01;,citation_cover_date=2004-09-01;,citation_year=2004;,citation_fulltext_html_url=https://doi.org/10.1198/108571104X3361;,citation_issue=3;,citation_doi=10.1198/108571104X3361;,citation_volume=9;,citation_language=en;,citation_journal_title=Journal of Agricultural, Biological, and Environmental Statistics;">
 </head>
 
-<body>
+  <body class="quarto-notebook">
+    <div id="quarto-embed-header" class="headroom fixed-top bg-primary">
+      
+      <a onclick="window.quartoBackToArticle(); return false;" class="btn btn-primary quarto-back-link" href=""><i class="bi bi-caret-left"></i> Back to Article</a>
+      <h6><i class="bi bi-journal-code"></i> Article Notebook</h6>
 
-<header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
+            <a href="./domReview.qmd" class="btn btn-primary quarto-download-embed" download="domReview.qmd">Download Source</a>
+          </div>
+
+     <header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
       <h1 class="title">Twenty years of dynamic occupancy models: a review of applications and a look towards the future</h1>
@@ -225,7 +354,7 @@ We present a review of applications of the dynamic occupancy model in the twenty
               </div>
       </div>
       <div class="quarto-title-meta-column-end quarto-other-formats-target">
-      <div class="quarto-alternate-formats"><div class="quarto-title-meta-heading">Other Formats</div><div class="quarto-title-meta-contents"><p><a href="domReview.docx"><i class="bi bi-file-word"></i>MS Word</a></p></div></div></div>
+      </div>
     </div>
 
     <div>
@@ -265,18 +394,13 @@ We present a review of applications of the dynamic occupancy model in the twenty
   </ul></li>
   <li><a href="#conclusions-and-key-considerations" id="toc-conclusions-and-key-considerations" class="nav-link" data-scroll-target="#conclusions-and-key-considerations">Conclusions and key considerations</a></li>
   </ul>
-<div class="quarto-alternate-notebooks"><h2>Notebooks</h2><ul><li><a href="domReview-preview.html"><i class="bi bi-journal-code"></i>Article Notebook</a></li></ul></div></nav>
+</nav>
 </div>
 <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
 </div>
-<main class="content quarto-banner-title-block page-columns page-full" id="quarto-document-content">
+<main class="content quarto-banner-title-block" id="quarto-document-content">      
 
-
-
-  
-
-
-<section id="introduction" class="level1">
+       <section id="introduction" class="level1">
 <h1>Introduction</h1>
 <p>Ecologists have long sought to describe the processes by which species are distributed across landscapes and throughout time <span class="citation" data-cites="humboldt1849">(<a href="#ref-humboldt1849" role="doc-biblioref">Humboldt 1849</a>)</span>, and an understanding of where a species exists, which factors lead to its presence, and how its distribution may change is ever more important in a dynamic and changing world. Descriptions of how widespread a species is and where it occurs are the foundation of monitoring programs and are imperative for assessing conservation status, and further untangling the drivers of occurrence can help us to better understand a species life history and inform potential management actions. Robust knowledge of the occupancy patterns of a species also helps us to predict where a species is most likely to occur — now, and under hypothetical future scenarios.</p>
 <p>The need to reliably describe species occupancy has led to the development of many quantitative approaches, of which the best known are species distribution models <span class="citation" data-cites="elith2009">(SDMs, <a href="#ref-elith2009" role="doc-biblioref">Jane Elith and Leathwick 2009</a>)</span>. The prototypical SDM correlates records of species occurrence with environmental features to determine where species are most probable to occur. While SDMs are an exceedingly popular tool for describing occupancy, the most frequently used implementations are known to struggle under certain common scenarios. First and foremost, SDMs do not typically account for imperfect detection, a near-ubiquitous characteristic of wildlife field data that can lead to meaningful bias in estimates of occupancy <span class="citation" data-cites="lahoz-monfort2014 guillera-arroita2017 gu2004">(<a href="#ref-lahoz-monfort2014" role="doc-biblioref">Lahoz-Monfort, Guillera-Arroita, and Wintle 2014</a>; <a href="#ref-guillera-arroita2017" role="doc-biblioref">Guillera-Arroita 2017</a>; <a href="#ref-gu2004" role="doc-biblioref">Gu and Swihart 2004</a>)</span>. Secondly, SDMs have been noted to perform poorly when a species’ distribution is not at equilibrium <span class="citation" data-cites="elith2010">(<a href="#ref-elith2010" role="doc-biblioref">Jane Elith, Kearney, and Phillips 2010</a>)</span>. These shortcomings may be problematic when working with invasive species or species whose ranges are expanding or contracting, all increasingly common scenarios in the Anthropocene <span class="citation" data-cites="bertelsmeier2013 lenoir2015">(<a href="#ref-bertelsmeier2013" role="doc-biblioref">Bertelsmeier, Luque, and Courchamp 2013</a>; <a href="#ref-lenoir2015" role="doc-biblioref">Lenoir and Svenning 2015</a>)</span>.</p>
@@ -374,10 +498,10 @@ Figure&nbsp;4: A) Study areas: Data for a majority of studies were collected fro
 <p>The authors of the studies captured in our sample come from a variety of backgrounds. 86% of articles had at least one author based at an academic institution, 46% had author(s) at government institutions and 25% had author(s) from non-profit organisations. The high proportion of articles with government and NGO participants suggests an applied focus for many users of DOMs. This has important implications: when a model is used to assess a critically endangered species <span class="citation" data-cites="carvalho2023">(<a href="#ref-carvalho2023" role="doc-biblioref">Carvalho et al. 2023</a>)</span>, guide public health management of a disease vector <span class="citation" data-cites="mores2020">(<a href="#ref-mores2020" role="doc-biblioref">Mores et al. 2020</a>)</span>, or track rapidly-developing biological invasions <span class="citation" data-cites="wood2020">(<a href="#ref-wood2020" role="doc-biblioref">Wood et al. 2020</a>)</span>, it is imperative that models can be trusted to accurately represent a system. Regardless of the reasons why they turn to the DOM to analyse their data, authors must navigate the model building process.</p>
 </section>
 </section>
-<section id="approaches-to-implementation" class="level1 page-columns page-full">
+<section id="approaches-to-implementation" class="level1">
 <h1>Approaches to implementation</h1>
 <p>Approaches to building any type of model will necessarily depend on the possibilities of the data at hand and on the priorities of the model-builder. This precludes any prescription of the ‘best’ way to build a model; however, there may still be commonalities in the modelling workflow. The modelling process for both DOMs and SDMs can be divided into a few components. First, based on prior knowledge and ecological theory a suite of covariates with hypothetical relationships with model parameters is assembled. Next, some form of model selection procedure is followed to identify either a single optimal model, or an ensemble of suitable models to be used to make conclusions. Following this, a model’s performance should be somehow assessed so that the validity of conclusions can be adequately judged. In this section we examine how DOM users have approaches each of these stages, and make comparisons to common practice in the more extensive SDM literature.</p>
-<section id="model-complexity" class="level3 page-columns page-full">
+<section id="model-complexity" class="level3">
 <h3 class="anchored" data-anchor-id="model-complexity">Model complexity</h3>
 <p>‘Complexity’ is a broad term which encompasses many aspects of a model <span class="citation" data-cites="merow2014">(<a href="#ref-merow2014" role="doc-biblioref">Merow et al. 2014</a>)</span>. Opinions on simple versus complex models can be divided - some advocate for the simplest possible models, arguing that they are most generaliseable; others insist that overly-simple models cannot adequately represent the most important drivers in a system <span class="citation" data-cites="evans2013 lonergan2014">(<a href="#ref-evans2013" role="doc-biblioref">Evans et al. 2013</a>; <a href="#ref-lonergan2014" role="doc-biblioref">Lonergan 2014</a>)</span>. To account for imperfect detection and describe change in occupancy, DOMs must be somewhat more complex relative to static correlative occupancy models. This added complexity helps mitigate the bias introduced when important elements like imperfect detection are ignored. Within DOMs, however, further complexity is to some degree up to the modeller: they can choose how many covariates to consider for inclusion on the various parameters, and how to represent the nature of the relationship between those covariates and parameters.</p>
 <p>The variation in the quality of covariates considered for each model parameter amongst our reviewed articles is shown in <a href="#fig-covariates" class="quarto-xref">Figure&nbsp;5</a>. Notably, many studies expressed some parameters as a constant without including any covariates: of the four standard model parameters initial occupancy has the most articles considering zero covariates (35%) and detection probability the least (19%). A lack of any covariates on the initial occupancy parameter raises some questions. Presumably any taxa will have some amount of non-random variation in how it is distributed across a landscape; by expressing initial occupancy as a constant this heterogeneity is not captured. Omission of factors which drive occupancy can introduce bias into SDMs <span class="citation" data-cites="barry2006">(<a href="#ref-barry2006" role="doc-biblioref">Barry and Elith 2006</a>)</span>. Initial occupancy is itself effectively a static correlative SDM, and the effects of poorly estimating this parameter on predicted occupancy in ensuing seasons is uncertain but unlikely to be favourable.</p>
@@ -392,9 +516,114 @@ Figure&nbsp;5: Distribution of covariate quantity considered for each model para
 </figure>
 </div>
 <p>The types of covariates which were considered for modelling were also wide-ranging, and a summary of their inclusions in articles is presented in <a href="#tbl-covariates" class="quarto-xref">Table&nbsp;1</a>. The most frequently used covariates described aspects of habitat, with 57% of articles considering these terms for at least one parameter. Data for covariates may be either collected directly, requiring measurement at individual sites, or indirectly via remote sensing — where directly measured covariates may offer more direct insights, indirect measurements are far more easily projected to unsurveyed sites when making predictions <span class="citation" data-cites="austin2002">(<a href="#ref-austin2002" role="doc-biblioref">M. P. Austin 2002</a>)</span>. Some covariates, like biotic interactions, must nearly always be measured at sites, while others such as climate and weather covariates are generally indirectly observed. There is variation in which covariates are most likely to be dynamic and change through time.</p>
-<div class="column-page-inset">
-<div class="cell">
-<div id="tbl-covariates" class="cell quarto-float anchored">
+<div class="">
+<div class="cell-container"><div class="cell-decorator"><pre>In [1]:</pre></div><div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.4     ✔ readr     2.1.5
+✔ forcats   1.0.0     ✔ stringr   1.5.1
+✔ ggplot2   3.5.1     ✔ tibble    3.2.1
+✔ lubridate 1.9.3     ✔ tidyr     1.3.1
+✔ purrr     1.0.2     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gt)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>covTable <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"Figures/CovariateTable.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 13 Columns: 11
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (2): Type, Category
+dbl (9): Overall_Proportion, InitOcc_Proportion, Colonisation_Proportion, Ex...
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+
+<div class="cell-container"><div class="cell-decorator"><pre>In [2]:</pre></div><div><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>covTable <span class="sc">|&gt;</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(Category, <span class="sc">-</span>Overall_Proportion) <span class="sc">|&gt;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">"Type"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_header</span>(<span class="st">"Covariate attributes"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_row_group</span>(</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="fu">md</span>(<span class="st">"Environmental covariates"</span>),</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">rows =</span> Category <span class="sc">==</span> <span class="st">"Environmental"</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">id =</span> <span class="st">"Env"</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_row_group</span>(</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="fu">md</span>(<span class="st">"Other covariates"</span>),</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">rows =</span> Category <span class="sc">==</span> <span class="st">"Other"</span>,</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">id =</span> <span class="st">"Other"</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_style</span>(</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">style =</span> <span class="fu">cell_fill</span>(<span class="at">color =</span> <span class="st">"#82AD8E"</span>),</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">locations =</span> <span class="fu">cells_row_groups</span>(<span class="at">groups =</span> <span class="st">"Env"</span>)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_style</span>(</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">style =</span> <span class="fu">list</span>(</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>      <span class="fu">cell_fill</span>(<span class="at">color =</span> <span class="st">"gray70"</span>)</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">locations =</span> <span class="fu">cells_row_groups</span>(<span class="at">groups =</span> <span class="st">"Other"</span>)</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">row_group_order</span>(<span class="at">groups =</span> <span class="fu">c</span>(<span class="st">"Env"</span>, <span class="st">"Other"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(<span class="at">label =</span> <span class="st">"Articles with covariate on:"</span>,</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>              <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">"Overall_Proportion"</span>, <span class="st">"InitOcc_Proportion"</span>,</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"Colonisation_Proportion"</span>, </span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"Extinction_Proportion"</span>,</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"Detection_Proportion"</span>),</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>              <span class="at">id =</span> <span class="st">"articles"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(<span class="at">label =</span> <span class="st">"Covariates which are:"</span>,</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>              <span class="at">columns =</span> <span class="fu">c</span>(Proportion_Dynamic, Proportion_Observed),</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>              <span class="at">id =</span> <span class="st">"covariates"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(<span class="at">label =</span> <span class="st">"Represented as:"</span>,</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>                <span class="at">columns =</span> <span class="fu">c</span>(Proportion_Polynomial, Proportion_Interact),</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>                <span class="at">id =</span> <span class="st">"representations"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>   <span class="fu">cols_label</span>(</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>    <span class="at">Overall_Proportion =</span> <span class="st">"Any parameter"</span>,</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">InitOcc_Proportion =</span> <span class="st">"Initial Occ."</span>,</span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>    <span class="at">Colonisation_Proportion =</span> <span class="st">"Colonisation"</span>,</span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>    <span class="at">Extinction_Proportion =</span> <span class="st">"Extinction"</span>,</span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>    <span class="at">Detection_Proportion =</span> <span class="st">"Detection"</span>,</span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>    <span class="at">Proportion_Dynamic =</span> <span class="st">"Dynamic"</span>,</span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>    <span class="at">Proportion_Observed =</span> <span class="st">"Directly observed"</span>,</span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>    <span class="at">Proportion_Polynomial =</span> <span class="st">"Non-linear"</span>,</span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>    <span class="at">Proportion_Interact =</span> <span class="st">"Interaction"</span></span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cols_hide</span>(Category) <span class="sc">|&gt;</span></span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fmt_percent</span>(<span class="at">decimals =</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sub_missing</span>(<span class="at">missing_text =</span> <span class="st">"-"</span>)<span class="sc">|&gt;</span></span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_style</span>(<span class="at">style =</span> <span class="fu">cell_fill</span>(<span class="at">color =</span> <span class="st">"lavender"</span>),</span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>            <span class="at">locations =</span> <span class="fu">cells_body</span>(<span class="at">columns =</span> Overall_Proportion,</span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">rows =</span> Overall_Proportion <span class="sc">==</span> <span class="fu">max</span>(Overall_Proportion, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tab_style</span>(<span class="at">style =</span> <span class="fu">cell_fill</span>(<span class="at">color =</span> <span class="st">"lavender"</span>),</span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a>            <span class="at">locations =</span> <span class="fu">cells_body</span>(<span class="at">columns =</span> InitOcc_Proportion,</span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">rows =</span> InitOcc_Proportion <span class="sc">==</span> <span class="fu">max</span>(InitOcc_Proportion, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tab_style</span>(<span class="at">style =</span> <span class="fu">cell_fill</span>(<span class="at">color =</span> <span class="st">"lavender"</span>),</span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>            <span class="at">locations =</span> <span class="fu">cells_body</span>(<span class="at">columns =</span> Colonisation_Proportion,</span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">rows =</span> Colonisation_Proportion <span class="sc">==</span> <span class="fu">max</span>(Colonisation_Proportion, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tab_style</span>(<span class="at">style =</span> <span class="fu">cell_fill</span>(<span class="at">color =</span> <span class="st">"lavender"</span>),</span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a>            <span class="at">locations =</span> <span class="fu">cells_body</span>(<span class="at">columns =</span> Extinction_Proportion,</span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">rows =</span> Extinction_Proportion <span class="sc">==</span> <span class="fu">max</span>(Extinction_Proportion, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tab_style</span>(<span class="at">style =</span> <span class="fu">cell_fill</span>(<span class="at">color =</span> <span class="st">"lavender"</span>),</span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a>            <span class="at">locations =</span> <span class="fu">cells_body</span>(<span class="at">columns =</span> Detection_Proportion,</span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">rows =</span> Detection_Proportion <span class="sc">==</span> <span class="fu">max</span>(Detection_Proportion, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tab_style</span>(<span class="at">style =</span> <span class="fu">cell_fill</span>(<span class="at">color =</span> <span class="st">"lavender"</span>),</span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a>            <span class="at">locations =</span> <span class="fu">cells_body</span>(<span class="at">columns =</span> Proportion_Dynamic,</span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">rows =</span> Proportion_Dynamic <span class="sc">==</span> <span class="fu">max</span>(Proportion_Dynamic, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tab_style</span>(<span class="at">style =</span> <span class="fu">cell_fill</span>(<span class="at">color =</span> <span class="st">"lavender"</span>),</span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a>            <span class="at">locations =</span> <span class="fu">cells_body</span>(<span class="at">columns =</span> Proportion_Observed,</span>
+<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">rows =</span> Proportion_Observed <span class="sc">==</span> <span class="fu">max</span>(Proportion_Observed, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tab_style</span>(<span class="at">style =</span> <span class="fu">cell_fill</span>(<span class="at">color =</span> <span class="st">"lavender"</span>),</span>
+<span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a>            <span class="at">locations =</span> <span class="fu">cells_body</span>(<span class="at">columns =</span> Proportion_Polynomial,</span>
+<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">rows =</span> Proportion_Polynomial <span class="sc">==</span> <span class="fu">max</span>(Proportion_Polynomial, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tab_style</span>(<span class="at">style =</span> <span class="fu">cell_fill</span>(<span class="at">color =</span> <span class="st">"lavender"</span>),</span>
+<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a>            <span class="at">locations =</span> <span class="fu">cells_body</span>(<span class="at">columns =</span> Proportion_Interact,</span>
+<span id="cb5-78"><a href="#cb5-78" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">rows =</span> Proportion_Interact <span class="sc">==</span> <span class="fu">max</span>(Proportion_Interact, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_raw_html</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div><div id="tbl-covariates" class="cell quarto-float anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-covariates-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;1: All covariates considered for inclusion in a study were classified into mutually exclusive categories. For each parameter (initial occupancy, colonisation, extinction, and detection), the percentage of studies including at least one covariate in a given category is presented. We also present the percentage of covariates in each category which are dynamic (change throughout seasons) or require direct observation (e.g.&nbsp;are not remotely sensed). The percentage of covariates in each category for which non-linear representations or interactions with other covariates were considered is given to indicate which were most likely to be included as more complex terms.
@@ -599,8 +828,8 @@ Table&nbsp;1: All covariates considered for inclusion in a study were classified
 </div>
 </div>
 </figure>
-<a class="quarto-notebook-link" id="nblink-2" href="domReview-preview.html#tbl-covariates">Source: Article Notebook</a></div>
-<a class="quarto-notebook-link" id="nblink-1" href="domReview-preview.html">Source: Article Notebook</a></div>
+</div></div></div>
+</div></div>
 </div>
 <p>For the vast majority of covariates authors considered only linear relationships with model parameters. Polynomial responses are rare — even in the categories where they are most frequently used, the rate of consideration for non-linear responses does not exceed 16%. This is a notable departure from SDMs; while GLM-based methods with linear responses are used, many common methods used to fit SDMs like MAXENT or boosted regression trees typically permit flexibility in response curves between covariates and parameters <span class="citation" data-cites="merow2013 elith2008">(<a href="#ref-merow2013" role="doc-biblioref">Merow, Smith, and Silander Jr 2013</a>; <a href="#ref-elith2008" role="doc-biblioref">J. Elith, Leathwick, and Hastie 2008</a>)</span>. Non-linear relationships are the norm, not the exception in nature, and in many cases a linear response will not adequately capture a covariate’s influence on model parameters <span class="citation" data-cites="austin2002">(<a href="#ref-austin2002" role="doc-biblioref">M. P. Austin 2002</a>)</span>. Interactions between covariates were also rarely incorporate in our sample, and their rate of inclusion does not exceed 34% for any category. While they should not necessarily be used liberally, where these interactions exist their exclusion can influence model performance <span class="citation" data-cites="guisan2006">(<a href="#ref-guisan2006" role="doc-biblioref">Guisan et al. 2006</a>)</span>.</p>
 <p>Any model must balance simplicity and realism, but it is important that the ecological relationships quantitatively expressed in a model be grounded in ecological theory and accurately represent the modeller’s hypothesised response <span class="citation" data-cites="austin2002 austin2007">(<a href="#ref-austin2002" role="doc-biblioref">M. P. Austin 2002</a>; <a href="#ref-austin2007" role="doc-biblioref">M. Austin 2007</a>)</span>. Complexity in the quantity and nature of covariate responses is also controlled during model selection, but these procedures can only work with the information provided to them. Adequately considering the plausible drivers of occupancy and detection by identifying quality candidate covariates representing those drivers is an important step in developing robust models that appropriately account for heterogeneity in these parameters.</p>
@@ -626,9 +855,68 @@ Figure&nbsp;6: Frequency of use for model selection methods. ‘Single model’ 
 <p>Regardless of whether a model was implemented under the Bayesian or frequentist frameworks, evaluation of model fit or performance was rare. Only 8% of articles directly addressed either aspect of modelling, be it via goodness-of-fit tests or validation with either internal or external data. This is a striking departure from the SDM literature, where roughly half of studies sufficiently assess their models performance <span class="citation" data-cites="araújo2019">(<a href="#ref-araújo2019" role="doc-biblioref">M. B. Araújo et al. 2019</a>)</span>. While the appropriate method of model evaluation may depend on data availability and research objectives, assessing models by some method is always important to ensure reliability of model outputs <span class="citation" data-cites="araújo2005 guisan2005">(<a href="#ref-araújo2005" role="doc-biblioref">M. Araújo et al. 2005</a>; <a href="#ref-guisan2005" role="doc-biblioref">Guisan and Thuiller 2005</a>)</span>. Most models in our sample conduct model selection using AIC as a scoring criteria, and often using model averages. While these approaches provide <em>relative</em> models of fit, they cannot be considered evaluation themselves - as <span class="citation" data-cites="mackenzie2004">MacKenzie and Bailey (<a href="#ref-mackenzie2004" role="doc-biblioref">2004</a>)</span> write, “the selection of a ‘best’ model(s) does not guarantee the selection of a”good” model.</p>
 <p>The first goodness-of-fit (GOF) test for occupancy model was given in <span class="citation" data-cites="mackenzie2004">MacKenzie and Bailey (<a href="#ref-mackenzie2004" role="doc-biblioref">2004</a>)</span>, implemented via a parametric bootstrap. There is no GOF test available for DOM, however, common packages including ‘AICcModAvg’ and ‘unmarked’ offer parametric bootstraps derived from <span class="citation" data-cites="mackenzie2004">MacKenzie and Bailey (<a href="#ref-mackenzie2004" role="doc-biblioref">2004</a>)</span>’s test which have been used by some authors in our sample. While these tests may not suit Bayesian implementations, <span class="citation" data-cites="broms2016">Broms et al. (<a href="#ref-broms2016" role="doc-biblioref">2016</a>)</span> discusses possibilities for model evaluation in that context - while their article focuses on single-season multi-species occupancy models, extensions of their approach may suit the dynamic multi-season model as well.</p>
 <p>All aspects of modelling varied with the stated objectives of articles (<a href="#tbl-objectives" class="quarto-xref">Table&nbsp;2</a>). Those focussed on making predictions and identifying drivers of occupancy were more likely to consider a larger number of covariates and represented covariates in more complex ways by considering non-linear responses and interactions between covariates. Articles with objectives involving methods development considered fewer covariates and were less likely to use these more complex formulations.</p>
-<div>
-<div class="cell">
-<div id="tbl-objectives" class="cell quarto-float anchored">
+<div class="">
+<div class="cell-container"><div class="cell-decorator"><pre>In [3]:</pre></div><div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>objTable <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"Figures/ObjectiveTable.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 6 Columns: 8
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (1): Objective
+dbl (7): Articles, ArticlesProp, MedianCovs, ProbPoly, ProbInt, ProbEval, Pr...
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+
+<div class="cell-container"><div class="cell-decorator"><pre>In [4]:</pre></div><div><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>objTable <span class="sc">|&gt;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Objective =</span> <span class="fu">fct</span>(Objective,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                         <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Hypothesis"</span>, <span class="st">"Drivers"</span>, <span class="st">"Parameters"</span>,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">"Methods"</span>, <span class="st">"Predict"</span>, <span class="st">"Any"</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(Objective) <span class="sc">|&gt;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Objective =</span> <span class="fu">case_when</span>(Objective <span class="sc">==</span> <span class="st">"Hypothesis"</span> <span class="sc">~</span> <span class="st">"Testing hypotheses"</span>,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>                               Objective <span class="sc">==</span> <span class="st">"Drivers"</span> <span class="sc">~</span> <span class="st">"Identifying drivers"</span>,</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>                               Objective <span class="sc">==</span> <span class="st">"Predict"</span> <span class="sc">~</span> <span class="st">"Making predictions"</span>,</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>                               Objective <span class="sc">==</span> <span class="st">"Methods"</span> <span class="sc">~</span> <span class="st">"Developing methods"</span>,</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>                               Objective <span class="sc">==</span> <span class="st">"Parameters"</span> <span class="sc">~</span> <span class="st">"Estimating parameters"</span>,</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>                               Objective <span class="sc">==</span> <span class="st">"Any"</span> <span class="sc">~</span> <span class="st">"Any objective"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">"Objective"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(<span class="at">label =</span> <span class="st">"Articles"</span>,</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>              <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">"Articles"</span>, <span class="st">"ArticlesProp"</span>),</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>              <span class="at">id =</span> <span class="st">"articles"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_spanner</span>(<span class="at">label =</span> <span class="st">"Percent which have:"</span>,</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>              <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">"ProbPoly"</span>, <span class="st">"ProbInt"</span>,</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>                          <span class="st">"ProbEval"</span>, <span class="st">"ProbSelect"</span>),</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>              <span class="at">id =</span> <span class="st">"percents"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cols_label</span>(<span class="at">Articles =</span> <span class="st">"n"</span>, <span class="at">ArticlesProp =</span> <span class="st">"%"</span>,</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>             <span class="at">MedianCovs =</span> <span class="st">"Median covariates considered"</span>,</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>             <span class="at">ProbPoly =</span> <span class="st">"Non-linear responses"</span>,</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>             <span class="at">ProbInt =</span> <span class="st">"Covariate interactions"</span>,</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>             <span class="at">ProbSelect =</span> <span class="st">"Model selection"</span>,</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>             <span class="at">ProbEval =</span> <span class="st">"Model evaluation / goodness of fit"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fmt_percent</span>(<span class="at">columns =</span> <span class="fu">c</span>(ArticlesProp, </span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>                          ProbPoly, ProbInt, </span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>                          ProbEval, ProbSelect),</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>              <span class="at">decimals =</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_style</span>(<span class="at">style =</span> <span class="fu">list</span>(<span class="fu">cell_fill</span>(<span class="at">color =</span> <span class="st">"gray80"</span>),</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>                         <span class="fu">cell_text</span>(<span class="at">style =</span> <span class="st">"italic"</span>)),</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>            <span class="at">locations =</span> <span class="fu">cells_body</span>(<span class="at">rows =</span> Objective <span class="sc">==</span> <span class="st">"Any objective"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_style</span>(<span class="at">style =</span> <span class="fu">cell_fill</span>(<span class="at">color =</span> <span class="st">"lavender"</span>),</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>            <span class="at">locations =</span> <span class="fu">cells_body</span>(<span class="at">columns =</span> MedianCovs,</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">rows =</span> MedianCovs <span class="sc">==</span> <span class="fu">max</span>(MedianCovs, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_style</span>(<span class="at">style =</span> <span class="fu">cell_fill</span>(<span class="at">color =</span> <span class="st">"lavender"</span>),</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>            <span class="at">locations =</span> <span class="fu">cells_body</span>(<span class="at">columns =</span> ProbPoly,</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">rows =</span> ProbPoly <span class="sc">==</span> <span class="fu">max</span>(ProbPoly, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_style</span>(<span class="at">style =</span> <span class="fu">cell_fill</span>(<span class="at">color =</span> <span class="st">"lavender"</span>),</span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>            <span class="at">locations =</span> <span class="fu">cells_body</span>(<span class="at">columns =</span> ProbInt,</span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">rows =</span> ProbInt <span class="sc">==</span> <span class="fu">max</span>(ProbInt, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_style</span>(<span class="at">style =</span> <span class="fu">cell_fill</span>(<span class="at">color =</span> <span class="st">"lavender"</span>),</span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>            <span class="at">locations =</span> <span class="fu">cells_body</span>(<span class="at">columns =</span> ProbEval,</span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">rows =</span> ProbEval <span class="sc">==</span> <span class="fu">max</span>(ProbEval, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tab_style</span>(<span class="at">style =</span> <span class="fu">cell_fill</span>(<span class="at">color =</span> <span class="st">"lavender"</span>),</span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>            <span class="at">locations =</span> <span class="fu">cells_body</span>(<span class="at">columns =</span> ProbSelect,</span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">rows =</span> ProbSelect <span class="sc">==</span> <span class="fu">max</span>(ProbSelect, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_raw_html</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div><div id="tbl-objectives" class="cell quarto-float anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-objectives-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;2: Implementation of models by study objective. Models were assessed based on the number of covariates considered, the inclusion of non-linear responses and interactions between covaraites, the manner of model selection, and whether or not they objectively evaluated model performance.
@@ -725,8 +1013,8 @@ Table&nbsp;2: Implementation of models by study objective. Models were assessed 
 </div>
 </div>
 </figure>
-<a class="quarto-notebook-link" id="nblink-4" href="domReview-preview.html#tbl-objectives">Source: Article Notebook</a></div>
-<a class="quarto-notebook-link" id="nblink-3" href="domReview-preview.html">Source: Article Notebook</a></div>
+</div></div></div>
+</div></div>
 </div>
 </section>
 </section>
@@ -747,10 +1035,7 @@ Table&nbsp;2: Implementation of models by study objective. Models were assessed 
 <span class="glightbox-desc lightbox-desc-5">Figure&nbsp;5: Distribution of covariate quantity considered for each model parameter.</span>
 <span class="glightbox-desc lightbox-desc-6">Figure&nbsp;6: Frequency of use for model selection methods. ‘Single model’ indicates no model selection occurred, ‘candidate suite’ includes studies which compared a predefined set of models, articles with ‘procedural selection’ fit parameters one-by-one, ‘exhaustive selection’ fit all possible combinations of models, and ‘simple precursor’ describes where results of a less-complex model were used to inform covariate choice.</span>
 </div>
-
-</section>
-
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
 <div id="ref-araújo2019" class="csl-entry" role="listitem">
 Araújo, Miguel B., Robert P. Anderson, A. Márcia Barbosa, Colin M. Beale, Carsten F. Dormann, Regan Early, Raquel A. Garcia, et al. 2019. <span>“Standards for Distribution Models in Biodiversity Assessments.”</span> <em>Science Advances</em> 5 (1): eaat4858. <a href="https://doi.org/10.1126/sciadv.aat4858">https://doi.org/10.1126/sciadv.aat4858</a>.
 </div>
@@ -973,9 +1258,10 @@ Zuckerberg, Benjamin, David N. Bonter, Wesley M. Hochachka, Walter D. Koenig, Ar
 <div id="ref-zurell2020" class="csl-entry" role="listitem">
 Zurell, Damaris, Janet Franklin, Christian König, Phil J. Bouchet, Carsten F. Dormann, Jane Elith, Guillermo Fandos, et al. 2020. <span>“A Standard Protocol for Reporting Species Distribution Models.”</span> <em>Ecography</em> 43 (9): 1261–77. <a href="https://doi.org/10.1111/ecog.04960">https://doi.org/10.1111/ecog.04960</a>.
 </div>
-</div></section></div></main>
-<!-- /main column -->
-<script id="quarto-html-after-body" type="application/javascript">
+</div>
+</section>
+     </main>
+<!-- /main column -->  <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
     const mode = bsSheetEl.getAttribute("data-mode");
@@ -1383,9 +1669,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
 });
-</script>
-</div> <!-- /content -->
-<script>var lightboxQuarto = GLightbox({"openEffect":"zoom","descPosition":"bottom","closeEffect":"zoom","selector":".lightbox","loop":false});
+</script>  </div> <!-- /content -->  <script>var lightboxQuarto = GLightbox({"loop":false,"openEffect":"zoom","descPosition":"bottom","selector":".lightbox","closeEffect":"zoom"});
 window.onload = () => {
   lightboxQuarto.on('slide_before_load', (data) => {
     const { slideIndex, slideNode, slideConfig, player, trigger } = data;
@@ -1409,9 +1693,6 @@ window.onload = () => {
   });
 
 };
-          </script>
-
-
-
-
+          </script> 
+  
 </body></html>
