@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Saoirse Kelleher">
-<meta name="dcterms.date" content="2024-07-28">
+<meta name="dcterms.date" content="2024-07-29">
 
 <title>Randomise papers for DOM Review</title>
 <style>
@@ -3105,7 +3105,7 @@ vertical-align: -.125em;
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">July 28, 2024</p>
+      <p class="date">July 29, 2024</p>
     </div>
   </div>
   
@@ -3130,28 +3130,26 @@ vertical-align: -.125em;
 <h2 class="anchored" data-anchor-id="load-web-of-science-queries">Load Web of Science queries</h2>
 <p>Two search queries were made on Web of Science on July 26 2024.</p>
 <ol type="1">
-<li>ALL=(dynamic occupancy model*) OR ALL=(occupancy dynamic$ model*) OR ALL=(multi$season occupancy model*) OR (ALL=(occupancy) AND ALL=(Coloni$ation) AND ((ALL = (Extinction)) OR (ALL = (Persistence))) AND All=(Detection)) and Ecology or Biodiversity Conservation or Environmental Sciences or Zoology or Evolutionary Biology or Biology or Ornithology or Forestry or Plant Sciences or Environmental Studies or Fisheries or Entomology (Web of Science Categories)</li>
+<li>ALL=(“dynamic* occupancy model*”) OR TS=(dynamic* NEAR “occupancy model*”) OR TI=(dynamic* NEAR “occupancy model*”) OR AB=(dynamic* NEAR “occupancy model*”) OR ALL=(“occupancy dynamic*”) OR ALL=(“multi*season occupancy model*”) OR ALL=(“multi-season occupancy model*”) OR (ALL=(occupancy) AND ALL=(coloni?ation) AND (ALL=(extinction) OR ALL=(persistence)) AND ALL=(detect*)) and Ecology or Biodiversity Conservation or Environmental Sciences or Zoology or Ornithology or Evolutionary Biology or Biology or Marine Freshwater Biology or Forestry or Fisheries or Entomology or Plant Sciences or Environmental Studies (Web of Science Categories)</li>
 <li>All articles citing MacKenzie et al. 2003</li>
 </ol>
 <p>WOS datasheets containing all matching records are loaded in.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>keyTerms_datasheet <span class="ot">&lt;-</span> <span class="fu">read_xlsx</span>(<span class="st">&quot;Queries/Final Queries/KeyTerms_A.xlsx&quot;</span>,</span>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>keyTerms_datasheet <span class="ot">&lt;-</span> <span class="fu">read_xlsx</span>(<span class="st">&quot;Queries/Final Queries/Keywords.xlsx&quot;</span>,</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                                <span class="at">skip =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rbind</span>(<span class="fu">read_xlsx</span>(<span class="st">&quot;Queries/Final Queries/KeyTerms_B.xlsx&quot;</span>,</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                  <span class="at">skip =</span> <span class="dv">10</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Title, <span class="at">Year =</span> <span class="st">&quot;Publication Year&quot;</span>, <span class="at">Journal =</span> <span class="st">&quot;Source Title&quot;</span>, </span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>         Authors, <span class="at">Citations =</span> <span class="st">&quot;Total Citations&quot;</span>, DOI) <span class="sc">|&gt;</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Query =</span> <span class="st">&quot;KeyTerms&quot;</span>)</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>citesMackenzie_datasheet <span class="ot">&lt;-</span> <span class="fu">read_xlsx</span>(<span class="st">&quot;Queries/Final Queries/MacKenzie_A.xlsx&quot;</span>,</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">skip =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rbind</span>(<span class="fu">read_xlsx</span>(<span class="st">&quot;Queries/Final Queries/MacKenzie_B.xlsx&quot;</span>,</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>                  <span class="at">skip =</span> <span class="dv">10</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Title, <span class="at">Year =</span> <span class="st">&quot;Publication Year&quot;</span>, <span class="at">Journal =</span> <span class="st">&quot;Source Title&quot;</span>, </span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>         Authors, <span class="at">Citations =</span> <span class="st">&quot;Total Citations&quot;</span>, DOI) <span class="sc">|&gt;</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Query =</span> <span class="st">&quot;CitesMackenzie&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Title, <span class="at">Year =</span> <span class="st">&quot;Publication Year&quot;</span>, <span class="at">Journal =</span> <span class="st">&quot;Source Title&quot;</span>, </span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>         Authors, <span class="at">Citations =</span> <span class="st">&quot;Total Citations&quot;</span>, DOI) <span class="sc">|&gt;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Query =</span> <span class="st">&quot;KeyTerms&quot;</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>citesMackenzie_datasheet <span class="ot">&lt;-</span> <span class="fu">read_xlsx</span>(<span class="st">&quot;Queries/Final Queries/MacKenzie_A.xlsx&quot;</span>,</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">skip =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rbind</span>(<span class="fu">read_xlsx</span>(<span class="st">&quot;Queries/Final Queries/MacKenzie_B.xlsx&quot;</span>,</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>                  <span class="at">skip =</span> <span class="dv">10</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Title, <span class="at">Year =</span> <span class="st">&quot;Publication Year&quot;</span>, <span class="at">Journal =</span> <span class="st">&quot;Source Title&quot;</span>, </span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>         Authors, <span class="at">Citations =</span> <span class="st">&quot;Total Citations&quot;</span>, DOI) <span class="sc">|&gt;</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Query =</span> <span class="st">&quot;CitesMackenzie&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>The datasheets are then combined, and duplicate records are removed. All records prior to 2004 are also removed. Each article is given a unique ID.</p>

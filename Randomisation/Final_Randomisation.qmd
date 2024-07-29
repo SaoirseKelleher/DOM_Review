@@ -24,16 +24,14 @@ library("readxl")
 
 Two search queries were made on Web of Science on July 26 2024.
 
-1.  ALL=(dynamic occupancy model\*) OR ALL=(occupancy dynamic\$ model\*) OR ALL=(multi\$season occupancy model\*) OR (ALL=(occupancy) AND ALL=(Coloni\$ation) AND ((ALL = (Extinction)) OR (ALL = (Persistence))) AND All=(Detection)) and Ecology or Biodiversity Conservation or Environmental Sciences or Zoology or Evolutionary Biology or Biology or Ornithology or Forestry or Plant Sciences or Environmental Studies or Fisheries or Entomology (Web of Science Categories)
+1.  ALL=("dynamic\* occupancy model\*") OR TS=(dynamic\* NEAR "occupancy model\*") OR TI=(dynamic\* NEAR "occupancy model\*") OR AB=(dynamic\* NEAR "occupancy model\*") OR ALL=("occupancy dynamic\*") OR ALL=("multi\*season occupancy model\*") OR ALL=("multi-season occupancy model\*") OR (ALL=(occupancy) AND ALL=(coloni?ation) AND (ALL=(extinction) OR ALL=(persistence)) AND ALL=(detect\*)) and Ecology or Biodiversity Conservation or Environmental Sciences or Zoology or Ornithology or Evolutionary Biology or Biology or Marine Freshwater Biology or Forestry or Fisheries or Entomology or Plant Sciences or Environmental Studies (Web of Science Categories)
 2.  All articles citing MacKenzie et al. 2003
 
 WOS datasheets containing all matching records are loaded in.
 
 ```{r load WOS queries}
-keyTerms_datasheet <- read_xlsx("Queries/Final Queries/KeyTerms_A.xlsx",
+keyTerms_datasheet <- read_xlsx("Queries/Final Queries/Keywords.xlsx",
                                 skip = 10) |>
-  rbind(read_xlsx("Queries/Final Queries/KeyTerms_B.xlsx",
-                  skip = 10)) |>
   select(Title, Year = "Publication Year", Journal = "Source Title", 
          Authors, Citations = "Total Citations", DOI) |>
   mutate(Query = "KeyTerms")
