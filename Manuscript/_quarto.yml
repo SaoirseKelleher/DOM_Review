@@ -4,6 +4,9 @@ project:
 manuscript:
   article: domReview.qmd
 
+bibliography: references.bib
+csl: apa.csl
+
 format:
   html:
     theme: simplex
@@ -11,6 +14,7 @@ format:
 
 execute:
   freeze: true
+
 
 
 
