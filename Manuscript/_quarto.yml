@@ -1,5 +1,7 @@
 project:
   type: manuscript
+  output-dir: Outputs
+  execute-dir: project
 
 manuscript:
   article: domReview.qmd
@@ -11,10 +13,3 @@ format:
   html:
     theme: simplex
   docx: default
-
-execute:
-  freeze: true
-
-
-
-

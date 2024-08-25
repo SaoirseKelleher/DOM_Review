@@ -16,6 +16,7 @@ embed-resources: true
 ```{r load packages}
 #| include: false
 library(tidyverse)
+library(patchwork)
 library(sf)
 library(readxl)
 ```
@@ -94,15 +95,17 @@ randomisationSheets <- list(read_xlsx("Randomisation/Final_Randomisation.xlsx", 
 
 ```{r Taxa bar plot}
 focalTaxaPlot <- sheet_FocalTaxa |>
-  mutate(Status = case_when(Status %in% c("CR", "EN", "NT", "Threatened_Other") ~ "Threatened",
-                            Status == "NA" ~ "Multispecies",
+  mutate(Status = case_when(Status %in% c("CR", "EN", "NT", "VU", "Threatened_Other") ~ "Threatened",
+                            Status == "NA" ~ "Multiple species",
                             Status == "Invasive" ~ "Invasive",
                             Status == "LC" ~ "Stable")) |>
-  mutate(Status = fct(Status, levels = c("Multispecies", "Invasive",
+  mutate(Status = fct(Status, levels = c("Multiple species", "Invasive",
                                          "Stable", "Threatened"))) |>
   summarise(Articles = n(), .by = c(`Taxa keywords`, Status)) |>
   select(Articles, Taxa = `Taxa keywords`, Status) |>
-  mutate(Taxa = fct_reorder(Taxa, Articles)) |>
+  mutate(Taxa = case_when(Taxa == "NA" ~ "Other", .default = Taxa)) |>
+  mutate(Taxa = fct(Taxa, levels = rev(c("Bird", "Mammal", "Herptile",
+                                     "Invertebrate", "Other")))) |>
   
   ggplot() +
   geom_col(aes(x = Articles, y = Taxa, fill = Status)) +
@@ -136,16 +139,18 @@ sheet_ArticleData |>
 Determine estimated coverage
 
 ```{r Article coverage}
-coveragePlot <- randomisationSheets |>
-  summarise(N = n(), .by = c(Strata, Included)) |>
-  pivot_wider(names_from = Included, values_from = N) |>
-  mutate(HitRate = YES/(NO+YES)) |>
+coveragePlot <- 
+  randomisationSheets |>
+  summarise(N = n(), .by = c(Year, Strata, Included)) |>
+  pivot_wider(names_from = Included, values_from = N, values_fill = 0) |>
+  mutate(HitRate = sum(YES)/(sum(NO)+sum(YES)),
+         .by = Strata) |>
   mutate(EstRemaining = `NA`*HitRate) |>
   pivot_longer(cols = c(YES, EstRemaining), 
                names_to = 'Group', values_to = 'Articles') |>
   
   ggplot() +
-  geom_col(aes(x = Strata, y = Articles, fill = Group), colour = "white") +
+  geom_col(aes(x = Year, y = Articles, fill = Group), colour = "white") +
   scale_fill_manual("",
                     limits = c("YES", "EstRemaining"),
                     labels = c("Included articles", 
@@ -155,7 +160,7 @@ coveragePlot <- randomisationSheets |>
   theme(panel.grid.major.x = element_blank(),
         legend.position = "top", axis.text = element_text(size = 12),
         axis.title = element_text(size = 12), legend.text = element_text(size = 12))
-
+coveragePlot
 ggsave(plot = coveragePlot, "Manuscript/Figures/CoveragePlot.jpeg",
        width = 8, height = 4)
 ```
@@ -178,10 +183,11 @@ studyArea_Map <- sheet_StudyArea |>
   
   ggplot() +
   geom_sf(data = countries_shp, colour = "gray90", fill = "gray80") +
-  geom_sf(shape = 21,fill = "aquamarine4", colour = "white", alpha = 0.7, size = 4) +
+  geom_sf(shape = 21,fill = "aquamarine4", colour = "white", alpha = 0.7, size = 2.5) +
   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank(),
         panel.background = element_rect(fill='transparent', color=NA),
-        plot.background = element_rect(fill='transparent', color=NA)) 
+        plot.background = element_rect(fill='transparent', color=NA),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
 studyArea_Map
 ggsave(plot = studyArea_Map, "Manuscript/Figures/StudiesMap.png")
 ```
@@ -204,8 +210,8 @@ studyAreaPlot <- sheet_StudyArea |>
   theme(panel.grid = element_blank(),
         axis.text.x = element_text(size = 20,
                                    angle = 90,
-                                   vjust = 1, hjust = 1),
-        axis.text.y = element_blank(), axis.ticks.y = element_blank(),
+                                   vjust = 0.5, hjust = 1),
+        axis.text.y = element_blank(), axis.ticks = element_blank(),
         panel.background = element_rect(fill='transparent', color=NA),
         plot.background = element_rect(fill='transparent', color=NA))
 studyAreaPlot
@@ -253,10 +259,11 @@ Plot site quantity
 
 ```{r plot site quantity}
 siteQuantityPlot <- sheet_DataCollection |>
+  mutate(`Site quantity` = as.numeric(`Site quantity`)) |>
   ggplot() +
   geom_histogram(aes(y = `Site quantity`),
                  binwidth = 0.25, fill = "aquamarine4", colour = "white") +
-  geom_hline(aes(yintercept = median(`Site quantity`)), 
+  geom_hline(aes(yintercept = median(`Site quantity`, na.rm = TRUE)), 
              colour = "goldenrod3", linetype = 2, linewidth = 2) +
   scale_y_continuous(transform = "log10",
                      limits = c(5, 10000),
@@ -278,6 +285,7 @@ Site quantity boxplots
 
 ```{r site quantity boxplots}
 sheet_DataCollection |>
+  mutate(`Site quantity` = as.numeric(`Site quantity`)) |>
   left_join(select(sheet_ArticleData, c(`Review ID`, `Year Strata`)), by = "Review ID") |>
   mutate(outlier = case_when(`Site quantity` >= 500 ~ TRUE,
                              .default = FALSE)) |>
@@ -338,6 +346,7 @@ Study scale over time
 
 ```{r study scale over time}
 sheet_DataCollection |>
+  mutate(`Site quantity` = as.numeric(`Site quantity`)) |>
   left_join(select(sheet_ArticleData, c(`Review ID`, `Year Strata`)), by = "Review ID") |>
   filter(!`Secondary occasions` %in% c('Unclear', 'Unspecified')) |>
   separate_wider_delim(`Secondary occasions`, delim = "-",
@@ -345,9 +354,9 @@ sheet_DataCollection |>
                        too_few = 'align_end') |>
   mutate(maxSecondary = as.numeric(maxSecondary)) |>
   mutate(studyScale = `Site quantity`*`Primary occasions`) |>
-  mutate(studyScale = case_when(studyScale > 5000 ~ 5000,
+  mutate(studyScale = case_when(studyScale > 10000 ~ 10000,
                                 .default = studyScale)) |>
-  mutate(outlier = case_when(studyScale >= 5000 ~ TRUE,
+  mutate(outlier = case_when(studyScale >= 10000 ~ TRUE,
                              .default = FALSE)) |>
   
   ggplot(aes(x = `Year Strata`, y = studyScale)) +
@@ -653,35 +662,136 @@ sheet_Objectives |>
 Objective proportions through time
 
 ```{r Objectives through time}
-sheet_Objectives |>
+objectiveTrendPlot <- sheet_Objectives |>
   left_join(select(sheet_ArticleData, c(`Review ID`, `Year Strata`)), by = "Review ID") |>
   pivot_longer(c("Demonstrate methods?", "Observe trends?", 
                  "Identify drivers?", "Test relationships?",
                  "Predict spatially?", "Predict temporally?"),
                names_to = "Objective", values_to = "ObjectiveIncluded") |>
-  filter(ObjectiveIncluded == "YES") |>
+  mutate(Objective = str_replace(Objective, "\\?", "")) |>
+  filter(ObjectiveIncluded == "YES") %>%
+  rbind(., mutate(., `Year Strata` = "All Years")) |>
   mutate(Articles = length(unique(`Review ID`)), .by = `Year Strata`) |>
   summarise(ObjArticles = n(), .by = c(Objective, Articles, `Year Strata`)) |>
-  mutate(PropArticles = ObjArticles/Articles) |>
+  mutate(PropArticles = (ObjArticles/Articles)*100) |>
   mutate(Objective = fct_reorder(Objective, PropArticles)) |>
   complete(Objective, `Year Strata`, fill = list(PropArticles = 0)) |>
-  mutate(Objective = factor(Objective, levels = c("Demonstrate methods?",
-                                               "Observe trends?", 
-                                               "Identify drivers?", 
-                                               "Test relationships?",
-                                               "Predict spatially?",
-                                               "Predict temporally?"))) |>
+  mutate(Strata = case_when(`Year Strata` == "All Years" ~ "left",
+                            .default = "right")) |>
+  mutate(Strata = fct(Strata, levels = c("left", "right"))) |>
+  mutate(Objective = factor(Objective, levels = c("Demonstrate methods",
+                                                  "Observe trends", 
+                                                  "Identify drivers", 
+                                                  "Test relationships",
+                                                  "Predict spatially",
+                                                  "Predict temporally"))) |>
+  mutate(`Year Strata` = fct(`Year Strata`, levels = c("2004-2007",
+                                                       "2008-2011",
+                                                       "2012-2015", 
+                                                       "2016-2019",
+                                                       "2020-2023",
+                                                       "All Years"))) |>
   
   ggplot() +
   geom_col(aes(x = `Year Strata`, y = PropArticles, fill = Objective),
            position = "dodge", colour = "white") + 
-  scale_fill_manual(values = c("plum4", "cadetblue3", "aquamarine3",
+  scale_fill_manual("",
+                    values = c("plum4", "cadetblue3", "aquamarine3",
                                "aquamarine4", "goldenrod2", "goldenrod3")) +
-  labs(y = "Proportion of studies") +
-  lims(y = c(0, 1)) +
+  scale_y_continuous(breaks = c(0, 20, 40, 60, 80),
+                     limits = c(0, 80),
+                     labels = c("0%", "20%", "40%", "60%", "80%")) +
+  labs(y = "Percentage of studies\nwith objective", x = "") +
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
-        legend.position = "top")
+        legend.text = element_text(size = 15),
+        axis.text = element_text(size = 15), axis.title = element_text(size = 15),
+        legend.position = "bottom", strip.background = element_blank(),
+        strip.text = element_blank()) +
+  facet_grid(cols = vars(Strata),
+             scales = "free_x", space = "free_x", drop = TRUE)
+objectiveTrendPlot
+ggsave(plot = objectiveTrendPlot, "Manuscript/Figures/ObjectiveTrend.jpeg",
+       width = 8, height = 4)
+```
+
+Avg covariate count by objective
+
+```{r Objective covariate count}
+covsPerParam <- sheet_Covariates |>
+  separate_longer_delim(Covariates, delim = ", ") |>
+  mutate(n_models = length(unique(`Model ID`)), .by = `Review ID`) |>
+  filter(`Parameter type` %in% c("Initial occupancy", "Occupancy",
+                                 "Colonisation", "Extinction_Persistence",
+                                 "Detection")) |>
+  mutate(n_params = length(unique(`Parameter type`)), .by = `Review ID`) |>
+  filter(Covariates != "None") |>
+  summarise(CovsPerParam = n()/(max(n_params)*max(n_models)), .by = `Review ID`)
+
+objectiveCovariatePlot <- sheet_Objectives |>
+  pivot_longer(c("Demonstrate methods?", "Observe trends?", 
+                 "Identify drivers?", "Test relationships?",
+                 "Predict spatially?", "Predict temporally?"),
+               names_to = "Objective", values_to = "ObjectiveIncluded") |>
+  mutate(Objective = str_replace(Objective, "\\?", "")) |>
+  filter(ObjectiveIncluded == "YES") %>%
+  rbind(., mutate(., Objective = "Any Objective")) |>
+  select(`Review ID`, Objective) |>
+  distinct() |>
+  left_join(covsPerParam, by = join_by(`Review ID`)) |>
+    
+  mutate(Objective = factor(Objective, levels = c("Any Objective", "Demonstrate methods",
+                                                  "Observe trends", 
+                                                  "Identify drivers", 
+                                                  "Test relationships",
+                                                  "Predict spatially",
+                                                  "Predict temporally"))) |>
+  mutate(Objective = fct_relabel(Objective, 
+                                 ~ str_replace(.x, " ", "\n"))) |>
+  mutate(facet = case_when(Objective == "Any\nObjective" ~ "left",
+                           .default = "right")) |>
+  mutate(CovsPerParam = case_when(CovsPerParam > 10 ~ 10,
+                                  .default = CovsPerParam)) |>
+  
+  ggplot(aes(x = Objective, y = CovsPerParam, 
+             fill = Objective, colour = Objective)) +
+  geom_boxplot(colour = "gray50", alpha = 0.6) +
+  geom_jitter(alpha = 0.6, width = 0.1) +
+  scale_y_continuous(breaks = c(0, 2, 4, 6, 8, 10),
+                     labels = c("0", "2", "4", "6", "8", "10+")) +
+  scale_fill_manual(limits = c("Any\nObjective", "Demonstrate\nmethods", 
+                               "Observe\ntrends", "Identify\ndrivers", 
+                               "Test\nrelationships", "Predict\nspatially",
+                               "Predict\ntemporally"),
+                    values = c("gray60", "plum4", "cadetblue3", "aquamarine3",
+                               "aquamarine4", "goldenrod2", "goldenrod3")) +
+  scale_colour_manual(limits = c("Any\nObjective", "Demonstrate\nmethods", 
+                                 "Observe\ntrends", "Identify\ndrivers", 
+                                 "Test\nrelationships", "Predict\nspatially",
+                                 "Predict\ntemporally"),
+                      values = c("gray60", "plum4", "cadetblue3", "aquamarine3",
+                                 "aquamarine4", "goldenrod2", "goldenrod3")) +
+  labs(x = "", y = "Number of covariates\nconsidered per parameter") +
+  facet_grid(cols = vars(facet), scales = "free_x", space = "free_x") +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(),
+        legend.text = element_text(size = 15), axis.text = element_text(size = 13),
+        axis.title = element_text(size = 15), strip.background = element_blank(),
+        strip.text = element_blank()) 
+objectiveCovariatePlot
+ggsave(plot = objectiveCovariatePlot, "Manuscript/Figures/ObjectiveCovariates.jpeg",
+       width = 8, height = 4)
+```
+
+Combined plot
+
+```{r combined objective plot}
+stackedObjectivePlot <- objectiveTrendPlot / objectiveCovariatePlot +
+   plot_annotation(tag_levels = 'A')
+stackedObjectivePlot
+
+ggsave(plot = stackedObjectivePlot, "Manuscript/Figures/ObjectiveFigure.jpeg",
+       width = 12, height = 8)
 ```
 
 # Modelling
@@ -730,8 +840,10 @@ modelling_details <- sheet_Modelling |>
             `Model averaging` = max(`Model averaging`),
             `A priori` = max(`A priori`), 
             Sequential = max(Sequential), Simple = max(Simple),
+            Candidate = max(`Candidate set`),
             .by = c(`Review ID`, `Model class`, n_Class, n_Overall)) |>
-  left_join(modelling_Covariates, by = join_by(`Review ID`)) 
+  left_join(modelling_Covariates, by = join_by(`Review ID`)) |>
+  filter(`Model class` != "Other")
 
 modelling_byClass <- modelling_details |>
   summarise(Number = mean(n_Class),
@@ -740,6 +852,7 @@ modelling_byClass <- modelling_details |>
             Prop_AnySelect = 1-(sum(`A priori`)/mean(n_Class)),
             Prop_Sequential = sum(Sequential)/mean(n_Class),
             Prop_Simple = sum(Simple)/mean(n_Class),
+            Prop_Candidate = sum(Candidate)/mean(n_Class),
             Prop_GOF = sum(GOF)/mean(n_Class),
             Prop_Eval = sum(Evaluate)/mean(n_Class),
             .by = `Model class`) |>
@@ -752,11 +865,17 @@ modelling_overall <- modelling_details |>
             Prop_AnySelect = 1-(sum(`A priori`)/mean(n_Overall)),
             Prop_Sequential = sum(Sequential)/mean(n_Overall),
             Prop_Simple = sum(Simple)/mean(n_Overall),
+            Prop_Candidate = sum(Candidate)/mean(n_Overall),
             Prop_GOF = sum(GOF)/mean(n_Overall),
             Prop_Eval = sum(Evaluate)/mean(n_Overall)) |>
   mutate(across(where(is.numeric), ~ round(.x, 2))) |>
-  mutate(`Model class` = "All Models")
+  mutate(`Model class` = "All Models") 
 
 modelling_summary <- rbind(modelling_byClass, modelling_overall) |>
-  t() |> as.data.frame()
+  t() |> as.data.frame() %>%
+  mutate(Variable = row.names(.)) |>
+  set_names(c("Frequentist", "Bayesian", "All models", "Variable")) |>
+  filter(Variable != "Model class")
+
+write_csv(modelling_summary, "Manuscript/Figures/ModellingSummary.csv")
 ```
