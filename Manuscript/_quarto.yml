@@ -1,6 +1,5 @@
 project:
   type: manuscript
-  output-dir: Outputs
   execute-dir: project
 
 manuscript:
