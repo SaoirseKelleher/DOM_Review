@@ -105,7 +105,7 @@ focalTaxaPlot <- sheet_FocalTaxa |>
   select(Articles, Taxa = `Taxa keywords`, Status) |>
   mutate(Taxa = case_when(Taxa == "NA" ~ "Other", .default = Taxa)) |>
   mutate(Taxa = fct(Taxa, levels = rev(c("Bird", "Mammal", "Herptile",
-                                     "Invertebrate", "Other")))) |>
+                                         "Fish", "Invertebrate", "Other")))) |>
   
   ggplot() +
   geom_col(aes(x = Articles, y = Taxa, fill = Status)) +
