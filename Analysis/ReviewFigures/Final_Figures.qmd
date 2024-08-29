@@ -796,20 +796,6 @@ ggsave(plot = stackedObjectivePlot, "Manuscript/Figures/ObjectiveFigure.jpeg",
 
 # Modelling
 
-Bayes/Freq/All table
-
-need:
-
-n articles in each category
-
-median covariates per core param
-
-n using each selection method
-
-n which look at fit
-
-n which evaluate
-
 ```{r modelling table}
 # get number of covariates per parameter for each model
 modelling_Covariates <- sheet_Covariates |>

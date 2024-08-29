@@ -1,10 +1,21 @@
 project:
   title: "DOM Review"
+  type: manuscript
   execute-dir: project
+  render: 
+    - Manuscript.qmd
+
+manuscript:
+  article: Manuscript.qmd
+  meca-bundle: false
 
 format: 
   html:
-    theme: minty
+    theme: simplex
+  docx: default
+
+bibliography: references.bib
+csl: apa.csl 
 
 editor: visual
 
