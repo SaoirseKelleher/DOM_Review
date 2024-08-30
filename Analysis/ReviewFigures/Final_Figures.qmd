@@ -19,6 +19,7 @@ library(tidyverse)
 library(patchwork)
 library(sf)
 library(readxl)
+library(ggtext)
 ```
 
 # Load in review pages and randomisation sheet
@@ -103,13 +104,13 @@ focalTaxaPlot <- sheet_FocalTaxa |>
                                          "Stable", "Threatened"))) |>
   summarise(Articles = n(), .by = c(`Taxa keywords`, Status)) |>
   select(Articles, Taxa = `Taxa keywords`, Status) |>
-  mutate(Taxa = case_when(Taxa == "NA" ~ "Other", .default = Taxa)) |>
+  mutate(Taxa = case_when(Taxa %in% c("NA", "Fish") ~ "Other", .default = Taxa)) |>
   mutate(Taxa = fct(Taxa, levels = rev(c("Bird", "Mammal", "Herptile",
-                                         "Fish", "Invertebrate", "Other")))) |>
+                                        "Invertebrate", "Other")))) |>
   
   ggplot() +
   geom_col(aes(x = Articles, y = Taxa, fill = Status)) +
-  scale_fill_manual("", values = c("gray40", "plum4", "aquamarine4", "firebrick4")) +
+  scale_fill_manual("", values = c("gray70", "plum4", "aquamarine4", "goldenrod2")) +
   labs(x = "Articles", y = "") +
   theme(panel.grid = element_blank(),
         #legend.position = "top",
@@ -120,9 +121,13 @@ focalTaxaPlot <- sheet_FocalTaxa |>
         legend.background = element_rect(fill = 'transparent', color = NA))
 focalTaxaPlot
 
-ggsave("Manuscript/Figures/TaxaPlot.png",
+ggsave("Figures/TaxaPlot.png",
        focalTaxaPlot, width = 10, height = 4, bg='transparent')
 
+sheet_FocalTaxa |>
+  select(`Review ID`, `Multispecies method`) |>
+  distinct() |>
+  summarise(Articles = n(), .by = `Multispecies method`)
 ```
 
 # Article data
@@ -137,6 +142,28 @@ sheet_ArticleData |>
 ```
 
 Determine estimated coverage
+
+```{r strata hit rates}
+sheet_ArticleData |>
+  pull(`Review ID`) |>
+  length()
+
+randomisationSheets |>
+  summarise(N = n(), .by = c(Year, Strata, Included)) |>
+  pivot_wider(names_from = Included, values_from = N, values_fill = 0) |>
+  summarise(HitRate = sum(YES)/(sum(NO)+sum(YES)),
+            .by = Strata) 
+
+  randomisationSheets |>
+  summarise(N = n(), .by = c(Year, Strata, Included)) |>
+  pivot_wider(names_from = Included, values_from = N, values_fill = 0) |>
+  mutate(HitRate = sum(YES)/(sum(NO)+sum(YES)),
+         .by = Strata) |>
+  summarise(HitRate = mean(HitRate), `NA` = sum(`NA`),
+            .by = Year) |>
+  mutate(EstRemaining = `NA`*HitRate) |>
+  summarise(`NA` = sum(`NA`), EstRemaining = sum(EstRemaining))
+```
 
 ```{r Article coverage}
 coveragePlot <- 
@@ -156,12 +183,17 @@ coveragePlot <-
                     labels = c("Included articles", 
                                "Estimated qualifying articles"),
                     values = c("aquamarine4", "gray70")) +
+  scale_y_continuous(expand = c(0,0), limits = c(0, 65)) +
   labs(x = "", y = "Number of articles") +
   theme(panel.grid.major.x = element_blank(),
-        legend.position = "top", axis.text = element_text(size = 12),
-        axis.title = element_text(size = 12), legend.text = element_text(size = 12))
+        panel.grid.minor.x = element_blank(),
+        legend.position = "bottom", axis.text = element_text(size = 12),
+        axis.text.x = element_blank(), axis.ticks.x = element_blank(),
+        axis.title = element_text(size = 12), legend.text = element_text(size = 12),
+        strip.text.x = element_text(size = 12)) +
+  facet_grid(cols = vars(Strata), scales = "free_x", switch = "x")
 coveragePlot
-ggsave(plot = coveragePlot, "Manuscript/Figures/CoveragePlot.jpeg",
+ggsave(plot = coveragePlot, "Figures/CoveragePlot.jpeg",
        width = 8, height = 4)
 ```
 
@@ -189,7 +221,15 @@ studyArea_Map <- sheet_StudyArea |>
         plot.background = element_rect(fill='transparent', color=NA),
         panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
 studyArea_Map
-ggsave(plot = studyArea_Map, "Manuscript/Figures/StudiesMap.png")
+ggsave(plot = studyArea_Map, "Figures/StudiesMap.png")
+
+sheet_StudyArea |>
+  select(`Review ID`, Country) |>
+  separate_longer_delim(Country, ", ") |>
+  distinct() |>
+  summarise(Articles = n(), .by = Country) |>
+  arrange(-Articles)
+  
 ```
 
 Study area size
@@ -201,26 +241,44 @@ studyAreaPlot <- sheet_StudyArea |>
   
   ggplot() +
   geom_col(aes(x = Size, y = Articles),
-           fill = "aquamarine4") +
+           fill = "aquamarine4", colour = "white",
+           width = 1, linewidth = 2) +
   labs(x = "", y = "") +
-  scale_x_discrete(labels = c("0-1", "1-10", "10-100",
-                              "100-\n1000", "1000-\n10000",
-                              "10000-\n100000", "100000-\n1000000",
-                              "1000000+")) +
+  scale_x_discrete(labels = c("< 1", "1 - 10", "10 - 10<sup>2</sup>",
+                              "10<sup>2</sup> - 10<sup>3</sup>",
+                              "10<sup>3</sup> - 10<sup>4</sup>",
+                              "10<sup>4</sup> - 10<sup>5</sup>",
+                              "10<sup>5</sup> - 10<sup>6</sup>",
+                              "10<sup>6</sup> +")) +
   theme(panel.grid = element_blank(),
-        axis.text.x = element_text(size = 20,
-                                   angle = 90,
-                                   vjust = 0.5, hjust = 1),
+        axis.text.x = element_markdown(size = 20, angle = 90,
+                                       vjust = 0.5, hjust = 1),
         axis.text.y = element_blank(), axis.ticks = element_blank(),
         panel.background = element_rect(fill='transparent', color=NA),
         plot.background = element_rect(fill='transparent', color=NA))
 studyAreaPlot
 
-ggsave("Manuscript/Figures/StudyAreaPlot.png",
-       studyAreaPlot, width = 8, height = 4, bg='transparent') 
+ggsave("Figures/StudyAreaPlot.png",
+       studyAreaPlot, width = 7, height = 4, bg='transparent') 
 ```
 
 # Data collection
+
+survey methods
+
+```{r survey methods}
+sheet_DataCollection |>
+  select(`Review ID`, `Capture method`) |>
+  separate_longer_delim(`Capture method`, ", ") |>
+  distinct() |>
+  summarise(Articles = n(), .by = `Capture method`)
+
+sheet_DataCollection |>
+  select(`Review ID`, Citizen) |>
+  distinct() |>
+  summarise(Articles = n(), .by = Citizen)
+
+```
 
 Plot study duration
 
@@ -234,25 +292,43 @@ studyDurationPlot <- sheet_DataCollection |>
                                  .default = StudyMonths)) |>
   
   ggplot() +
-  geom_histogram(aes(y = StudyMonths), 
-                 binwidth = 0.2, fill = "aquamarine4", colour = "white") +
-  geom_hline(aes(yintercept = median(StudyMonths)), 
-             colour = "goldenrod3", linetype = 2, linewidth = 2) +
-  labs(y = "", x = "") +
-  scale_y_continuous(transform = "log10",
+  geom_histogram(aes(x = StudyMonths), 
+                 binwidth = 0.2, fill = "aquamarine4", colour = "white",
+                 linewidth = 2) +
+  geom_vline(aes(xintercept = median(StudyMonths)), 
+             colour = "goldenrod2", linetype = 1, linewidth = 2) +
+  labs(x = "", y = "Study\nduration") +
+  scale_x_continuous(transform = "log10",
                      limits = c(0.5,725),
                      breaks = c(1, 6, 12, 60, 
-                                120, 240, 480, 720), 
+                                120, 240, 480), 
                      labels = c("1 month", "6 months", "1 year", "5 years", 
-                                "10 years", "20 years", "40 years", "60 Years")) +
+                                "10 years", "20 years", "40 years"),
+                     expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0)) +
   theme(panel.grid = element_blank(),
         panel.background = element_rect(fill='transparent', color=NA),
         plot.background = element_rect(fill='transparent', color=NA),
-        axis.text.y = element_text(size = 23),
-        axis.text.x = element_blank(), axis.ticks.x = element_blank())
+        axis.text.x = element_text(size = 23, angle = 90,
+                                   vjust = 0.5, hjust = 1),
+        axis.text.y = element_blank(), axis.ticks.y = element_blank(),
+        axis.line.x = element_line(), 
+        axis.title.y = element_text(size = 35, colour = "aquamarine4"))
 studyDurationPlot
-ggsave(plot = studyDurationPlot, filename = "Manuscript/Figures/Duration.png",
-       height = 8, width = 4)
+ggsave(plot = studyDurationPlot, filename = "Figures/Duration.png",
+       height = 3, width = 12)
+
+sheet_DataCollection |>
+  mutate(StartDay = as.numeric(as.Date(`Start month`)),
+         EndDay = as.numeric(as.Date(`End month`))) |>
+  mutate(StudyDuration = EndDay - StartDay) |>
+  mutate(StudyMonths = (StudyDuration/30)) |>
+  mutate(StudyMonths = case_when(StudyMonths == 0 ~ 1,
+                                 .default = StudyMonths)) |>
+  summarise(StudyMonths = mean(StudyMonths, na.rm = TRUE),
+            .by = `Review ID`) |>
+  pull(StudyMonths) |>
+  median(na.rm = TRUE)
 ```
 
 Plot site quantity
@@ -261,24 +337,47 @@ Plot site quantity
 siteQuantityPlot <- sheet_DataCollection |>
   mutate(`Site quantity` = as.numeric(`Site quantity`)) |>
   ggplot() +
-  geom_histogram(aes(y = `Site quantity`),
-                 binwidth = 0.25, fill = "aquamarine4", colour = "white") +
-  geom_hline(aes(yintercept = median(`Site quantity`, na.rm = TRUE)), 
-             colour = "goldenrod3", linetype = 2, linewidth = 2) +
-  scale_y_continuous(transform = "log10",
+  geom_histogram(aes(x = `Site quantity`),
+                 binwidth = 0.25, fill = "aquamarine4", colour = "white",
+                 linewidth = 2) +
+  geom_vline(aes(xintercept = median(`Site quantity`, na.rm = TRUE)), 
+             colour = "goldenrod2", linetype = 1, linewidth = 2) +
+  scale_x_continuous(transform = "log10",
                      limits = c(5, 10000),
                      breaks = c(10, 25, 50, 100, 250, 500,
-                                1000, 2500, 5000, 10000)) +
-  scale_x_continuous(expand = c(0,0)) +
-  labs(x = "", y = "") +
+                                1000, 2500, 5000),
+                     expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0)) +
+  labs(y = "Site\nquantity", x = "") +
   theme(panel.grid = element_blank(),
         panel.background = element_rect(fill='transparent', color=NA),
         plot.background = element_rect(fill='transparent', color=NA),
-        axis.text.y = element_text(size = 23),
-        axis.text.x = element_blank(), axis.ticks.x = element_blank())
+        axis.text.x = element_text(size = 23, angle = 90,
+                                   vjust = 0.5, hjust = 1),
+        axis.text.y = element_blank(), axis.ticks.y = element_blank(),
+        axis.line.x = element_line(), 
+        axis.title.y = element_text(size = 35, colour = "aquamarine4"))
 siteQuantityPlot
-ggsave(plot = siteQuantityPlot, filename = "Manuscript/Figures/Sites.png",
-       height = 8, width = 4)
+ggsave(plot = siteQuantityPlot, filename = "Figures/Sites.png",
+       height = 3, width = 12)
+
+sheet_DataCollection |>
+  mutate(`Site quantity` = as.numeric(`Site quantity`)) |>
+  summarise(Sites = mean(`Site quantity`, na.rm = TRUE), 
+            .by = `Review ID`) |>
+  pull(Sites) |>
+  median(na.rm = TRUE)
+```
+
+Combine sites and durations
+
+```{r site and duration combination}
+combinedStudyScale <- studyDurationPlot / siteQuantityPlot
+combinedStudyScale <- combinedStudyScale +
+  theme(panel.background = element_rect(fill='transparent', color=NA),
+        plot.background = element_rect(fill='transparent', color=NA))
+ggsave(plot = combinedStudyScale, filename = "Figures/StudyScale.png",
+       height = 6, width = 12)
 ```
 
 Site quantity boxplots
@@ -429,7 +528,7 @@ covParamPlot <- sheet_Covariates |>
         legend.text = element_text(size = 12, family = "Helvetica"))
 
 covParamPlot
-ggsave(plot = covParamPlot, filename = "Manuscript/Figures/CovParamPlot.jpeg",
+ggsave(plot = covParamPlot, filename = "Figures/CovParamPlot.jpeg",
        width = 8, height = 4)
 ```
 
@@ -447,6 +546,14 @@ covariate_details <- sheet_Covariates |>
   separate_wider_delim(Covariate, delim = "-",
                        names = c("Category", "Covariate"),
                        too_few = "align_start") |>
+  mutate(Covariate = case_when(Covariate == "OTHER" & Category == "E" ~ "OTHER-E",
+                               Covariate == "OTHER" & Category == "S" ~ "OTHER-S",
+                               Covariate %in% c("HABT", "HABA", "LACO") ~ "HABT",
+                               Covariate %in% c("CLWE", "DISA", "DIST") ~ "CLWE",
+                               Covariate %in% c("SPAT", "GEOM", "CONN") ~ "SPAT",
+                               Covariate %in% c("TOPO", "HYDR") ~ "TOPO",
+                               Covariate %in% c("ANTH", "AGRI", "PROT") ~ "ANTH",
+                               .default = Covariate)) |>
   mutate(n_overall = length(unique(`Review ID`))) |>
   mutate(n_param = length(unique(`Review ID`)), 
          .by = `Parameter type`) |>
@@ -632,7 +739,7 @@ fullCovariateSummary <- covariates_table |>
   rbind(overall_row) |>
   mutate(across(where(is.numeric), ~ round(.x, 2)))
 
-write_csv(fullCovariateSummary, "Manuscript/Figures/CovariateTable.csv")
+write_csv(fullCovariateSummary, "Figures/CovariateTable.csv")
 ```
 
 # Objectives
@@ -711,7 +818,7 @@ objectiveTrendPlot <- sheet_Objectives |>
   facet_grid(cols = vars(Strata),
              scales = "free_x", space = "free_x", drop = TRUE)
 objectiveTrendPlot
-ggsave(plot = objectiveTrendPlot, "Manuscript/Figures/ObjectiveTrend.jpeg",
+ggsave(plot = objectiveTrendPlot, "Figures/ObjectiveTrend.jpeg",
        width = 8, height = 4)
 ```
 
@@ -779,7 +886,7 @@ objectiveCovariatePlot <- sheet_Objectives |>
         axis.title = element_text(size = 15), strip.background = element_blank(),
         strip.text = element_blank()) 
 objectiveCovariatePlot
-ggsave(plot = objectiveCovariatePlot, "Manuscript/Figures/ObjectiveCovariates.jpeg",
+ggsave(plot = objectiveCovariatePlot, "Figures/ObjectiveCovariates.jpeg",
        width = 8, height = 4)
 ```
 
@@ -790,7 +897,7 @@ stackedObjectivePlot <- objectiveTrendPlot / objectiveCovariatePlot +
    plot_annotation(tag_levels = 'A')
 stackedObjectivePlot
 
-ggsave(plot = stackedObjectivePlot, "Manuscript/Figures/ObjectiveFigure.jpeg",
+ggsave(plot = stackedObjectivePlot, "Figures/ObjectiveFigure.jpeg",
        width = 12, height = 8)
 ```
 
@@ -863,5 +970,5 @@ modelling_summary <- rbind(modelling_byClass, modelling_overall) |>
   set_names(c("Frequentist", "Bayesian", "All models", "Variable")) |>
   filter(Variable != "Model class")
 
-write_csv(modelling_summary, "Manuscript/Figures/ModellingSummary.csv")
+write_csv(modelling_summary, "Figures/ModellingSummary.csv")
 ```
