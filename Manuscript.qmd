@@ -27,7 +27,7 @@ csl: apa.csl
 embed-resources: true
 ---
 
-# Introduction
+# Introduction yr
 
 The description of patterns of species occupancy across landscapes has been a long-standing subject of ecological research [@humboldt1849]. An understanding of where a species exists, which factors lead to its presence, and how its distribution may be changing can be applied in many ways. Descriptions of how widespread a species is and where it occurs are the foundation of monitoring programs and important for assessing conservation status, and identifying potential drivers of occurrence can help inform potential management actions. Robust knowledge of the occupancy patterns of a species also helps us to predict where a species is most likely to occur, both under present conditions and in hypothetical future scenarios.
 
