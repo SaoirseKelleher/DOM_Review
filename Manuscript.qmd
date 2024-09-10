@@ -23,11 +23,10 @@ abstract: |
   A key aim of this review is to explore how users of DOMs have incorporated covariates into their models to describe variation in occupancy through space and time. Broadly speaking, model complexity in DOMs tends to be low, with relatively few covariates considered for inclusion and most relationships represented as simple linear terms. Considerable variation also exists in the procedures used for covariate selection, and limited research has been conducted on how these choices may influence model performance and inference. Furthermore, only a fraction of articles appear to evaluate models (either by goodness-of-fit testing or prediction validation). Likewise, little guidance exists on how to approach this task in DOMs. These uncertainties in the modelling process should be key priorities for future research on DOMs given their increasing use in applied ecological research.
   
 bibliography: references.bib
-csl: apa.csl 
-embed-resources: true
+csl: apa.csl
 ---
 
-# Introduction yr
+# Introduction
 
 The description of patterns of species occupancy across landscapes has been a long-standing subject of ecological research [@humboldt1849]. An understanding of where a species exists, which factors lead to its presence, and how its distribution may be changing can be applied in many ways. Descriptions of how widespread a species is and where it occurs are the foundation of monitoring programs and important for assessing conservation status, and identifying potential drivers of occurrence can help inform potential management actions. Robust knowledge of the occupancy patterns of a species also helps us to predict where a species is most likely to occur, both under present conditions and in hypothetical future scenarios.
 
