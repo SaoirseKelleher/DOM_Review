@@ -21,9 +21,6 @@ abstract: |
   In this review we examine how ecologists have applied the DOM in its first two decades of use. Based on a sample of articles fitting DOMs to field ecological data, we explore the systems in which these models have been used, how data were collected for them, and how authors have built their models to achieve their objectives. Our findings indicate that the DOM is an particularly flexible tool readily applied to a range of diverse taxa from around the globe, capable of being used to estimate occupancy at study sites ranging from local to continental scales over time periods from months to decades. The DOM framework is also amenable to extension, further broadening their utility to address a wide range of ecological questions.
   
   A key aim of this review is to explore how users of DOMs have incorporated covariates into their models to describe variation in occupancy through space and time. Broadly speaking, model complexity in DOMs tends to be low, with relatively few covariates considered for inclusion and most relationships represented as simple linear terms. Considerable variation also exists in the procedures used for covariate selection, and limited research has been conducted on how these choices may influence model performance and inference. Furthermore, only a fraction of articles appear to evaluate models (either by goodness-of-fit testing or prediction validation). Likewise, little guidance exists on how to approach this task in DOMs. These uncertainties in the modelling process should be key priorities for future research on DOMs given their increasing use in applied ecological research.
-  
-bibliography: references.bib
-csl: apa.csl
 ---
 
 # Introduction

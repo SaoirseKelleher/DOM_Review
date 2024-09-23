@@ -1,9 +1,10 @@
 project:
-  title: "DOM Review"
+  title: "DOM_Review"
   type: manuscript
-  execute-dir: project
   render: 
     - Manuscript.qmd
+    - Analysis/Analysis.qmd
+  execute-dir: project
 
 manuscript:
   article: Manuscript.qmd
