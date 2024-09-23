@@ -344,7 +344,7 @@ sheet_DataCollection |>
 
 ```{r site quantity plot}
 #| fig-width: 12
-#| fig-height: 3
+#| fig-height: 3.5
 
 siteQuantityPlot <- sheet_DataCollection |>
   mutate(`Site quantity` = as.numeric(`Site quantity`)) |>
@@ -387,7 +387,7 @@ sheet_DataCollection |>
 
 ```{r site duration figure}
 #| fig-width: 12
-#| fig-height: 3
+#| fig-height: 3.5
 
 studyDurationPlot <-
   sheet_DataCollection |>
@@ -427,7 +427,7 @@ studyDurationPlot <-
         axis.title.y = element_text(size = 35, colour = "aquamarine4"))
 studyDurationPlot
 ggsave(plot = studyDurationPlot, filename = "Figures/Duration.png",
-       height = 3, width = 12)
+       height = 3.5, width = 12)
 ```
 
 ```{r combine sites and duration}
@@ -436,9 +436,9 @@ ggsave(plot = studyDurationPlot, filename = "Figures/Duration.png",
 
 combinedStudyScale <- siteQuantityPlot / studyDurationPlot
 combinedStudyScale <- combinedStudyScale +
-  theme(panel.background = element_rect(fill='transparent', color=NA),
-        plot.background = element_rect(fill='transparent', color=NA))
+  theme(panel.background = element_rect(fill='transparent', color = NA),
+        plot.background = element_rect(fill='transparent', color = NA))
 combinedStudyScale
 ggsave(plot = combinedStudyScale, filename = "Figures/StudyScale.png",
-       height = 6, width = 12)
+       height = 6, width = 12, bg='transparent')
 ```
