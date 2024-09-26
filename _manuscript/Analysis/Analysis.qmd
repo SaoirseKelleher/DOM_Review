@@ -4,11 +4,14 @@ author: "Saoirse Kelleher"
 date: today
 abstract: "Calculates key statistics and renders figures for \"*Twenty years of dynamic occupancy models: a review of applications and look to the future*\""
 abstract-title: "Summary"
+format:
+  html:
+    theme: minty
 ---
 
 ## Load packages
 
-Required packages for analysis and plotting figures.
+First, we load in a handful of packages required for analysis and visualisation.
 
 ```{r Load packages}
 #| message: false
@@ -20,17 +23,17 @@ library(readxl)
 library(ggtext)
 ```
 
-## Load data
+## Read in data
 
-Two sources of data are loaded in for analysis:
+Two data sources are required to render the analyses and visualisation for this article:
 
--   Randomised list of all queried articles
+i.  Randomised list of all queried articles *(Randomisation.xlsx)*
 
--   Spreadsheet of included articles
+ii. Spreadsheet of articles included in the review *(Review_Spreadsheet.xlsx)*
 
-#### Randomised articles
+#### Randomised article list
 
-All queried articles were assigned random values in *'Randomisation.qmd'* to determine the order in which they were considered for inclusion in this review. These articles are read in from *'Randomisation.xlsx'*.
+All queried articles were collated and assigned random values in *'Randomisation.qmd'* to determine the order in which they would be considered for inclusion. '*Randomisation.xlsx'* contains all of these articles, and also documents which articles were included in the review, were excluded based on our review criteria, or were not processed at all. This spreadsheet is split across sheets by year strata. All sheets are read in using `readxl` and combined.
 
 ```{r Load query sheets}
 sheet_AllArticles <- list(read_xlsx("Randomisation/Randomisation.xlsx", 
@@ -48,7 +51,7 @@ sheet_AllArticles <- list(read_xlsx("Randomisation/Randomisation.xlsx",
 
 #### Reviewed data
 
-Each sheet from *'Review_Spreadsheet.xlsx'* is loaded individually.
+*'Review_Spreadsheet.xlsx'* contains all recorded details from the 92 reviewed articles. This spreadsheet contains several sheets, each including one category of variable (e.g., details on 'Focal Taxa' or 'Covariates'). Each of these is loaded individually with `readxl`.
 
 ```{r Load review sheets}
 sheet_ArticleData <- read_xlsx("Review_Spreadsheet.xlsx",
@@ -69,45 +72,51 @@ sheet_Modelling <- read_xlsx("Review_Spreadsheet.xlsx",
 
 ## Article inclusion
 
+The first set of numbers we calculate describe the articles included in the review, and the inclusion rates within each of our year strata. These values are used to render a figure showing the coverage of reviewed articles during our study period.
+
 #### Articles by query
 
-Calculate the number of articles sourced from each query, and the proportion of articles which were included in both queries.
+Recall that our review sample was drawn from two Web of Science queries: the first being all articles which have cited @mackenzie2003, and the second using a selection of keywords presumed to be used in articles fitting DOMs. Here, we calculate the number of articles which appeared in one or both of these queries.
 
 ```{r Calculate query statistics}
-sheet_AllArticles |>
+stat_queryCounts <- sheet_AllArticles |>
   mutate(Query = case_when(KeyTerms == TRUE & CitesMackenzie == TRUE ~ "Both",
-                           KeyTerms == FALSE & CitesMackenzie == TRUE ~ "Mackenzie",
-                           KeyTerms == TRUE & CitesMackenzie == FALSE ~ "KeyTerms")) |>
+                           KeyTerms == FALSE & CitesMackenzie == TRUE ~ "Mackenzie only",
+                           KeyTerms == TRUE & CitesMackenzie == FALSE ~ "Key terms only")) |>
   summarise(Articles = n(), .by = Query) |>
   mutate(Proportion = round(Articles/sum(Articles), 2))
+stat_queryCounts
 ```
 
 #### Total articles
 
-Get the number of included articles
+Next, we get the number of articles included in the review.
 
 ```{r Total article count}
-sheet_AllArticles |>
+stat_articleTotal <- sheet_AllArticles |>
   filter(Included == "YES") |>
   nrow()
+stat_articleTotal
 ```
 
 #### Article hit rates
 
-Calculate the hit rate for articles in each stratum, and determine how many articles are estimated to remain in each stratum based off of those hit rates.
+We then calculate the hit rate for articles in each stratum, by dividing the number of articles included by the number of articles processed. These hit rates are then used to estimate how many articles from the remaining pool would have met inclusion criteria — first summed from each year, then summed across years.
 
 ```{r Calculate article hit rates}
 # Hit rates within each stratum
-stratumHitRates <- sheet_AllArticles |>
-  summarise(Articles = n(), .by = c(Year, Strata, Included)) |>
+stat_hitRates <- sheet_AllArticles |>
+  summarise(Articles = n(), 
+            .by = c(Year, Strata, Included)) |>
   pivot_wider(names_from = Included, 
-              values_from = Articles, values_fill = 0) |>
+              values_from = Articles, 
+              values_fill = 0) |>
   summarise(HitRate = round(sum(YES)/(sum(NO)+sum(YES)), 2),
             .by = Strata)
-stratumHitRates
+stat_hitRates
 
 # Number of remaining articles per year
-remainingArticles <- sheet_AllArticles |>
+stat_remainingArticles <- sheet_AllArticles |>
   summarise(Articles = n(), .by = c(Year, Strata, Included)) |>
   pivot_wider(names_from = Included, 
               values_from = Articles, values_fill = 0) |>
@@ -115,27 +124,33 @@ remainingArticles <- sheet_AllArticles |>
          .by = Strata) |>
   mutate(EstRemaining = round(`NA`*HitRate, 2)) |>
   select(Year, EstRemaining)
-remainingArticles
+stat_remainingArticles
 
 # Estimating remaining qualified articles and total remaining articles
-remainingProportion <- data.frame(Group = c("EstRemaining", "TotalUnreviewed"),
-                                  Articles = c(sum(remainingArticles$EstRemaining),
+stat_remainingProportion <- data.frame(Group = c("EstRemaining", "TotalUnreviewed"),
+                                  Articles = c(sum(stat_remainingArticles$EstRemaining),
                                                sheet_AllArticles |>
-                                                 summarise(Articles = n(), .by = c(Year, Strata, Included)) |>
+                                                 summarise(Articles = n(), 
+                                                           .by = c(Year, 
+                                                                   Strata, 
+                                                                   Included)) |>
                                                  pivot_wider(names_from = Included, 
-                                                             values_from = Articles, values_fill = 0) |>
+                                                             values_from = Articles,
+                                                             values_fill = 0) |>
                                                  pull(`NA`) |> 
                                                  sum()))
-remainingProportion
+stat_remainingProportion
 ```
 
 #### Coverage figure
+
+Using these values we render a figure presenting the estimated coverage of our review over time (Figure 3 in the article).
 
 ```{r Coverage figure}
 #| fig-width: 8
 #| fig-height: 4
 
-plot_coverage <- 
+plot_reviewCoverage <- 
   sheet_AllArticles |>
   summarise(N = n(), .by = c(Year, Strata, Included)) |>
   pivot_wider(names_from = Included, values_from = N, values_fill = 0) |>
@@ -151,7 +166,7 @@ plot_coverage <-
                     limits = c("YES", "EstRemaining"),
                     labels = c("Included articles", 
                                "Estimated qualifying articles"),
-                    values = c("aquamarine4", "gray70")) +
+                    values = c("aquamarine4", "gray65")) +
   scale_y_continuous(expand = c(0,0), limits = c(0, 65)) +
   labs(x = "", y = "Number of articles") +
   theme(panel.grid.major.x = element_blank(),
@@ -164,36 +179,50 @@ plot_coverage <-
         legend.text = element_text(size = 12),
         strip.text.x = element_text(size = 12)) +
   facet_grid(cols = vars(Strata), scales = "free_x", switch = "x")
-plot_coverage
-ggsave(plot = plot_coverage, "Figures/CoveragePlot.jpeg",
+plot_reviewCoverage
+ggsave(plot = plot_reviewCoverage, "Figures/CoveragePlot.jpeg",
        width = 8, height = 4)
 ```
 
 ## Study areas
 
+The next set of statistics and figures focus on the study areas included in reviewed articles. For each article the countries where data was collected, a rough centroid of the study area, and an estimate of the spatial extent of the study area was recorded.
+
 #### Study countries table
 
+First, a table is generated presenting the number of articles using data from each country with at least one article.
+
 ```{r Study location table}
-sheet_StudyArea |>
+stat_studyCountries <- sheet_StudyArea |>
   select(`Review ID`, Country) |>
   separate_longer_delim(Country, ", ") |>
   distinct() |>
-  summarise(Articles = n(), .by = Country) |>
+  mutate(TotalArticles = length(unique(`Review ID`))) |>
+  summarise(Articles = n(), .by = c(Country, TotalArticles)) |>
+  mutate(Proportion = round(Articles/TotalArticles,2)) |>
+  select(-TotalArticles) |>
   arrange(-Articles)
+stat_studyCountries
 ```
 
 #### Unique countries
 
+The total number of unique countries is extracted.
+
 ```{r Unique countries}
-sheet_StudyArea |>
-  select(`Review ID`, Country) |>
-  separate_longer_delim(Country, ", ") |>
-  pull(Country) |>
+stat_uniqueCountries <- stat_studyCountries$Country |>
   unique() |>
   length()
+stat_uniqueCountries
 ```
 
 #### Map of study locations
+
+A figure is rendered plotting the rough centroids for each study area included in the review.
+
+::: callout-important
+## Some articles include multiple study areas which were treated as distinct when they were modelled independently.
+:::
 
 ```{r Study location map}
 # Load country shapefile
@@ -344,7 +373,7 @@ sheet_DataCollection |>
 
 ```{r site quantity plot}
 #| fig-width: 12
-#| fig-height: 3
+#| fig-height: 3.5
 
 siteQuantityPlot <- sheet_DataCollection |>
   mutate(`Site quantity` = as.numeric(`Site quantity`)) |>
@@ -387,7 +416,7 @@ sheet_DataCollection |>
 
 ```{r site duration figure}
 #| fig-width: 12
-#| fig-height: 3
+#| fig-height: 3.5
 
 studyDurationPlot <-
   sheet_DataCollection |>
@@ -427,7 +456,7 @@ studyDurationPlot <-
         axis.title.y = element_text(size = 35, colour = "aquamarine4"))
 studyDurationPlot
 ggsave(plot = studyDurationPlot, filename = "Figures/Duration.png",
-       height = 3, width = 12)
+       height = 3.5, width = 12)
 ```
 
 ```{r combine sites and duration}
@@ -436,8 +465,25 @@ ggsave(plot = studyDurationPlot, filename = "Figures/Duration.png",
 
 combinedStudyScale <- siteQuantityPlot / studyDurationPlot
 combinedStudyScale <- combinedStudyScale +
-  theme(panel.background = element_rect(fill='transparent', color=NA),
-        plot.background = element_rect(fill='transparent', color=NA))
+  theme(panel.background = element_rect(fill='transparent', color = NA),
+        plot.background = element_rect(fill='transparent', color = NA))
+combinedStudyScale
 ggsave(plot = combinedStudyScale, filename = "Figures/StudyScale.png",
-       height = 6, width = 12)
+       height = 6, width = 12, bg='transparent')
 ```
+
+## Covariates
+
+#### Covariates table
+
+#### Covariates figure
+
+## Modelling
+
+#### Modelling table
+
+## Objectives
+
+#### Objectives statistics
+
+#### Objectives figure

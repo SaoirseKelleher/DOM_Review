@@ -3,7 +3,6 @@ project:
   type: manuscript
   render: 
     - Manuscript.qmd
-    - Analysis/Analysis.qmd
   execute-dir: project
 
 manuscript:

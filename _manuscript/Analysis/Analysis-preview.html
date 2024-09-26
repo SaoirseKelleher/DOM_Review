@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
     <meta name="author" content="Saoirse Kelleher">
-    <meta name="dcterms.date" content="2024-09-23">
+    <meta name="dcterms.date" content="2024-09-25">
 
     <title>Analysis and figures</title>
     <style>
@@ -55,7 +55,27 @@
       @media screen {
       pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
       }
-    </style>
+      /* CSS for citations */
+      div.csl-bib-body { }
+      div.csl-entry {
+        clear: both;
+        margin-bottom: 0em;
+      }
+      .hanging-indent div.csl-entry {
+        margin-left:2em;
+        text-indent:-2em;
+      }
+      div.csl-left-margin {
+        min-width:2em;
+        float:left;
+      }
+      div.csl-right-inline {
+        margin-left:2em;
+        padding-left:1em;
+      }
+      div.csl-indent {
+        margin-left: 2em;
+      }    </style>
 
     <style>
       body.hypothesis-enabled #quarto-embed-header {
@@ -195,7 +215,7 @@
                 <div>
             <div class="quarto-title-meta-heading">Published</div>
             <div class="quarto-title-meta-contents">
-              <p class="date">September 23, 2024</p>
+              <p class="date">September 25, 2024</p>
             </div>
           </div>
           
@@ -223,11 +243,14 @@
    
   <ul>
   <li><a href="#load-packages" id="toc-load-packages" class="nav-link active" data-scroll-target="#load-packages">Load packages</a></li>
-  <li><a href="#load-data" id="toc-load-data" class="nav-link" data-scroll-target="#load-data">Load data</a></li>
+  <li><a href="#read-in-data" id="toc-read-in-data" class="nav-link" data-scroll-target="#read-in-data">Read in data</a></li>
   <li><a href="#article-inclusion" id="toc-article-inclusion" class="nav-link" data-scroll-target="#article-inclusion">Article inclusion</a></li>
   <li><a href="#study-areas" id="toc-study-areas" class="nav-link" data-scroll-target="#study-areas">Study areas</a></li>
   <li><a href="#study-taxa" id="toc-study-taxa" class="nav-link" data-scroll-target="#study-taxa">Study taxa</a></li>
   <li><a href="#data-collection" id="toc-data-collection" class="nav-link" data-scroll-target="#data-collection">Data collection</a></li>
+  <li><a href="#covariates" id="toc-covariates" class="nav-link" data-scroll-target="#covariates">Covariates</a></li>
+  <li><a href="#modelling" id="toc-modelling" class="nav-link" data-scroll-target="#modelling">Modelling</a></li>
+  <li><a href="#objectives" id="toc-objectives" class="nav-link" data-scroll-target="#objectives">Objectives</a></li>
   </ul>
 </nav>
 </div>
@@ -237,7 +260,7 @@
 
        <section id="load-packages" class="level2">
 <h2 class="anchored" data-anchor-id="load-packages">Load packages</h2>
-<p>Required packages for analysis and plotting figures.</p>
+<p>First, we load in a handful of packages required for analysis and visualisation.</p>
 <div class="cell-container"><div class="cell-decorator"><pre>In [1]:</pre></div><div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -264,16 +287,16 @@
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggtext)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div>
 </section>
-<section id="load-data" class="level2">
-<h2 class="anchored" data-anchor-id="load-data">Load data</h2>
-<p>Two sources of data are loaded in for analysis:</p>
-<ul>
-<li><p>Randomised list of all queried articles</p></li>
-<li><p>Spreadsheet of included articles</p></li>
-</ul>
-<section id="randomised-articles" class="level4">
-<h4 class="anchored" data-anchor-id="randomised-articles">Randomised articles</h4>
-<p>All queried articles were assigned random values in <em>‘Randomisation.qmd’</em> to determine the order in which they were considered for inclusion in this review. These articles are read in from <em>‘Randomisation.xlsx’</em>.</p>
+<section id="read-in-data" class="level2">
+<h2 class="anchored" data-anchor-id="read-in-data">Read in data</h2>
+<p>Two data sources are required to render the analyses and visualisation for this article:</p>
+<ol type="i">
+<li><p>Randomised list of all queried articles <em>(Randomisation.xlsx)</em></p></li>
+<li><p>Spreadsheet of articles included in the review <em>(Review_Spreadsheet.xlsx)</em></p></li>
+</ol>
+<section id="randomised-article-list" class="level4">
+<h4 class="anchored" data-anchor-id="randomised-article-list">Randomised article list</h4>
+<p>All queried articles were collated and assigned random values in <em>‘Randomisation.qmd’</em> to determine the order in which they would be considered for inclusion. ’<em>Randomisation.xlsx’</em> contains all of these articles, and also documents which articles were included in the review, were excluded based on our review criteria, or were not processed at all. This spreadsheet is split across sheets by year strata. All sheets are read in using <code>readxl</code> and combined.</p>
 <div class="cell-container"><div class="cell-decorator"><pre>In [2]:</pre></div><div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>sheet_AllArticles <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">read_xlsx</span>(<span class="st">"Randomisation/Randomisation.xlsx"</span>, </span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>                                    <span class="at">sheet =</span> <span class="st">"2004-2007"</span>),</span>
@@ -290,7 +313,7 @@
 </section>
 <section id="reviewed-data" class="level4">
 <h4 class="anchored" data-anchor-id="reviewed-data">Reviewed data</h4>
-<p>Each sheet from <em>‘Review_Spreadsheet.xlsx’</em> is loaded individually.</p>
+<p><em>‘Review_Spreadsheet.xlsx’</em> contains all recorded details from the 92 reviewed articles. This spreadsheet contains several sheets, each including one category of variable (e.g., details on ‘Focal Taxa’ or ‘Covariates’). Each of these is loaded individually with <code>readxl</code>.</p>
 <div class="cell-container"><div class="cell-decorator"><pre>In [3]:</pre></div><div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>sheet_ArticleData <span class="ot">&lt;-</span> <span class="fu">read_xlsx</span>(<span class="st">"Review_Spreadsheet.xlsx"</span>,</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>                               <span class="at">sheet =</span> <span class="st">"Article Data"</span>)</span>
@@ -311,33 +334,36 @@
 </section>
 <section id="article-inclusion" class="level2">
 <h2 class="anchored" data-anchor-id="article-inclusion">Article inclusion</h2>
+<p>The first set of numbers we calculate describe the articles included in the review, and the inclusion rates within each of our year strata. These values are used to render a figure showing the coverage of reviewed articles during our study period.</p>
 <section id="articles-by-query" class="level4">
 <h4 class="anchored" data-anchor-id="articles-by-query">Articles by query</h4>
-<p>Calculate the number of articles sourced from each query, and the proportion of articles which were included in both queries.</p>
+<p>Recall that our review sample was drawn from two Web of Science queries: the first being all articles which have cited <span class="citation" data-cites="mackenzie2003">MacKenzie et al. (<a href="#ref-mackenzie2003" role="doc-biblioref">2003</a>)</span>, and the second using a selection of keywords presumed to be used in articles fitting DOMs. Here, we calculate the number of articles which appeared in one or both of these queries.</p>
 <div class="cell-container"><div class="cell-decorator"><pre>In [4]:</pre></div><div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>sheet_AllArticles <span class="sc">|&gt;</span></span>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>stat_queryCounts <span class="ot">&lt;-</span> sheet_AllArticles <span class="sc">|&gt;</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Query =</span> <span class="fu">case_when</span>(KeyTerms <span class="sc">==</span> <span class="cn">TRUE</span> <span class="sc">&amp;</span> CitesMackenzie <span class="sc">==</span> <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"Both"</span>,</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                           KeyTerms <span class="sc">==</span> <span class="cn">FALSE</span> <span class="sc">&amp;</span> CitesMackenzie <span class="sc">==</span> <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"Mackenzie"</span>,</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                           KeyTerms <span class="sc">==</span> <span class="cn">TRUE</span> <span class="sc">&amp;</span> CitesMackenzie <span class="sc">==</span> <span class="cn">FALSE</span> <span class="sc">~</span> <span class="st">"KeyTerms"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                           KeyTerms <span class="sc">==</span> <span class="cn">FALSE</span> <span class="sc">&amp;</span> CitesMackenzie <span class="sc">==</span> <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"Mackenzie only"</span>,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                           KeyTerms <span class="sc">==</span> <span class="cn">TRUE</span> <span class="sc">&amp;</span> CitesMackenzie <span class="sc">==</span> <span class="cn">FALSE</span> <span class="sc">~</span> <span class="st">"Key terms only"</span>)) <span class="sc">|&gt;</span></span>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Articles =</span> <span class="fu">n</span>(), <span class="at">.by =</span> Query) <span class="sc">|&gt;</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Proportion =</span> <span class="fu">round</span>(Articles<span class="sc">/</span><span class="fu">sum</span>(Articles), <span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Proportion =</span> <span class="fu">round</span>(Articles<span class="sc">/</span><span class="fu">sum</span>(Articles), <span class="dv">2</span>))</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>stat_queryCounts</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 3 × 3
-  Query     Articles Proportion
-  &lt;chr&gt;        &lt;int&gt;      &lt;dbl&gt;
-1 Both           298       0.2 
-2 Mackenzie      897       0.61
-3 KeyTerms       274       0.19</code></pre>
+  Query          Articles Proportion
+  &lt;chr&gt;             &lt;int&gt;      &lt;dbl&gt;
+1 Both                298       0.2 
+2 Mackenzie only      897       0.61
+3 Key terms only      274       0.19</code></pre>
 </div>
 </div></div>
 </section>
 <section id="total-articles" class="level4">
 <h4 class="anchored" data-anchor-id="total-articles">Total articles</h4>
-<p>Get the number of included articles</p>
+<p>Next, we get the number of articles included in the review.</p>
 <div class="cell-container"><div class="cell-decorator"><pre>In [5]:</pre></div><div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>sheet_AllArticles <span class="sc">|&gt;</span></span>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>stat_articleTotal <span class="ot">&lt;-</span> sheet_AllArticles <span class="sc">|&gt;</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Included <span class="sc">==</span> <span class="st">"YES"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nrow</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nrow</span>()</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>stat_articleTotal</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 92</code></pre>
 </div>
@@ -345,16 +371,18 @@
 </section>
 <section id="article-hit-rates" class="level4">
 <h4 class="anchored" data-anchor-id="article-hit-rates">Article hit rates</h4>
-<p>Calculate the hit rate for articles in each stratum, and determine how many articles are estimated to remain in each stratum based off of those hit rates.</p>
+<p>We then calculate the hit rate for articles in each stratum, by dividing the number of articles included by the number of articles processed. These hit rates are then used to estimate how many articles from the remaining pool would have met inclusion criteria — first summed from each year, then summed across years.</p>
 <div class="cell-container"><div class="cell-decorator"><pre>In [6]:</pre></div><div class="cell">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Hit rates within each stratum</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>stratumHitRates <span class="ot">&lt;-</span> sheet_AllArticles <span class="sc">|&gt;</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Articles =</span> <span class="fu">n</span>(), <span class="at">.by =</span> <span class="fu">c</span>(Year, Strata, Included)) <span class="sc">|&gt;</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> Included, </span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>              <span class="at">values_from =</span> Articles, <span class="at">values_fill =</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">HitRate =</span> <span class="fu">round</span>(<span class="fu">sum</span>(YES)<span class="sc">/</span>(<span class="fu">sum</span>(NO)<span class="sc">+</span><span class="fu">sum</span>(YES)), <span class="dv">2</span>),</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">.by =</span> Strata)</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>stratumHitRates</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>stat_hitRates <span class="ot">&lt;-</span> sheet_AllArticles <span class="sc">|&gt;</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Articles =</span> <span class="fu">n</span>(), </span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">.by =</span> <span class="fu">c</span>(Year, Strata, Included)) <span class="sc">|&gt;</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> Included, </span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>              <span class="at">values_from =</span> Articles, </span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>              <span class="at">values_fill =</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">HitRate =</span> <span class="fu">round</span>(<span class="fu">sum</span>(YES)<span class="sc">/</span>(<span class="fu">sum</span>(NO)<span class="sc">+</span><span class="fu">sum</span>(YES)), <span class="dv">2</span>),</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">.by =</span> Strata)</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>stat_hitRates</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 5 × 2
   Strata    HitRate
@@ -366,7 +394,7 @@
 5 2020-2023    0.57</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Number of remaining articles per year</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>remainingArticles <span class="ot">&lt;-</span> sheet_AllArticles <span class="sc">|&gt;</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>stat_remainingArticles <span class="ot">&lt;-</span> sheet_AllArticles <span class="sc">|&gt;</span></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Articles =</span> <span class="fu">n</span>(), <span class="at">.by =</span> <span class="fu">c</span>(Year, Strata, Included)) <span class="sc">|&gt;</span></span>
 <span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> Included, </span>
 <span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>              <span class="at">values_from =</span> Articles, <span class="at">values_fill =</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
@@ -374,7 +402,7 @@
 <span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">.by =</span> Strata) <span class="sc">|&gt;</span></span>
 <span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">EstRemaining =</span> <span class="fu">round</span>(<span class="st">`</span><span class="at">NA</span><span class="st">`</span><span class="sc">*</span>HitRate, <span class="dv">2</span>)) <span class="sc">|&gt;</span></span>
 <span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Year, EstRemaining)</span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>remainingArticles</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>stat_remainingArticles</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 20 × 2
     Year EstRemaining
@@ -401,15 +429,19 @@
 20  2020        61.7 </code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Estimating remaining qualified articles and total remaining articles</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>remainingProportion <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Group =</span> <span class="fu">c</span>(<span class="st">"EstRemaining"</span>, <span class="st">"TotalUnreviewed"</span>),</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">Articles =</span> <span class="fu">c</span>(<span class="fu">sum</span>(remainingArticles<span class="sc">$</span>EstRemaining),</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>stat_remainingProportion <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Group =</span> <span class="fu">c</span>(<span class="st">"EstRemaining"</span>, <span class="st">"TotalUnreviewed"</span>),</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">Articles =</span> <span class="fu">c</span>(<span class="fu">sum</span>(stat_remainingArticles<span class="sc">$</span>EstRemaining),</span>
 <span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>                                               sheet_AllArticles <span class="sc">|&gt;</span></span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>                                                 <span class="fu">summarise</span>(<span class="at">Articles =</span> <span class="fu">n</span>(), <span class="at">.by =</span> <span class="fu">c</span>(Year, Strata, Included)) <span class="sc">|&gt;</span></span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>                                                 <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> Included, </span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>                                                             <span class="at">values_from =</span> Articles, <span class="at">values_fill =</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>                                                 <span class="fu">pull</span>(<span class="st">`</span><span class="at">NA</span><span class="st">`</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>                                                 <span class="fu">sum</span>()))</span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>remainingProportion</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>                                                 <span class="fu">summarise</span>(<span class="at">Articles =</span> <span class="fu">n</span>(), </span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>                                                           <span class="at">.by =</span> <span class="fu">c</span>(Year, </span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>                                                                   Strata, </span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>                                                                   Included)) <span class="sc">|&gt;</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>                                                 <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> Included, </span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>                                                             <span class="at">values_from =</span> Articles,</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>                                                             <span class="at">values_fill =</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>                                                 <span class="fu">pull</span>(<span class="st">`</span><span class="at">NA</span><span class="st">`</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>                                                 <span class="fu">sum</span>()))</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>stat_remainingProportion</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>            Group Articles
 1    EstRemaining    495.7
@@ -419,9 +451,10 @@
 </section>
 <section id="coverage-figure" class="level4">
 <h4 class="anchored" data-anchor-id="coverage-figure">Coverage figure</h4>
+<p>Using these values we render a figure presenting the estimated coverage of our review over time (Figure 3 in the article).</p>
 <div class="cell-container"><div class="cell-decorator"><pre>In [7]:</pre></div><div class="cell">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>plot_coverage <span class="ot">&lt;-</span> </span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>plot_reviewCoverage <span class="ot">&lt;-</span> </span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  sheet_AllArticles <span class="sc">|&gt;</span></span>
 <span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">N =</span> <span class="fu">n</span>(), <span class="at">.by =</span> <span class="fu">c</span>(Year, Strata, Included)) <span class="sc">|&gt;</span></span>
 <span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> Included, <span class="at">values_from =</span> N, <span class="at">values_fill =</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
@@ -437,7 +470,7 @@
 <span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>                    <span class="at">limits =</span> <span class="fu">c</span>(<span class="st">"YES"</span>, <span class="st">"EstRemaining"</span>),</span>
 <span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>                    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Included articles"</span>, </span>
 <span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"Estimated qualifying articles"</span>),</span>
-<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>                    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"aquamarine4"</span>, <span class="st">"gray70"</span>)) <span class="sc">+</span></span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>                    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"aquamarine4"</span>, <span class="st">"gray65"</span>)) <span class="sc">+</span></span>
 <span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>), <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">65</span>)) <span class="sc">+</span></span>
 <span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">""</span>, <span class="at">y =</span> <span class="st">"Number of articles"</span>) <span class="sc">+</span></span>
 <span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">panel.grid.major.x =</span> <span class="fu">element_blank</span>(),</span>
@@ -450,7 +483,7 @@
 <span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a>        <span class="at">legend.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>),</span>
 <span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a>        <span class="at">strip.text.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>)) <span class="sc">+</span></span>
 <span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="at">cols =</span> <span class="fu">vars</span>(Strata), <span class="at">scales =</span> <span class="st">"free_x"</span>, <span class="at">switch =</span> <span class="st">"x"</span>)</span>
-<span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a>plot_coverage</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a>plot_reviewCoverage</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="">
 <figure class="figure">
@@ -459,49 +492,54 @@
 </div>
 </div>
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">plot =</span> plot_coverage, <span class="st">"Figures/CoveragePlot.jpeg"</span>,</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">plot =</span> plot_reviewCoverage, <span class="st">"Figures/CoveragePlot.jpeg"</span>,</span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">width =</span> <span class="dv">8</span>, <span class="at">height =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div>
 </section>
 </section>
 <section id="study-areas" class="level2">
 <h2 class="anchored" data-anchor-id="study-areas">Study areas</h2>
+<p>The next set of statistics and figures focus on the study areas included in reviewed articles. For each article the countries where data was collected, a rough centroid of the study area, and an estimate of the spatial extent of the study area was recorded.</p>
 <section id="study-countries-table" class="level4">
 <h4 class="anchored" data-anchor-id="study-countries-table">Study countries table</h4>
+<p>First, a table is generated presenting the number of articles using data from each country with at least one article.</p>
 <div class="cell-container"><div class="cell-decorator"><pre>In [8]:</pre></div><div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>sheet_StudyArea <span class="sc">|&gt;</span></span>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>stat_studyCountries <span class="ot">&lt;-</span> sheet_StudyArea <span class="sc">|&gt;</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="st">`</span><span class="at">Review ID</span><span class="st">`</span>, Country) <span class="sc">|&gt;</span></span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate_longer_delim</span>(Country, <span class="st">", "</span>) <span class="sc">|&gt;</span></span>
 <span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>() <span class="sc">|&gt;</span></span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Articles =</span> <span class="fu">n</span>(), <span class="at">.by =</span> Country) <span class="sc">|&gt;</span></span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="sc">-</span>Articles)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">TotalArticles =</span> <span class="fu">length</span>(<span class="fu">unique</span>(<span class="st">`</span><span class="at">Review ID</span><span class="st">`</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">Articles =</span> <span class="fu">n</span>(), <span class="at">.by =</span> <span class="fu">c</span>(Country, TotalArticles)) <span class="sc">|&gt;</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Proportion =</span> <span class="fu">round</span>(Articles<span class="sc">/</span>TotalArticles,<span class="dv">2</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>TotalArticles) <span class="sc">|&gt;</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="sc">-</span>Articles)</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>stat_studyCountries</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 27 × 2
-   Country                  Articles
-   &lt;chr&gt;                       &lt;int&gt;
- 1 United States of America       55
- 2 Canada                          6
- 3 Italy                           5
- 4 Switzerland                     5
- 5 France                          4
- 6 Australia                       4
- 7 Brazil                          2
- 8 Costa Rica                      2
- 9 New Zealand                     2
-10 Panama                          1
+<pre><code># A tibble: 27 × 3
+   Country                  Articles Proportion
+   &lt;chr&gt;                       &lt;int&gt;      &lt;dbl&gt;
+ 1 United States of America       55       0.6 
+ 2 Canada                          6       0.07
+ 3 Italy                           5       0.05
+ 4 Switzerland                     5       0.05
+ 5 France                          4       0.04
+ 6 Australia                       4       0.04
+ 7 Brazil                          2       0.02
+ 8 Costa Rica                      2       0.02
+ 9 New Zealand                     2       0.02
+10 Panama                          1       0.01
 # ℹ 17 more rows</code></pre>
 </div>
 </div></div>
 </section>
 <section id="unique-countries" class="level4">
 <h4 class="anchored" data-anchor-id="unique-countries">Unique countries</h4>
+<p>The total number of unique countries is extracted.</p>
 <div class="cell-container"><div class="cell-decorator"><pre>In [9]:</pre></div><div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>sheet_StudyArea <span class="sc">|&gt;</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="st">`</span><span class="at">Review ID</span><span class="st">`</span>, Country) <span class="sc">|&gt;</span></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate_longer_delim</span>(Country, <span class="st">", "</span>) <span class="sc">|&gt;</span></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(Country) <span class="sc">|&gt;</span></span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unique</span>() <span class="sc">|&gt;</span></span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">length</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>stat_uniqueCountries <span class="ot">&lt;-</span> stat_studyCountries<span class="sc">$</span>Country <span class="sc">|&gt;</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unique</span>() <span class="sc">|&gt;</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">length</span>()</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>stat_uniqueCountries</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 27</code></pre>
 </div>
@@ -509,6 +547,20 @@
 </section>
 <section id="map-of-study-locations" class="level4">
 <h4 class="anchored" data-anchor-id="map-of-study-locations">Map of study locations</h4>
+<p>A figure is rendered plotting the rough centroids for each study area included in the review.</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Some articles include multiple study areas which were treated as distinct when they were modelled independently.
+</div>
+</div>
+<div class="callout-body-container callout-body">
+
+</div>
+</div>
 <div class="cell-container"><div class="cell-decorator"><pre>In [10]:</pre></div><div class="cell">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load country shapefile</span></span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>countries_shp <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="st">"Analysis/Countries_Spatial/World_Countries__Generalized_.shp"</span>, <span class="at">quiet =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
@@ -831,7 +883,7 @@ Caused by warning:
 </div>
 <div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">plot =</span> studyDurationPlot, <span class="at">filename =</span> <span class="st">"Figures/Duration.png"</span>,</span>
-<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">height =</span> <span class="dv">3</span>, <span class="at">width =</span> <span class="dv">12</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">height =</span> <span class="fl">3.5</span>, <span class="at">width =</span> <span class="dv">12</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: Removed 18 rows containing non-finite outside the scale range (`stat_bin()`).
 Removed 2 rows containing missing values or values outside the scale range
@@ -842,10 +894,9 @@ Removed 2 rows containing missing values or values outside the scale range
 <div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>combinedStudyScale <span class="ot">&lt;-</span> siteQuantityPlot <span class="sc">/</span> studyDurationPlot</span>
 <span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>combinedStudyScale <span class="ot">&lt;-</span> combinedStudyScale <span class="sc">+</span></span>
-<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">fill=</span><span class="st">'transparent'</span>, <span class="at">color=</span><span class="cn">NA</span>),</span>
-<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.background =</span> <span class="fu">element_rect</span>(<span class="at">fill=</span><span class="st">'transparent'</span>, <span class="at">color=</span><span class="cn">NA</span>))</span>
-<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">plot =</span> combinedStudyScale, <span class="at">filename =</span> <span class="st">"Figures/StudyScale.png"</span>,</span>
-<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">height =</span> <span class="dv">6</span>, <span class="at">width =</span> <span class="dv">12</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">fill=</span><span class="st">'transparent'</span>, <span class="at">color =</span> <span class="cn">NA</span>),</span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.background =</span> <span class="fu">element_rect</span>(<span class="at">fill=</span><span class="st">'transparent'</span>, <span class="at">color =</span> <span class="cn">NA</span>))</span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>combinedStudyScale</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: Removed 13 rows containing non-finite outside the scale range
 (`stat_bin()`).</code></pre>
@@ -862,7 +913,59 @@ Removed 2 rows containing missing values or values outside the scale range
 <pre><code>Warning: Removed 2 rows containing missing values or values outside the scale range
 (`geom_bar()`).</code></pre>
 </div>
+<div class="cell-output-display">
+<div class="">
+<figure class="figure">
+<p class=""><a href="Analysis_files/figure-html/combine%20sites%20and%20duration-1.png" class="lightbox" data-gallery="quarto-lightbox-gallery-7"><img src="Analysis_files/figure-html/combine%20sites%20and%20duration-1.png" class="img-fluid figure-img" width="1152"></a></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="at">plot =</span> combinedStudyScale, <span class="at">filename =</span> <span class="st">"Figures/StudyScale.png"</span>,</span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">height =</span> <span class="dv">6</span>, <span class="at">width =</span> <span class="dv">12</span>, <span class="at">bg=</span><span class="st">'transparent'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 13 rows containing non-finite outside the scale range (`stat_bin()`).
+Removed 2 rows containing missing values or values outside the scale range
+(`geom_bar()`).</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 18 rows containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 2 rows containing missing values or values outside the scale range
+(`geom_bar()`).</code></pre>
+</div>
 </div></div>
+</section>
+</section>
+<section id="covariates" class="level2">
+<h2 class="anchored" data-anchor-id="covariates">Covariates</h2>
+<section id="covariates-table" class="level4">
+<h4 class="anchored" data-anchor-id="covariates-table">Covariates table</h4>
+</section>
+<section id="covariates-figure" class="level4">
+<h4 class="anchored" data-anchor-id="covariates-figure">Covariates figure</h4>
+</section>
+</section>
+<section id="modelling" class="level2">
+<h2 class="anchored" data-anchor-id="modelling">Modelling</h2>
+<section id="modelling-table" class="level4">
+<h4 class="anchored" data-anchor-id="modelling-table">Modelling table</h4>
+</section>
+</section>
+<section id="objectives" class="level2">
+<h2 class="anchored" data-anchor-id="objectives">Objectives</h2>
+<section id="objectives-statistics" class="level4">
+<h4 class="anchored" data-anchor-id="objectives-statistics">Objectives statistics</h4>
+</section>
+<section id="objectives-figure" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="objectives-figure">Objectives figure</h4>
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" data-line-spacing="2" role="list">
+<div id="ref-mackenzie2003" class="csl-entry" role="listitem">
+MacKenzie, D. I., Nichols, J. D., Hines, J. E., Knutson, M. G., &amp; Franklin, A. B. (2003). Estimating site occupancy, colonization, and local extinction when a species is detected imperfectly. <em>Ecology</em>, <em>84</em>(8), 2200–2207. <a href="https://doi.org/10.1890/02-3090">https://doi.org/10.1890/02-3090</a>
+</div>
+</div>
 </section>
 </section>
      </main>
@@ -1285,7 +1388,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
 });
-</script>  </div> <!-- /content -->  <script>var lightboxQuarto = GLightbox({"loop":false,"selector":".lightbox","openEffect":"zoom","descPosition":"bottom","closeEffect":"zoom"});
+</script>  </div> <!-- /content -->  <script>var lightboxQuarto = GLightbox({"descPosition":"bottom","closeEffect":"zoom","selector":".lightbox","loop":false,"openEffect":"zoom"});
 (function() {
   let previousOnload = window.onload;
   window.onload = () => {

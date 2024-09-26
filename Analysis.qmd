@@ -1,0 +1,1085 @@
+---
+title: "Analysis and figures"
+author: "Saoirse Kelleher"
+date: today
+abstract: "Calculates key statistics and renders figures for \"*Twenty years of dynamic occupancy models: a review of applications and look to the future*\""
+abstract-title: "Summary"
+format:
+  html:
+    theme: minty
+---
+
+## Load packages
+
+First, we load in a handful of packages required for analysis and visualisation.
+
+```{r Load packages}
+#| message: false
+
+library(tidyverse)
+library(patchwork)
+library(sf)
+library(readxl)
+library(ggtext)
+```
+
+## Read in data
+
+Two data sources are required to render the analyses and visualisation for this article:
+
+i.  Randomised list of all queried articles *(Randomisation.xlsx)*
+
+ii. Spreadsheet of articles included in the review *(Review_Spreadsheet.xlsx)*
+
+#### Randomised article list
+
+All queried articles were collated and assigned random values in *'Randomisation.qmd'* to determine the order in which they would be considered for inclusion. '*Randomisation.xlsx'* contains all of these articles, and also documents which articles were included in the review, were excluded based on our review criteria, or were not processed at all. This spreadsheet is split across sheets by year strata. All sheets are read in using `readxl` and combined.
+
+```{r Load query sheets}
+sheet_AllArticles <- list(read_xlsx("Randomisation/Randomisation.xlsx", 
+                                    sheet = "2004-2007"),
+                          read_xlsx("Randomisation/Randomisation.xlsx", 
+                                    sheet = "2008-2011"),
+                          read_xlsx("Randomisation/Randomisation.xlsx", 
+                                    sheet = "2012-2015"),
+                          read_xlsx("Randomisation/Randomisation.xlsx", 
+                                    sheet = "2016-2019"),
+                          read_xlsx("Randomisation/Randomisation.xlsx", 
+                                    sheet = "2020-2023")) |> 
+  list_rbind()
+```
+
+#### Reviewed data
+
+*'Review_Spreadsheet.xlsx'* contains all recorded details from the 92 reviewed articles. This spreadsheet contains several sheets, each including one category of variable (e.g., details on 'Focal Taxa' or 'Covariates'). Each of these is loaded individually with `readxl`.
+
+```{r Load review sheets}
+sheet_ArticleData <- read_xlsx("Review_Spreadsheet.xlsx",
+                               sheet = "Article Data")
+sheet_Objectives <- read_xlsx("Review_Spreadsheet.xlsx",
+                              sheet = "Objectives") 
+sheet_FocalTaxa <- read_xlsx("Review_Spreadsheet.xlsx",
+                             sheet = "Focal Taxa") 
+sheet_StudyArea <- read_xlsx("Review_Spreadsheet.xlsx",
+                             sheet = "Study Area")
+sheet_DataCollection <- read_xlsx("Review_Spreadsheet.xlsx",
+                                  sheet = "Data Collection")
+sheet_Covariates <- read_xlsx("Review_Spreadsheet.xlsx",
+                              sheet = "Covariates")
+sheet_Modelling <- read_xlsx("Review_Spreadsheet.xlsx",
+                             sheet = "Modelling")
+```
+
+## Article inclusion
+
+The first set of numbers we calculate describe the articles included in the review, and the inclusion rates within each of our year strata. These values are used to render a figure showing the coverage of reviewed articles during our study period.
+
+#### Articles by query
+
+Recall that our review sample was drawn from two Web of Science queries: the first being all articles which have cited @mackenzie2003, and the second using a selection of keywords presumed to be used in articles fitting DOMs. Here, we calculate the number of articles which appeared in one or both of these queries.
+
+```{r Calculate query statistics}
+stat_queryCounts <- sheet_AllArticles |>
+  mutate(Query = case_when(KeyTerms == TRUE & CitesMackenzie == TRUE ~ "Both",
+                           KeyTerms == FALSE & CitesMackenzie == TRUE ~ "Mackenzie only",
+                           KeyTerms == TRUE & CitesMackenzie == FALSE ~ "Key terms only")) |>
+  summarise(Articles = n(), .by = Query) |>
+  mutate(Proportion = round(Articles/sum(Articles), 2))
+stat_queryCounts
+```
+
+#### Total articles
+
+Next, we get the number of articles included in the review.
+
+```{r Total article count}
+stat_articleTotal <- sheet_AllArticles |>
+  filter(Included == "YES") |>
+  nrow()
+stat_articleTotal
+```
+
+#### Article hit rates
+
+We then calculate the hit rate for articles in each stratum, by dividing the number of articles included by the number of articles processed. These hit rates are then used to estimate how many articles from the remaining pool would have met inclusion criteria — first summed from each year, then summed across years.
+
+```{r Calculate article hit rates}
+# Hit rates within each stratum
+stat_hitRates <- sheet_AllArticles |>
+  summarise(Articles = n(), 
+            .by = c(Year, Strata, Included)) |>
+  pivot_wider(names_from = Included, 
+              values_from = Articles, 
+              values_fill = 0) |>
+  summarise(HitRate = round(sum(YES)/(sum(NO)+sum(YES)), 2),
+            .by = Strata)
+stat_hitRates
+
+# Number of remaining articles per year
+stat_remainingArticles <- sheet_AllArticles |>
+  summarise(Articles = n(), .by = c(Year, Strata, Included)) |>
+  pivot_wider(names_from = Included, 
+              values_from = Articles, values_fill = 0) |>
+  mutate(HitRate = sum(YES)/(sum(NO)+sum(YES)),
+         .by = Strata) |>
+  mutate(EstRemaining = round(`NA`*HitRate, 2)) |>
+  select(Year, EstRemaining)
+stat_remainingArticles
+
+# Estimating remaining qualified articles and total remaining articles
+stat_remainingProportion <- data.frame(Group = c("EstRemaining", "TotalUnreviewed"),
+                                  Articles = c(sum(stat_remainingArticles$EstRemaining),
+                                               sheet_AllArticles |>
+                                                 summarise(Articles = n(), 
+                                                           .by = c(Year, 
+                                                                   Strata, 
+                                                                   Included)) |>
+                                                 pivot_wider(names_from = Included, 
+                                                             values_from = Articles,
+                                                             values_fill = 0) |>
+                                                 pull(`NA`) |> 
+                                                 sum()))
+stat_remainingProportion
+```
+
+#### Coverage figure
+
+Using these values we render a figure presenting the estimated coverage of our review over time (Figure 3 in the article).
+
+```{r Coverage figure}
+#| fig-width: 8
+#| fig-height: 4
+
+plot_reviewCoverage <- 
+  sheet_AllArticles |>
+  summarise(N = n(), .by = c(Year, Strata, Included)) |>
+  pivot_wider(names_from = Included, values_from = N, values_fill = 0) |>
+  mutate(HitRate = sum(YES)/(sum(NO)+sum(YES)),
+         .by = Strata) |>
+  mutate(EstRemaining = `NA`*HitRate) |>
+  pivot_longer(cols = c(YES, EstRemaining), 
+               names_to = 'Group', values_to = 'Articles') |>
+  
+  ggplot() +
+  geom_col(aes(x = Year, y = Articles, fill = Group), colour = "white") +
+  scale_fill_manual("",
+                    limits = c("YES", "EstRemaining"),
+                    labels = c("Included articles", 
+                               "Estimated qualifying articles"),
+                    values = c("aquamarine4", "gray65")) +
+  scale_y_continuous(expand = c(0,0), limits = c(0, 65)) +
+  labs(x = "", y = "Number of articles") +
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        legend.position = "bottom", 
+        axis.text = element_text(size = 12),
+        axis.text.x = element_blank(), 
+        axis.ticks.x = element_blank(),
+        axis.title = element_text(size = 12), 
+        legend.text = element_text(size = 12),
+        strip.text.x = element_text(size = 12)) +
+  facet_grid(cols = vars(Strata), scales = "free_x", switch = "x")
+plot_reviewCoverage
+ggsave(plot = plot_reviewCoverage, "Figures/CoveragePlot.jpeg",
+       width = 8, height = 4)
+```
+
+## Study areas
+
+The next set of statistics and figures focus on the study areas included in reviewed articles. For each article the countries where data was collected, a rough centroid of the study area, and an estimate of the spatial extent of the study area was recorded.
+
+#### Study countries table
+
+First, a table is generated presenting the number of articles using data from each country with at least one article.
+
+```{r Study location table}
+stat_studyCountries <- sheet_StudyArea |>
+  select(`Review ID`, Country) |>
+  separate_longer_delim(Country, ", ") |>
+  distinct() |>
+  mutate(TotalArticles = length(unique(`Review ID`))) |>
+  summarise(Articles = n(), .by = c(Country, TotalArticles)) |>
+  mutate(Proportion = round(Articles/TotalArticles,2)) |>
+  select(-TotalArticles) |>
+  arrange(-Articles)
+stat_studyCountries
+```
+
+#### Unique countries
+
+The total number of unique countries is extracted.
+
+```{r Unique countries}
+stat_uniqueCountries <- stat_studyCountries$Country |>
+  unique() |>
+  length()
+stat_uniqueCountries
+```
+
+#### Map of study locations
+
+A figure is rendered plotting the rough centroids for each study area included in the review, corresponding to Figure 4A in the article. We also note the total number of study areas included in the reviewed articles.
+
+::: callout-important
+## Articles may include multiple study areas in cases where distinct dataset were modelled separately
+:::
+
+```{r Study location map}
+# Load country shapefile
+countries_shp <- st_read("Analysis/Countries_Spatial/World_Countries__Generalized_.shp", quiet = TRUE) |>
+  st_transform(crs = "ESRI:54030") |>
+  filter(COUNTRY != "Antarctica")
+
+# Convert coordinates and plot map
+plot_studyAreaMap <- sheet_StudyArea |>
+  st_as_sf(coords = c("Centre Point (lon)", "Centre Point (lat)"),
+           crs = "EPSG:4326") |>
+  st_transform(crs = "ESRI:54030") |>
+  
+  ggplot() +
+  geom_sf(data = countries_shp, colour = "gray90", fill = "gray80") +
+  geom_sf(shape = 21, fill = "aquamarine4", colour = "white", alpha = 0.5, size = 3.5) +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank(),
+        panel.background = element_rect(fill='transparent', color=NA),
+        plot.background = element_rect(fill='transparent', color=NA),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
+plot_studyAreaMap
+ggsave(plot = plot_studyAreaMap, "Figures/StudiesMap.png")
+
+# Get number of unique study areas
+stat_totalStudyAreas <- sheet_StudyArea |>
+  nrow()
+stat_totalStudyAreas
+```
+
+#### Study area size
+
+We noted the rough extent of each study area in our review, recording it as an order of magnitude to account for some amount of measurement uncertainty. Here we render a histogram of study area size to be used as Figure 4B in the article.
+
+```{r Study area size}
+#| fig-width: 7
+#| fig-height: 4
+
+plot_studyAreaSize <- sheet_StudyArea |>
+  summarise(Articles = n(), .by = Size) |>
+  filter(Size != "Unspecified") |>
+  
+  ggplot() +
+  geom_col(aes(x = Size, y = Articles),
+           fill = "aquamarine4", colour = "white",
+           width = 1, linewidth = 2) +
+  labs(x = "", y = "") +
+  scale_x_discrete(labels = c("< 1", "1 - 10", "10 - 10<sup>2</sup>",
+                              "10<sup>2</sup> - 10<sup>3</sup>",
+                              "10<sup>3</sup> - 10<sup>4</sup>",
+                              "10<sup>4</sup> - 10<sup>5</sup>",
+                              "10<sup>5</sup> - 10<sup>6</sup>",
+                              "\\> 10<sup>6</sup>")) +
+  theme(panel.grid = element_blank(),
+        axis.text.x = element_markdown(size = 20, angle = 90,
+                                       vjust = 0.5, hjust = 1),
+        axis.text.y = element_blank(), axis.ticks = element_blank(),
+        panel.background = element_rect(fill='transparent', color=NA),
+        plot.background = element_rect(fill='transparent', color=NA))
+plot_studyAreaSize
+
+ggsave("Figures/StudyAreaPlot.png",
+       plot = plot_studyAreaSize, width = 7, height = 4, bg='transparent')
+```
+
+## Study taxa
+
+Details were recorded on the focal taxa for each article. In this section we calculate some numbers on the approaches taken for modelling multiple species and render a figure showing the types of taxa modelled.
+
+#### Multi-species statistics
+
+First we calculate the proportion of articles which modelled i) only one taxa, ii) multiple species independently, iii) multiple species in a hierarchical multi-species implementation, and iv) multiple species in an interactive multi-species implementation.
+
+```{r Multi-species stats}
+stat_multiSpecies <- sheet_FocalTaxa |>
+  separate_longer_delim(`Multispecies method`, ", ") |>
+  select(`Review ID`, `Multispecies method`) |>
+  distinct() |>
+  mutate(TotalArticles = length(unique(`Review ID`))) |>
+  summarise(Articles = n(), 
+            .by = c(`Multispecies method`, TotalArticles)) |>
+  mutate(Proportion = round(Articles/TotalArticles, 2))
+stat_multiSpecies
+```
+
+#### Study species
+
+We render a figure corresponding to Figure 4D in the review, showing the number of articles fitting DOMs for each category of taxa, with further detail on invasive and threatened species. Species were considered 'threatened' either if they are currently listed on the IUCN Red List, or if the article indicates the species is otherwise threatened (e.g., a state 'species of special concern.') Range-expanding species like the Barred Owl in California were included in the 'Invasive' tally.
+
+```{r Focal species figure}
+#| fig-width: 10
+#| fig-height: 4
+
+plot_focalTaxa <- 
+  sheet_FocalTaxa |>
+  separate_longer_delim(`Taxa keywords`, delim = ", ") |>
+  separate_longer_delim(Status, delim = ", ") |>
+  mutate(`Taxa keywords` = case_when(`Taxa keywords` == "Fish" ~ "Other", 
+                                     .default = `Taxa keywords`)) |>
+  mutate(Status = case_when(Status %in% c("CR", "EN", "NT", "VU", "Threatened_Other") ~ "Threatened",
+                            Status %in% c("NA", "Unclear", "DD") ~ "NA",
+                            Status == "Invasive" ~ "Invasive",
+                            Status == "LC" ~ "Stable")) |>
+  mutate(Threatened = case_when("Threatened" %in% Status ~ TRUE,
+                                .default = FALSE),
+         Invasive = case_when("Invasive" %in% Status ~ TRUE,
+                              .default = FALSE),
+         Overall = TRUE,
+         .by = c(`Review ID`, `Taxa keywords`)) |>
+  select(`Review ID`, `Taxa keywords`, Threatened, Invasive, Overall) |>
+  distinct() |>
+  pivot_longer(cols = c(Threatened, Invasive, Overall), 
+               names_to = "Group", values_to = "Value") |>
+  summarise(Articles = sum(Value),
+            .by = c(`Taxa keywords`, Group)) |>
+  mutate(Group = fct(Group, levels = c("Overall", "Threatened",
+                                       "Invasive"))) |>
+  mutate(`Taxa keywords` = fct(`Taxa keywords`, 
+                               levels = rev(c("Bird", "Mammal", "Herptile",
+                                              "Invertebrate", "Other")))) |>
+  # Bump up 0's to 0.1 so they show on the figure
+  mutate(Articles = case_when(Articles == 0 ~ 0.1, .default = Articles)) |>
+  
+  ggplot() +
+  geom_col(aes(x = Articles, y = `Taxa keywords`, fill = Group),
+           position = position_dodge2(reverse = TRUE), width = 0.8) +
+  scale_fill_manual("", values = c("aquamarine4", "goldenrod2", "gray70")) +
+  scale_x_continuous(expand = c(0,0)) +
+  labs(x = "Articles", y = "") +
+  theme(panel.grid = element_blank(),
+        legend.text = element_text(size = 20), axis.text = element_text(size = 21),
+        axis.title = element_text(size = 19), axis.ticks.y = element_blank(),
+        panel.background = element_rect(fill='transparent', color = NA),
+        plot.background = element_rect(fill='transparent', color = NA),
+        legend.background = element_rect(fill = 'transparent', color = NA))
+plot_focalTaxa
+
+ggsave("Figures/TaxaPlot.png",
+       plot_focalTaxa, width = 10, height = 4, bg='transparent')
+```
+
+## Data collection
+
+In this section, we calculate key statistics on the survey protocols used to collect data for DOMs in our review. This includes numbers on the most commonly used survey methods, the duration of surveys, and the number of sites. In cases where multiple datasets were used and modelled independently in the same article, these datasets are considered separately.
+
+#### Survey method statistics
+
+We tally how many articles used data collected with each survey method, as well as how many articles use citizen science data irrespective of detection method.
+
+```{r survey methods}
+# Number of articles using each method
+stat_surveyMethod <- sheet_DataCollection |>
+  separate_longer_delim(`Capture method`, ", ") |>
+  select(`Review ID`, `Capture method`) |>
+  distinct() |>
+  mutate(TotalArticles = length(unique(`Review ID`))) |>
+  summarise(Articles = n(), .by = c(`Capture method`, TotalArticles)) |>
+  mutate(Proportion = round(Articles/TotalArticles, 2))
+stat_surveyMethod
+
+# Number of articles with citizen science
+stat_citizen <- sheet_DataCollection |>
+  select(`Review ID`, Citizen) |>
+  distinct() |>
+  mutate(Citizen = case_when(Citizen == "YES" ~ TRUE,
+                             Citizen == "NO" ~ FALSE)) |>
+  pull(Citizen) |>
+  sum()
+stat_citizen
+```
+
+#### Site quantity
+
+We calculate the median number of sites included in DOMs, and render a histogram of site quantity for use in Figure 4F. We also get the sample size, as the number of datasets is greater than the number of reviewed articles due to aforementioned cases where studies contain multiple datasets.
+
+```{r site quantity plot}
+#| fig-width: 12
+#| fig-height: 3.5
+
+# Get median site quantity
+stat_medianSites <- sheet_DataCollection |>
+  filter(`Site quantity` != "Unclear") |>
+  mutate(`Site quantity` = as.numeric(`Site quantity`)) |>
+  pull(`Site quantity`) |>
+  median(na.rm = TRUE)
+stat_medianSites
+
+# Plot site quantity distribution
+plot_siteQuantity <- sheet_DataCollection |>
+  filter(`Site quantity` != "Unclear") |>
+  mutate(`Site quantity` = as.numeric(`Site quantity`)) |>
+  ggplot() +
+  geom_histogram(aes(x = `Site quantity`),
+                 binwidth = 0.25, fill = "aquamarine4", colour = "white",
+                 linewidth = 2) +
+  geom_vline(aes(xintercept = median(`Site quantity`, na.rm = TRUE)), 
+             colour = "goldenrod2", linetype = 1, linewidth = 2) +
+  scale_x_continuous(transform = "log10",
+                     breaks = c(0, 10, 25, 50, 100, 250, 500,
+                                1000, 2500, 5000, 7500),
+                     expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0), position = "right") +
+  labs(y = "Site\nquantity", x = "") +
+  theme(panel.grid = element_blank(),
+        panel.background = element_rect(fill='transparent', color=NA),
+        plot.background = element_rect(fill='transparent', color=NA),
+        axis.text.x = element_text(size = 23, angle = 90,
+                                   vjust = 0.5, hjust = 1),
+        axis.text.y = element_blank(), axis.ticks.y = element_blank(),
+        axis.line.x = element_line(), 
+        axis.title.y = element_text(size = 35, colour = "aquamarine4"))
+plot_siteQuantity
+ggsave(plot = plot_siteQuantity, filename = "Figures/Sites.png",
+       height = 3, width = 12)
+
+# Site sample size
+stat_siteQuantityN <- sheet_DataCollection |>
+  filter(`Site quantity` != "Unclear") |>
+  nrow()
+stat_siteQuantityN
+```
+
+#### Study duration
+
+We calculate similar statistics and render a matching plot for study duration for Figure 4F. Study duration is here defined as the time elapsed between the first and last surveys.
+
+```{r site duration figure}
+#| fig-width: 12
+#| fig-height: 3.5
+
+# Calculate median duration
+stat_medianDuration <- sheet_DataCollection |>
+  filter(`Start month` != "Unclear" & `End month` != "Unclear") |>
+  mutate(StartDay = as.numeric(as.Date(as.numeric(`Start month`))),
+         EndDay = as.numeric(as.Date(as.numeric(`End month`)))) |>
+  mutate(StudyDuration = EndDay - StartDay) |>
+  # Divide days by average length of month
+  mutate(StudyMonths = (StudyDuration/30.44)) |>
+  # For cases where start/end date are in same month, set to '1 month'
+  mutate(StudyMonths = case_when(StudyMonths == 0 ~ 1,
+                                 .default = StudyMonths)) |>
+  pull(StudyMonths) |>
+  median()
+stat_medianDuration
+
+# Render duration figure
+plot_studyDuration <-
+  sheet_DataCollection |>
+  filter(`Start month` != "Unclear" & `End month` != "Unclear") |>
+  mutate(StartDay = as.numeric(as.Date(as.numeric(`Start month`))),
+         EndDay = as.numeric(as.Date(as.numeric(`End month`)))) |>
+  mutate(StudyDuration = EndDay - StartDay) |>
+  # Divide days by average length of month
+  mutate(StudyMonths = (StudyDuration/30.44)) |>
+  # For cases where start/end date are in same month, set to '1 month'
+  mutate(StudyMonths = case_when(StudyMonths == 0 ~ 1,
+                                 .default = StudyMonths)) |>
+  
+  ggplot() +
+  geom_histogram(aes(x = StudyMonths), 
+                 binwidth = 0.2, fill = "aquamarine4", colour = "white",
+                 linewidth = 2) +
+  geom_vline(aes(xintercept = median(StudyMonths, na.rm = TRUE)), 
+             colour = "goldenrod2", linetype = 1, linewidth = 2) +
+  labs(x = "", y = "Study\nduration") +
+  scale_x_continuous(transform = "log10",
+                     breaks = c(1, 6, 12, 60, 
+                                120, 240, 480), 
+                     labels = c("1 month", "6 months", "1 year", "5 years", 
+                                "10 years", "20 years", "40 years"),
+                     expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0), position = "right") +
+  theme(panel.grid = element_blank(),
+        panel.background = element_rect(fill='transparent', color=NA),
+        plot.background = element_rect(fill='transparent', color=NA),
+        axis.text.x = element_text(size = 23, angle = 90,
+                                   vjust = 0.5, hjust = 1),
+        axis.text.y = element_blank(), axis.ticks.y = element_blank(),
+        axis.line.x = element_line(), 
+        axis.title.y = element_text(size = 35, colour = "aquamarine4"))
+plot_studyDuration
+ggsave(plot = plot_studyDuration, filename = "Figures/Duration.png",
+       height = 3.5, width = 12)
+
+# Calculate sample size
+stat_studyDurationN <- sheet_DataCollection |>
+  filter(`Start month` != "Unclear" & `End month` != "Unclear") |>
+  nrow()
+stat_studyDurationN
+```
+
+We combine the study duration figure and the site quantity figure using `patchwork`.
+
+```{r combine sites and duration}
+#| fig-width: 12
+#| fig-height: 7.5
+
+plot_combinedStudyScale <- plot_siteQuantity / plot_spacer() / plot_studyDuration
+plot_combinedStudyScale <- plot_combinedStudyScale +
+  theme(panel.background = element_rect(fill='transparent', color = NA),
+        plot.background = element_rect(fill='transparent', color = NA))
+plot_combinedStudyScale
+ggsave(plot = plot_combinedStudyScale, filename = "Figures/StudyScale.png",
+       height = 7, width = 12, bg='transparent')
+```
+
+## Covariates
+
+For each article we recorded *all* covariates considered across all modelled parameters.
+
+#### Covariates figure
+
+We render a plot to be used as Figure 5 in the article, presenting the number of covariates considered for each main parameter in each study.
+
+```{r Covariate quantity figure}
+plot_covariateQuantity <- sheet_Covariates |> 
+  separate_longer_delim(Covariates, delim = ", ") |>
+  separate_wider_delim(Covariates, delim = "_", 
+                       names = c("Covariate", "Variation", 
+                                 "Observation", "Relation"),
+                       too_few = "align_start") |>
+  separate_wider_delim(Covariate, delim = "-",
+                       names = c("Category", "Covariate"),
+                       too_few = "align_start") |>
+  filter(`Parameter type` %in% c("Initial occupancy", "Occupancy",
+                                 "Colonisation", "Extinction_Persistence",
+                                 "Detection")) |>
+  summarise(Covariates = n(),
+            .by = c(`Review ID`, `Model ID`, `Parameter type`, Category)) |>
+  complete(nesting(`Review ID`, `Model ID`, `Parameter type`), 
+           Category, fill = list(Covariates = 0)) |>
+  filter(Category != "None") |>
+  mutate(`Parameter type` = case_when(`Parameter type` == "Extinction_Persistence" ~ "Extinction",
+                                      `Parameter type` == "Occupancy" ~ "Occupancy*",
+                                      .default = `Parameter type`)) |>
+  mutate(Parameter = fct(`Parameter type`, 
+                         levels = c("Initial occupancy", "Occupancy*",
+                                    "Colonisation", "Extinction",
+                                    "Detection"))) |>
+  mutate(Covariates = case_when(Covariates >= 15 ~ 15,
+                                .default = Covariates)) |>
+  mutate(Outlier = case_when(Covariates == 15 ~ TRUE,
+                             .default = FALSE)) |>
+  
+  ggplot(aes(x = Category, y = Covariates)) +
+  geom_jitter(aes(colour = Category, shape = Outlier), 
+              alpha = 0.3, size = 2.5,
+              width = 0.25, height = 0) +
+  geom_boxplot(aes(fill = Category), 
+               outliers = FALSE, alpha = 0.3, colour = "gray60") +
+  scale_fill_manual("", labels = c("Environmental covariates", "Structural covariates"),
+                    values = c("aquamarine4", "plum4")) +
+  scale_colour_manual("", labels = c("Environmental covariates", 
+                                     "Structural covariates"),
+                      values = c("aquamarine4", "plum4")) +
+  scale_shape_manual("", labels = c("",""), 
+                     limits = c(TRUE, FALSE), values = c(17, 16)) +
+  scale_y_continuous(breaks = c(0, 5, 10, 15),
+                     labels = c("0", "5", "10", "15+")) +
+  labs(x = "", y = "Number of covariates considered") +
+  facet_grid(cols = vars(Parameter), switch = "x") +
+  guides(shape = "none") +
+  theme(legend.position = "bottom", 
+        axis.text.x = element_blank(), axis.ticks.x = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(), 
+        strip.text = element_text(size = 12, family = "Helvetica"), 
+        axis.title.y = element_text(size = 13, family = "Helvetica"), 
+        axis.text = element_text(size = 12, family = "Helvetica"),
+        legend.text = element_text(size = 12, family = "Helvetica"))
+
+plot_covariateQuantity
+ggsave(plot = plot_covariateQuantity, filename = "Figures/CovParamPlot.jpeg",
+       width = 8, height = 4)
+```
+
+#### Covariates table
+
+Here, we compile information on covariates required for Table 1. This is achieved in several steps: first, details on each narrow category of covariate are calculated; second, the same details are calculated for broader categories (environmental and structural); third, they are calculated once more for an overall summary.
+
+```{r Compile covariate table}
+# Covariate level summaries ------------------------------------------------
+# Extract details for each covariate and get parameter counts
+covariate_details <- sheet_Covariates |>
+  separate_longer_delim(Covariates, delim = ", ") |>
+  separate_wider_delim(Covariates, delim = "_", 
+                       names = c("Covariate", "Variation", 
+                                 "Observation", "Relation"),
+                       too_few = "align_start") |>
+  separate_wider_delim(Covariate, delim = "-",
+                       names = c("Category", "Covariate"),
+                       too_few = "align_start") |>
+  # Merge some covariate categories
+  mutate(Covariate = case_when(Covariate == "OTHER" & Category == "E" ~ "OTHER-E",
+                               Covariate == "OTHER" & Category == "S" ~ "OTHER-S",
+                               Covariate %in% c("HABT", "HABA", "LACO") ~ "HABT",
+                               Covariate %in% c("CLWE", "DISA", "DIST") ~ "CLWE",
+                               Covariate %in% c("SPAT", "GEOM", "CONN") ~ "SPAT",
+                               Covariate %in% c("ANTH", "AGRI", "PROT") ~ "ANTH",
+                               .default = Covariate)) |>
+  # Combine Review ID & Model ID, and calculate the number of studies and number of studies with each parameter
+  mutate(studyID = paste(`Review ID`, `Model ID`), sep = "_") |>
+  mutate(n_overall = length(unique(studyID))) |>
+  mutate(n_param = length(unique(studyID)), 
+         .by = `Parameter type`) |>
+  mutate(Dynamic = case_when(Variation %in% c("SE", "SISE", "SU") ~ TRUE,
+                             .default = FALSE),
+         DirectObs = case_when(Observation == "D" ~ TRUE, 
+                               .default = FALSE),
+         Nonlinear = case_when(Relation %in% c("N", "B") ~ TRUE,
+                               .default = FALSE),
+         Interaction = case_when(Relation %in% c("I", "B") ~ TRUE,
+                                 .default = FALSE)) |>
+  filter(!is.na(Covariate))
+  
+# Proportion of studies with covariate on any parameter 
+covariates_PropAny <- covariate_details |>
+  select(studyID, Covariate, Category, n_overall) |>
+  distinct() |>
+  summarise(Prop_Any = n()/mean(n_overall), .by = c(Covariate, Category))
+
+# Proportion of articles with covariate on each parameter
+covariates_PropParameter <- covariate_details |>
+  select(studyID, Covariate, Category, `Parameter type`, n_param) |>
+  distinct() |>
+  summarise(Prop_Param = n()/mean(n_param), 
+            .by = c(Covariate, Category, `Parameter type`)) |>
+  filter(`Parameter type` %in% c("Initial occupancy", "Occupancy",
+                                 "Colonisation", "Extinction_Persistence",
+                                 "Detection")) |>
+  pivot_wider(names_from = `Parameter type`, values_from = Prop_Param,
+              values_fill = 0)
+
+# Average proportion of covariates which are dynamic
+covariates_dynamic <- covariate_details |>
+  select(studyID, Covariate, Category, Parameter, Dynamic) |>
+  filter(Parameter != "Initial occupancy") |>
+  summarise(Prop_Dynamic = sum(Dynamic)/n(),
+            .by = c(Category, Covariate, studyID)) |>
+  summarise(Prop_Dynamic = mean(Prop_Dynamic),
+            .by = c(Category, Covariate))
+
+# Proportion of covariates which are directly observed
+covariates_direct <- covariate_details |>
+  select(studyID, Covariate, Category, Parameter, DirectObs) |>
+  summarise(Prop_Direct = sum(DirectObs)/n(),
+            .by = c(Category, Covariate, studyID)) |>
+  summarise(Prop_Direct = mean(Prop_Direct),
+            .by = c(Category, Covariate))
+
+# Proportion of articles which use each cov non-linearly
+covariates_nonlinear <- covariate_details |> 
+  select(studyID, Covariate, Category, Nonlinear) |>
+  summarise(Nonlinear = max(Nonlinear), 
+            .by = c(Covariate, Category, studyID)) |>
+  summarise(Prop_Nonlinear = sum(Nonlinear)/n(),
+            .by = c(Covariate, Category))
+
+# Proportion of articles which use each cov in an interaction  
+covariates_interact <- covariate_details |> 
+  select(studyID, Covariate, Category, Interaction) |>
+  summarise(Interaction = max(Interaction), 
+            .by = c(Covariate, Category, studyID)) |>
+  summarise(Prop_Interact = sum(Interaction)/n(),
+            .by = c(Covariate, Category))
+
+# Combine all for covariates
+covariates_table <- covariates_PropAny |>
+  full_join(covariates_PropParameter, by = join_by(Covariate, Category)) |>
+  full_join(covariates_dynamic, by = join_by(Covariate, Category)) |>
+  full_join(covariates_direct, by = join_by(Covariate, Category)) |>
+  full_join(covariates_nonlinear, by = join_by(Covariate, Category)) |>
+  full_join(covariates_interact, by = join_by(Covariate, Category)) |>
+  filter(!is.na(Covariate))
+
+# Category level summary ----------------------------------------------
+categories_PropAny <- covariate_details |>
+  select(studyID, Category, n_overall) |>
+  distinct() |>
+  summarise(Prop_Any = n()/mean(n_overall), .by = c(Category))
+
+categories_PropParameter <- covariate_details |>
+  select(studyID, Category, `Parameter type`, n_param) |>
+  distinct() |>
+  summarise(Prop_Param = n()/mean(n_param), 
+            .by = c(Category, `Parameter type`)) |>
+  filter(`Parameter type` %in% c("Initial occupancy", "Occupancy",
+                                 "Colonisation", "Extinction_Persistence",
+                                 "Detection")) |>
+  pivot_wider(names_from = `Parameter type`, values_from = Prop_Param,
+              values_fill = 0)
+
+# Proportion of covariates which are dynamic
+categories_dynamic <- covariate_details |>
+  select(studyID, Category, Parameter, Dynamic) |>
+  filter(Parameter != "Initial occupancy") |>
+  summarise(Prop_Dynamic = sum(Dynamic)/n(),
+            .by = c(Category, studyID)) |>
+  summarise(Prop_Dynamic = mean(Prop_Dynamic),
+            .by = Category)
+
+# Proportion of covariates which are directly observed
+categories_direct <- covariate_details |>
+  select(studyID, Category, Parameter, DirectObs) |>
+  summarise(Prop_Direct = sum(DirectObs)/n(),
+            .by = c(Category, studyID)) |>
+  summarise(Prop_Direct = mean(Prop_Direct),
+            .by = Category)
+
+# Proportion of articles which use each cov non-linearly
+categories_nonlinear <- covariate_details |> 
+  select(studyID, Category, Nonlinear) |>
+  summarise(Nonlinear = max(Nonlinear), 
+            .by = c(Category, studyID)) |>
+  summarise(Prop_Nonlinear = sum(Nonlinear)/n(),
+            .by = Category)
+
+# Proportion of articles which use each cov in an interaction  
+categories_interact <- covariate_details |> 
+  select(studyID, Category, Interaction) |>
+  summarise(Interaction = max(Interaction), 
+            .by = c(Category, studyID)) |>
+  summarise(Prop_Interact = sum(Interaction)/n(),
+            .by = Category)
+
+categories_table <- categories_PropAny |>
+  full_join(categories_PropParameter, by = join_by(Category)) |>
+  full_join(categories_dynamic, by = join_by(Category)) |>
+  full_join(categories_direct, by = join_by(Category)) |>
+  full_join(categories_nonlinear, by = join_by(Category)) |>
+  full_join(categories_interact, by = join_by(Category)) |>
+  mutate(Covariate = case_when(Category == "E" ~ "Environmental",
+                               Category == "S" ~ "Structural"))
+
+# Overall summary row ----------------------------------------------
+overall_PropAny <- covariate_details |>
+  select(studyID, n_overall) |>
+  distinct() |>
+  summarise(Prop_Any = n()/mean(n_overall)) |>
+  mutate(Category = "O", Covariate = "Overall")
+
+overall_PropParameter <- covariate_details |>
+  select(studyID, `Parameter type`, n_param) |>
+  distinct() |>
+  summarise(Prop_Param = n()/mean(n_param), 
+            .by = c(`Parameter type`)) |>
+  filter(`Parameter type` %in% c("Initial occupancy", "Occupancy",
+                                 "Colonisation", "Extinction_Persistence",
+                                 "Detection")) |>
+  pivot_wider(names_from = `Parameter type`, values_from = Prop_Param,
+              values_fill = 0) |>
+  mutate(Category = "O", Covariate = "Overall")
+
+# Proportion of covariates which are dynamic
+overall_dynamic <- covariate_details |>
+  select(studyID, Parameter, Dynamic) |>
+  filter(Parameter != "Initial occupancy") |>
+  summarise(Prop_Dynamic = sum(Dynamic)/n(), 
+            .by = studyID) |>
+  summarise(Prop_Dynamic = mean(Prop_Dynamic)) |>
+  mutate(Category = "O", Covariate = "Overall")
+
+# Proportion of covariates which are directly observed
+overall_direct <- covariate_details |>
+  select(studyID, Parameter, DirectObs) |>
+  summarise(Prop_Direct = sum(DirectObs)/n(),
+            .by = studyID) |>
+  summarise(Prop_Direct = mean(Prop_Direct)) |>
+  mutate(Category = "O", Covariate = "Overall")
+
+# Proportion of articles which use each cov non-linearly
+overall_nonlinear <- covariate_details |> 
+  select(studyID, Nonlinear) |>
+  summarise(Nonlinear = max(Nonlinear), 
+            .by = studyID) |>
+  summarise(Prop_Nonlinear = sum(Nonlinear)/n()) |>
+  mutate(Category = "O", Covariate = "Overall")
+
+# Proportion of articles which use each cov in an interaction  
+overall_interact <- covariate_details |> 
+  select(studyID, Interaction) |>
+  summarise(Interaction = max(Interaction), 
+            .by = studyID) |>
+  summarise(Prop_Interact = sum(Interaction)/n()) |>
+  mutate(Category = "O", Covariate = "Overall")
+
+overall_row <- overall_PropAny |>
+  full_join(overall_PropParameter, by = join_by(Category, Covariate)) |>
+  full_join(overall_dynamic, by = join_by(Category, Covariate)) |>
+  full_join(overall_direct, by = join_by(Category, Covariate)) |>
+  full_join(overall_nonlinear, by = join_by(Category, Covariate)) |>
+  full_join(overall_interact, by = join_by(Category, Covariate))
+
+# Combine all summaries ----------------------------------------------------
+table_covariateSummary <- covariates_table |>
+  rbind(categories_table) |>
+  rbind(overall_row) |>
+  mutate(across(where(is.numeric), ~ round(.x, 2)))
+
+write_csv(table_covariateSummary, "Figures/CovariateTable.csv")
+```
+
+## Modelling
+
+#### Modelling table
+
+```{r Compile modelling table}
+# get number of covariates per parameter for each model
+modelling_Covariates <- sheet_Covariates |>
+  separate_longer_delim(`Model ID`, delim = ",") |>
+  separate_longer_delim(Covariates, delim = ", ") |>
+  mutate(studyID = paste(`Review ID`, `Model ID`, sep = "_")) |>
+  # Get number of core parameters
+  filter(`Parameter type` %in% c("Initial occupancy", "Occupancy",
+                                 "Colonisation", "Extinction_Persistence",
+                                 "Detection")) |>
+  mutate(n_params = length(unique(`Parameter type`)), .by = studyID) |>
+  # Remove 'none' covariates
+  filter(Covariates != "None") |>
+  # Calculate number of covariates per parameter
+  summarise(CovsPerParam = n()/(max(n_params)), .by = studyID) |>
+  # Models with 0 covariates equate to NA, convert these to 0s
+  mutate(CovsPerParam = case_when(is.na(CovsPerParam) ~ 0,
+                                  .default = CovsPerParam))
+  
+# compose table
+modelling_details <- sheet_Modelling |>
+  separate_longer_delim(`Model ID`, delim = ",") |>
+  mutate(studyID = paste(`Review ID`, `Model ID`, sep = "_")) |>
+  mutate(n_Overall = length(unique(studyID))) |>
+  mutate(n_Class = length(unique(studyID)),
+         .by = `Model class`) |>
+  separate_longer_delim(`Performance evaluation`, ", ") |>
+  separate_longer_delim(`Selection method`, ", ") |>
+  mutate(GOF = case_when(`Performance evaluation` %in% c("GOF", "BayesianP") ~ TRUE,
+                         .default = FALSE),
+         Evaluate = case_when(`Performance evaluation` %in% c("Validation_In", "Validation_Out") ~ TRUE,
+                         .default = FALSE)) |>
+  mutate(Select = 1) |>
+  pivot_wider(names_from = `Selection method`, 
+              values_from = Select, values_fill = 0) |>
+  summarise(GOF = max(GOF), Evaluate = max(Evaluate),
+            `Model averaging` = max(`Model averaging`),
+            `A priori` = max(`A priori`), 
+            Sequential = max(Sequential), Simple = max(Simple),
+            Candidate = max(`Candidate set`),
+            .by = c(studyID, `Model class`, n_Class, n_Overall)) |>
+  left_join(modelling_Covariates, by = join_by(studyID)) |>
+  filter(`Model class` != "Other")
+
+modelling_byClass <- modelling_details |>
+  summarise(Number = mean(n_Class),
+            MedianCovs = median(CovsPerParam, na.rm = TRUE),
+            Prop_ModAvg = sum(`Model averaging`)/mean(n_Class),
+            Prop_AnySelect = 1-(sum(`A priori`)/mean(n_Class)),
+            Prop_Sequential = sum(Sequential)/mean(n_Class),
+            Prop_Simple = sum(Simple)/mean(n_Class),
+            Prop_Candidate = sum(Candidate)/mean(n_Class),
+            Prop_GOF = sum(GOF)/mean(n_Class),
+            Prop_Eval = sum(Evaluate)/mean(n_Class),
+            .by = `Model class`) |>
+  mutate(across(where(is.numeric), ~ round(.x, 2)))
+  
+modelling_overall <- modelling_details |>
+  summarise(Number = mean(n_Overall),
+            MedianCovs = median(CovsPerParam, na.rm = TRUE),
+            Prop_ModAvg = sum(`Model averaging`)/mean(n_Overall),
+            Prop_AnySelect = 1-(sum(`A priori`)/mean(n_Overall)),
+            Prop_Sequential = sum(Sequential)/mean(n_Overall),
+            Prop_Simple = sum(Simple)/mean(n_Overall),
+            Prop_Candidate = sum(Candidate)/mean(n_Overall),
+            Prop_GOF = sum(GOF)/mean(n_Overall),
+            Prop_Eval = sum(Evaluate)/mean(n_Overall)) |>
+  mutate(across(where(is.numeric), ~ round(.x, 2))) |>
+  mutate(`Model class` = "All Models") 
+
+modelling_summary <- rbind(modelling_byClass, modelling_overall) |>
+  t() |> as.data.frame() %>%
+  mutate(Variable = row.names(.)) |>
+  set_names(c("Frequentist", "Bayesian", "All models", "Variable")) |>
+  filter(Variable != "Model class")
+
+write_csv(modelling_summary, "Figures/ModellingSummary.csv")
+```
+
+## Objectives
+
+The objectives of each article were documented, split into 6 non-exclusive categories.
+
+#### Objectives statistics
+
+We calculate the proportion of articles which used DOMs for each objective.
+
+```{r Objective proportions}
+stat_objectiveProportions <- sheet_Objectives |>
+  mutate(TotalArticles = length(unique(`Review ID`))) |>
+  pivot_longer(c("Demonstrate methods?", "Estimate trends?", 
+                 "Identify drivers?", "Test relationships?",
+                 "Predict spatially?", "Predict temporally?"),
+               names_to = "Objective", values_to = "ObjectiveIncluded") |>
+  filter(ObjectiveIncluded == "YES") |>
+  summarise(ObjArticles = n(), 
+            .by = c(Objective, TotalArticles)) |>
+  mutate(PropArticles = ObjArticles/TotalArticles)
+stat_objectiveProportions
+```
+
+#### Objectives figure
+
+```{r Objective proportion figure}
+#| fig-width: 8
+#| fig-height: 4
+
+plot_objectiveTrend <- sheet_Objectives |>
+  left_join(select(sheet_ArticleData, c(`Review ID`, `Year Strata`)), by = "Review ID") |>
+  pivot_longer(c("Demonstrate methods?", "Estimate trends?", 
+                 "Identify drivers?", "Test relationships?",
+                 "Predict spatially?", "Predict temporally?"),
+               names_to = "Objective", values_to = "ObjectiveIncluded") |>
+  mutate(Objective = str_replace(Objective, "\\?", "")) |>
+  filter(ObjectiveIncluded == "YES") %>%
+  rbind(., mutate(., `Year Strata` = "All Years")) |>
+  mutate(StrataArticles = length(unique(`Review ID`)), .by = `Year Strata`) |>
+  summarise(ObjArticles = n(), 
+            .by = c(Objective, StrataArticles, `Year Strata`)) |>
+  mutate(PctArticles = (ObjArticles/StrataArticles)*100) |>
+  mutate(Objective = fct_reorder(Objective, PctArticles)) |>
+  complete(Objective, `Year Strata`, fill = list(PctArticles = 0)) |>
+  mutate(Strata = case_when(`Year Strata` == "All Years" ~ "left",
+                            .default = "right")) |>
+  mutate(Strata = fct(Strata, levels = c("left", "right"))) |>
+  mutate(Objective = factor(Objective, levels = c("Demonstrate methods",
+                                                  "Estimate trends", 
+                                                  "Identify drivers", 
+                                                  "Test relationships",
+                                                  "Predict spatially",
+                                                  "Predict temporally"))) |>
+  mutate(`Year Strata` = fct(`Year Strata`, levels = c("2004-2007",
+                                                       "2008-2011",
+                                                       "2012-2015", 
+                                                       "2016-2019",
+                                                       "2020-2023",
+                                                       "All Years"))) |>
+  
+  ggplot() +
+  geom_col(aes(x = `Year Strata`, y = PctArticles, fill = Objective),
+           position = "dodge", colour = "white") + 
+  scale_fill_manual("",
+                    values = c("plum4", "cadetblue3", "aquamarine3",
+                               "aquamarine4", "goldenrod2", "goldenrod3")) +
+  scale_y_continuous(breaks = c(0, 20, 40, 60, 80),
+                     limits = c(0, 80),
+                     labels = c("0%", "20%", "40%", "60%", "80%")) +
+  labs(y = "Percentage of studies\nwith objective", x = "") +
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(),
+        legend.text = element_text(size = 15),
+        axis.text = element_text(size = 15), axis.title = element_text(size = 15),
+        legend.position = "bottom", strip.background = element_blank(),
+        strip.text = element_blank()) +
+  facet_grid(cols = vars(Strata),
+             scales = "free_x", space = "free_x", drop = TRUE)
+plot_objectiveTrend
+ggsave(plot = plot_objectiveTrend, "Figures/ObjectiveTrend.jpeg",
+       width = 8, height = 4)
+```
+
+We render a second figure for the average number of covariates used in articles approaching each objective
+
+```{r Covariates per objective}
+#| fig-width: 8
+#| fig-height: 4
+
+covsPerParam <- sheet_Covariates |>
+  mutate(studyID = paste(`Review ID`, `Model ID`, sep = "_")) |>
+  separate_longer_delim(Covariates, delim = ", ") |>
+  filter(`Parameter type` %in% c("Initial occupancy", "Occupancy",
+                                 "Colonisation", "Extinction_Persistence",
+                                 "Detection")) |>
+  mutate(n_params = length(unique(`Parameter type`)),
+         .by = c(studyID, `Review ID`)) |>
+  filter(Covariates != "None") |>
+  summarise(CovsPerParam = n()/max(n_params), 
+            .by = c(studyID, `Review ID`))
+
+plot_objectiveCovariates <- sheet_Objectives |>
+  pivot_longer(c("Demonstrate methods?", "Estimate trends?", 
+                 "Identify drivers?", "Test relationships?",
+                 "Predict spatially?", "Predict temporally?"),
+               names_to = "Objective", values_to = "ObjectiveIncluded") |>
+  mutate(Objective = str_replace(Objective, "\\?", "")) |>
+  filter(ObjectiveIncluded == "YES") %>%
+  rbind(., mutate(., Objective = "Any Objective")) |>
+  select(`Review ID`, Objective) |>
+  distinct() |>
+  left_join(covsPerParam, by = join_by(`Review ID`), relationship = "many-to-many") |>
+  mutate(CovsPerParam = case_when(is.na(CovsPerParam) ~ 0,
+                                  .default = CovsPerParam)) |>
+  mutate(Objective = factor(Objective, levels = c("Any Objective", 
+                                                  "Demonstrate methods",
+                                                  "Estimate trends", 
+                                                  "Identify drivers", 
+                                                  "Test relationships",
+                                                  "Predict spatially",
+                                                  "Predict temporally"))) |>
+  mutate(Objective = fct_relabel(Objective, 
+                                 ~ str_replace(.x, " ", "\n"))) |>
+  mutate(facet = case_when(Objective == "Any\nObjective" ~ "left",
+                           .default = "right")) |>
+  mutate(CovsPerParam = case_when(CovsPerParam > 15 ~ 15,
+                                  .default = CovsPerParam)) |>
+  mutate(Outlier = case_when(CovsPerParam == 15 ~ TRUE,
+                             .default = FALSE)) |>
+  
+  ggplot(aes(x = Objective, y = CovsPerParam, 
+             fill = Objective, colour = Objective)) +
+  geom_boxplot(colour = "gray50", alpha = 0.6, outliers = FALSE) +
+  geom_jitter(aes(shape = Outlier), alpha = 0.4, width = 0.3, size = 2.5) +
+  scale_y_continuous(breaks = c(0, 5, 10, 15),
+                     labels = c("0", "5", "10", "15+")) +
+  scale_fill_manual(limits = c("Any\nObjective", "Demonstrate\nmethods", 
+                               "Estimate\ntrends", "Identify\ndrivers", 
+                               "Test\nrelationships", "Predict\nspatially",
+                               "Predict\ntemporally"),
+                    values = c("gray60", "plum4", "cadetblue3", "aquamarine3",
+                               "aquamarine4", "goldenrod2", "goldenrod3")) +
+  scale_colour_manual(limits = c("Any\nObjective", "Demonstrate\nmethods", 
+                                 "Estimate\ntrends", "Identify\ndrivers", 
+                                 "Test\nrelationships", "Predict\nspatially",
+                                 "Predict\ntemporally"),
+                      values = c("gray60", "plum4", "cadetblue3", "aquamarine3",
+                                 "aquamarine4", "goldenrod2", "goldenrod3")) +
+  scale_shape_manual(limits = c(TRUE, FALSE),
+                     values = c(17, 16)) +
+  labs(x = "", y = "Number of covariates\nconsidered per parameter") +
+  facet_grid(cols = vars(facet), scales = "free_x", space = "free_x") +
+  guides(shape = "none") +
+  theme(legend.position = "none",
+        panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(),
+        legend.text = element_text(size = 15), axis.text = element_text(size = 13),
+        axis.title = element_text(size = 15), strip.background = element_blank(),
+        strip.text = element_blank()) 
+plot_objectiveCovariates
+ggsave(plot = plot_objectiveCovariates, "Figures/ObjectiveCovariates.jpeg",
+       width = 8, height = 4)
+```
+
+Combine the objective plots
+
+```{r combine objective plots}
+#| fig-width: 12
+#| fig-height: 8
+
+plot_stackedObjectives <- plot_objectiveTrend / plot_objectiveCovariates +
+   plot_annotation(tag_levels = 'A')
+plot_stackedObjectives
+
+ggsave(plot = plot_stackedObjectives, "Figures/ObjectiveFigure.jpeg",
+       width = 12, height = 8)
+
+```

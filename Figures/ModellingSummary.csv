@@ -1,10 +1,10 @@
 Frequentist,Bayesian,All models,Variable
-70,22,91,Number
-3.12,2.50,2.75,MedianCovs
-0.71,0.05,0.56,Prop_ModAvg
-0.94,0.36,0.80,Prop_AnySelect
-0.39,0.00,0.30,Prop_Sequential
-0.09,0.05,0.08,Prop_Simple
-0.43,0.14,0.36,Prop_Candidate
-0.20,0.14,0.19,Prop_GOF
-0.04,0.18,0.08,Prop_Eval
+ 76, 24,102,Number
+3.00,2.12,2.75,MedianCovs
+0.47,0.04,0.36,Prop_ModAvg
+0.95,0.33,0.80,Prop_AnySelect
+0.37,0.00,0.27,Prop_Sequential
+0.08,0.04,0.07,Prop_Simple
+0.45,0.12,0.36,Prop_Candidate
+0.20,0.12,0.18,Prop_GOF
+0.04,0.17,0.07,Prop_Eval
