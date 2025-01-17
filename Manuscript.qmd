@@ -17,8 +17,13 @@ authors:
     
 abstract: | 
  Understanding the patterns by which species occur across landscapes and throughout time is a long-standing objective of ecological research which has inspired the development of numerous quantitative modelling approaches for the task. However, estimating occupancy can be a challenge, particularly where issues like imperfect detection and shifting distributions exist. Dynamic occupancy models (DOMs) offer a framework for occupancy estimation which explicitly accounts for observation error while incorporating additional mechanistic process by estimating colonisation and local extinction. In light of increasing interest in more process-explicit models for understanding species occurrence, here we examine how DOMs have been applied to field ecological data in the two decades since their introduction. Following a general introduction to the model, we present the results of a systematic review exploring the research contexts where DOMs have been applied and interrogating how authors have built their models, with particular emphasis on how covariates are incorporated to describe variation in occupancy dynamics. Our findings indicate that DOMs are a flexible tool readily applied to diverse study systems and data types, with their usage expanding in recent years as more studies apply them to make spatial and temporal prediction of species occupancy. DOMs are also amenable to extension, further broadening their utility. Despite their flexibility, model complexity in DOMs tends to be low; most studies consider relatively few covariates, most of which are represented as simple linear relationships. Approaches to covariate selection also vary considerably, and there remains little research on how these choices may influence model performance. Furthermore, only a fraction of articles report evaluating models and little guidance exists on how to approach this task in DOMs. These uncertainties in the modelling process should be key priorities for future research on DOMs given their increasing use in applied ecological research.
- 
+
+format:
+  html:
+    theme: simplex
+
 embed-resources: true
+title-block-banner: true
 ---
 
 # Introduction
