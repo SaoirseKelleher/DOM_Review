@@ -1,13 +1,6 @@
 project:
   title: "DOM_Review"
-  type: manuscript
-  render: 
-    - Manuscript.qmd
   execute-dir: project
-
-manuscript:
-  article: Manuscript.qmd
-  meca-bundle: false
 
 format: 
   html:
