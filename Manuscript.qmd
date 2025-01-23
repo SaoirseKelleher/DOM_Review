@@ -21,6 +21,9 @@ abstract: |
 format:
   html:
     theme: simplex
+  docx: default
+
+
 
 embed-resources: true
 title-block-banner: true
@@ -28,19 +31,33 @@ title-block-banner: true
 
 # Introduction
 
-Background Information section
+Ecologists are often asked to describe, explain, and predict where and when species occur on the landscape. Research on patterns of species occupancy dates back to the origins of the field, and continues to a priority in quantitative ecological research [@humboldt1849]. Estimates of how widespread a species is and where it occurs are the foundation of monitoring programs and important for assessing conservation status, while identifying potential drivers of occurrence can help inform potential management actions [@mackenzie2013]. Robust knowledge of the occupancy patterns of a species can also help us to predict where a species is most likely to occur, both under present conditions and in hypothetical future scenarios [@kéry2013].
 
-#### Model form and assumptions
+While occupancy is a useful concept, it is also a challenging quantity to describe, measure, and estimate. The need to understand and quantitatively describe species occupancy has led to the development of several popular modelling approaches, including stochastic patch occupancy models commonly applied to study meta-population dynamics [@gutiérrez-arellano2024], and species distribution models (SDMs) widely used to explore species occurrence at larger scales [@franklin2010]. However, several factors can make occupancy difficult to estimate. For instance, simple presence/absence observations can be biased when species are detected imperfectly – this is often the case in wildlife field data, where it can be impossible to determine from a single observation whether a location is truly occupied or whether the species occurs but was not detected [@gu2004; @lahoz-monfort2014]. Despite the ubiquity of imperfect detection in data collection, many models fit to presence/absence data make no adjustment for this source of bias [@kellner2014]. Another challenge for modelling occupancy is the difficulty in describing populations under non-equilibrium conditions, where a species’ occurrence pattern and relationship to its environment is in flux [@dormann2007; @elith2010]. These conditions often occur during biological invasions and climate change driven range shifts, each of which are conservation priorities and increasingly common scenarios in the Anthropocene [@bertelsmeier2013; @lenoir2015].
 
-Model form.
+The site occupancy models first introduced by @mackenzie2002 set the foundation for a powerful framework for modelling presence/absence data while accounting for each of these challenges [@guillera-arroita2017a] . Drawing on principles from the mark-recapture literature, occupancy models use multiple resurveys of sites to estimate detection probabilities and correct for bias in estimates of site occupancy. Originally a static model, @mackenzie2003 extended this model for use in multiple time-steps by explicitly describing the process of changing occupancy via colonisation and extinction, relaxing assumptions of equilibrium and allowing description of patterns of site occupancy through time. For newcomers to DOMs, in [Box @nte-Primer] we present a simple introduction to the basic model form as described in @mackenzie2003.
 
-![The form of the dynamic occupancy model as described by @mackenzie2003. The ecological process sub-model describes changes in occupancy over time, while the observational process sub-model describes detectability.](Figures/ModelForm.png){#fig-modelform}
+This dynamic occupancy model (DOM) balances complexity and feasibility, explicitly describing the key processes driving occupancy dynamics while requiring reasonably simple-to-collect presence absence/data instead of the detailed demographic or abundance data required by more process-explicit models [@briscoe2019]. These features make the DOM an important tool, with uses including hypothesis testing of relationships between occupancy and the environment, explorations of the key drivers of occupancy, and even prediction of occupancy under future conditions [@briscoe2021; @kéry2013].
 
-Survey design.
+::: {#nte-Primer .callout-note icon="false"}
+## An introduction to dynamic occupancy models
 
-![The sampling design of the standard dynamic occupancy model. During seasons (also called primary occasions) sites are considered closed to changes in true occupancy state; occupancy state may only change between seasons. Within each season, multiple observations (also called surveys or secondary occasions) are conducted to record the observed presence or absence of the species at each site. These multiple observations may be recorded in many ways: sites can be revisited multiple times within a season, surveys can be conducted at multiple points within a larger site, multiple observers can conduct surveys contemporaneously, or the time elapsed prior to a detection occurring can be recorded. Note that it is not necessary for each site or season to have the same number of observations, and that missing data can be accommodated.](Figures/SurveyDesign.png){#fig-surveys fig-align="center"}
+Dynamic occupancy models.
 
-Assumptions.
+![](images/clipboard-1253177906.png){width="11cm"}
+
+![](images/clipboard-3209412869.png){width="11cm"}
+:::
+
+DOMs make several key assumptions requiring careful consideration by model users, which we outline here as our review interrogates related aspects of model building.
+
+I.  **False positive detections do not occur**. While this assumption can be safely met in many studies, it is not necessarily guaranteed when working with more cryptic species or less reliable survey methods. @mcclintock2010 and @miller2015 comment on the bias induced when false positives occur and are not accounted for, highlighting the need to consider how certain detections truly are for any given study system. Significantly, even genuine detections of a species can be considered 'false positives' when they do not represent the intended definition of occupancy, such as detections of transient individuals when the intent is to estimate breeding occupancy [@berigan2019]. Where this assumption can not reasonably be met, model extensions designed to account for false positive error should be considered [@royle2006; @miller2011; @miller2015].
+
+II. **Sites are closed to occupancy between seasons.** This requirement, best known as the 'closure assumption,' has also been subject to considerable discussion in terms of the bias introduced when it is violated [@rota2009; @otto2013]. Closure is dependent not only on the life history of the species, but also on the definition of occupancy used by researchers — short seasons may represent dynamics more representative of species 'use,' and it can be difficult to distinguish local extinction from temporary emigration [@valente2017]. Model extensions to relax the closure assumption have been developed, including approaches using staggered arrival and departure periods between sites [@kendall2013]. A more pertinent approach for most studies, however, is careful consideration of the appropriate definition of occupancy under the survey design used [@steenweg2018].
+
+III. **Heterogeneity in occupancy and detection is accounted for.** As with any approach for modelling species occurrence, it is assumed that DOMs appropriately capture variation in occupancy patterns and species detectability across the study system. Generally, this is achieved by allowing model parameters (ψ~1~, γ, ε, and ρ) to vary with respect to covariates representing the environmental factors which may be expected to influence these parameters. An important element of this assumption is that the likelihood of detection of a species can depend not only on the observability of the species, but also on factors like habitat suitability which influence species abundance and activity [@guillera-arroita2017a]. While no model will fully account for the complexity inherent in patterns of species occupancy and detection, failure to capture key drivers is likely to introduce bias and confound inference made from model estimates [@barry2006]. Compared to the first two assumptions mentioned, this aspect of DOMs has been less thoroughly discussed and comparatively little is known about how this latent heterogeneity can influence model performance.
+
+Since its original description in @mackenzie2003, the DOM has been further developed with numerous model extensions and alternative formulations including aforementioned implementations accounting for false positives [@royle2006; @miller2011; @miller2015], multiple states beyond occupied and unoccupied [@nichols2007], and jointly estimated multi-species models [@dorazio2010]. For a comprehensive discussion of common extensions and their applications see @bailey2014 and @guillera-arroita2017a, as well as @devarajan2020 for a more detailed review of multi-species occupancy models.
 
 # Review methods
 
@@ -251,9 +268,8 @@ modellingSummary |>
   tab_style(
     locations = cells_body(columns = "All models"),
     style = cell_text(style = "italic")
-  ) 
-#|>
- # as_raw_html()
+  ) |>
+  as_raw_html()
 ```
 
 Objectives.
