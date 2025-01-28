@@ -42,14 +42,32 @@ This dynamic occupancy model (DOM) balances complexity and feasibility, explicit
 ::: {#nte-Primer .callout-note icon="false"}
 ## An introduction to dynamic occupancy models
 
-Dynamic occupancy models.
+We give a minimal introduction to the canonical dynamic occupancy model as defined in @mackenzie2003. DOMs are hierarchical models which link two sub-models. The first of these describes the ecological process of occupancy, in which sites move between occupied and unoccupied states over time. Occupancy is unobservable, as we cannot always know the true occupancy state. The second sub-model describes the observational process of detection, allowing us to correct for imperfect detection.
 
-![](images/clipboard-1253177906.png){width="11cm"}
+#### Data collection
 
-![](images/clipboard-3209412869.png){width="11cm"}
+DOMs require hierarchical data to separate the occupancy and detection processes. Occupancy is measured in discrete, time-bound intervals termed *primary occasions*. Within each primary occasion *t*, multiple observations are recorded at the same sites. Importantly, all sites or primary occasions do not require the same number of observations and some number of missing observations are permissible. While secondary occasions are typically repeat observations, other options including same-visit replicates and spatial replicates are also possible (see @guillera-arroita2010).
+
+![](images/clipboard-2772050481.png){width="600" fig-align="center"}
+
+#### Site occupancy sub-model
+
+Occupancy is described during discrete, time-bound intervals termed *primary occasions.* In each primary occasion *t,* each site *i* may exist in either an occupied (z~i,t~ = 1) or unoccupied state (z~i,t~ = 0). In the first primary occasion, occupancy is determined as a Bernoulli trial with initial occupancy probability 𝛙~1~, such that $z_{i,t=1} \sim Bernoulli(\psi_1)$. In subsequent primary occasions, site occupancy is determined by the site's state in the previous primary occasion and probability of colonisation 𝛄 and extinction 𝛆, such that $z_{i,t} \sim Bernoulli(z_{i,t-1}(1-\epsilon)+(1-z_{i,t-1})*\gamma)$. While we present each of 𝛙~1~, 𝛄, and 𝛆 as constants for simplicity, they may be estimated with respect to covariates which are typically included via a logit link.
+
+![](images/clipboard-3349624601.png){width="600" fig-align="center"}
+
+#### Detection sub-model
+
+During any given survey *j,* observers will either observe (y~i,t,j~ = 1) or not observe (y~i,t,j~ = 0) the target species. In each survey, the probability of observing the target species at a site is given as a Bernoulli trial with detection probability *p,* conditional on the site being occupied, such that $y_{i,t,j} \sim Bernoulli(z_{i,t}*p)$. This formulation assumes that no false positive detections exist; that is, observations are never recorded at truly unoccupied sites. As with the occupancy probabilities, *p* may also be estimated using covariates via a logit link.
+
+![](images/clipboard-411045638.png){width="324" fig-align="center"}
+
+#### Fitting DOMs
+
+DOMs are most often fit with maximum likelihood estimation, which identifies the values of 𝛙~1~, 𝛄, 𝛆, and *p* under which the observed data **y** are most probable. Common tools for fitting DOMs include `PRESENCE`, `MARK`, and the r package `unmarked`. DOMs may also be fit in a Bayesian framework, with available packages including `ubms`.
 :::
 
-DOMs make several key assumptions requiring careful consideration by model users, which we outline here as our review interrogates related aspects of model building.
+DOMs make several key assumptions requiring careful consideration by model users, which we outline here as our reviews related aspects of model building.
 
 I.  **False positive detections do not occur**. While this assumption can be safely met in many studies, it is not necessarily guaranteed when working with more cryptic species or less reliable survey methods. @mcclintock2010 and @miller2015 comment on the bias induced when false positives occur and are not accounted for, highlighting the need to consider how certain detections truly are for any given study system. Significantly, even genuine detections of a species can be considered 'false positives' when they do not represent the intended definition of occupancy, such as detections of transient individuals when the intent is to estimate breeding occupancy [@berigan2019]. Where this assumption can not reasonably be met, model extensions designed to account for false positive error should be considered [@royle2006; @miller2011; @miller2015].
 
