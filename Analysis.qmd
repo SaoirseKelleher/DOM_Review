@@ -184,6 +184,28 @@ ggsave(plot = plot_reviewCoverage, "Figures/CoveragePlot.jpeg",
        width = 8, height = 4)
 ```
 
+## Authorship
+
+```{r Authorship_categories}
+sheet_Objectives |>
+  separate_longer_delim(`Authorship categories`, delim = ", ") |>
+  mutate(n_Overall = length(unique(`Review ID`))) |>
+  summarise(PropAuthor = (n()/mean(n_Overall))*100,
+            .by = `Authorship categories`)
+
+sheet_Objectives |>
+  separate_longer_delim(`Authorship categories`, delim = ", ") |>
+  summarise(nPer = n(),
+            .by = `Review ID`) |>
+  summarise(AffilCount = n(),
+            .by = nPer) (92-34)/92
+
+sheet_ArticleData |>
+  separate_longer_delim(`Countries of affiliation`, delim = ", ") |>
+  summarise(nCountry = n(),
+            .by = `Countries of affiliation`) 
+```
+
 ## Study areas
 
 The next set of statistics and figures focus on the study areas included in reviewed articles. For each article the countries where data was collected, a rough centroid of the study area, and an estimate of the spatial extent of the study area was recorded.
@@ -907,6 +929,343 @@ modelling_summary <- rbind(modelling_byClass, modelling_overall) |>
 write_csv(modelling_summary, "Figures/ModellingSummary.csv")
 ```
 
+## Covariate summaries
+
+#### Quantity
+
+```{r Covariate_Quantity}
+covariateFreq <- sheet_Covariates |>
+  separate_longer_delim(Covariates, delim = ", ") |>
+  separate_wider_delim(Covariates, delim = "_", 
+                       names = c("Covariate", "Variation", 
+                                 "Observation", "Relation"),
+                       too_few = "align_start") |>
+  separate_wider_delim(Covariate, delim = "-",
+                       names = c("Category", "Covariate"),
+                       too_few = "align_start") |>
+  # Merge some covariate categories
+  mutate(Covariate = case_when(Covariate == "OTHER" & Category == "E" ~ "OTHER-E",
+                               Covariate == "OTHER" & Category == "S" ~ "OTHER-S",
+                               Covariate %in% c("HABT", "HABA", "LACO") ~ "Habitat",
+                               Covariate %in% c("CLWE", "DISA", "DIST") ~ "Climate",
+                               Covariate %in% c("SPAT", "GEOM", "CONN") ~ "Spatial",
+                               Covariate %in% c("ANTH", "AGRI", "PROT") ~ "Human",
+                               .default = Covariate)) |>
+  # Combine Review ID & Model ID, and calculate the number of studies and number of studies with each parameter
+  mutate(studyID = paste(`Review ID`, `Model ID`), sep = "_") |>
+  mutate(n_overall = length(unique(studyID))) |>
+  select(studyID, Covariate, Category, n_overall) |>
+  filter(!is.na(Covariate)) %>%
+  rbind(mutate(., Covariate = Category)) %>%
+  rbind(mutate(., Covariate = "ANY", Category = "ANY")) |>
+  distinct() |>
+  summarise(PctCategory = (n()/mean(n_overall))*100,
+            .by = c(Covariate, Category)) |>
+  mutate(Included = TRUE) %>%
+  rbind(mutate(., PctCategory = 100-PctCategory, Included = FALSE)) |>
+  mutate(Covariate = case_when(Covariate == "Habitat" ~ "Habitat",
+                               Covariate == "Climate" ~ "Climate",
+                               Covariate == "Spatial" ~ "Spatial",
+                               Covariate == "Human" ~ "Human",
+                               Covariate == "HYDR" ~ "Water",
+                               Covariate == "BIOT" ~ "Biotic",
+                               Covariate == "TOPO" ~ "Topography",
+                               Covariate == "PHEN" ~ "Timing",
+                               Covariate == "SEAS" ~ "Primary",
+                               Covariate == "SURV" ~ "Secondary",
+                               Covariate == "OBSE" ~ "Observation",
+                               Covariate == "SITE" ~ "Site",
+                               Covariate == "SPEC" ~ "Species",
+                               Covariate == "ANY" ~ "Any",
+                               Covariate == "E" ~ "Any\nEnv.",
+                               Covariate == "S" ~ "Any\nStruct."),
+         .default = Covariate) |>
+  filter(!is.na(Covariate)) |>
+  mutate(Covariate = fct(Covariate,
+                         levels = c("Any", "Any\nEnv.",
+                                    "Habitat", "Spatial", "Climate",
+                                    "Timing", "Human", "Topography",
+                                    "Biotic", "Water",
+                                    "Any\nStruct.", "Primary", "Observation",
+                                    "Secondary", "Site", "Species"))) |>
+  mutate(Category = case_when(Category == "ANY" ~ "Any",
+                              Category == "E" ~ "Environmental",
+                              Category == "S" ~ "Structural")) |>
+  
+  ggplot(aes(x = Covariate, y = PctCategory, fill = Included)) +
+  geom_col(colour = "white", 
+           linewidth = 1, width = 1) +
+  scale_fill_manual(limits = c(TRUE, FALSE), 
+                    values = c("goldenrod", "gray50")) +
+  scale_y_continuous(expand = c(0,0)) +
+  facet_grid(cols = vars(Category), scales = "free_x", space = "free_x") +
+  labs(y = "Percent\nof models", x = "") +
+  theme(legend.position = "none",
+        plot.background = element_blank(),
+        panel.grid = element_blank(),
+        axis.text.x = element_text(family = "Helvetica", 
+                                   angle = 90, vjust = 0.5, hjust = 1),
+        strip.text.x = element_text(family = "Helvetica"))
+covariateFreq
+```
+
+#### Dynamism
+
+```{r Covariate_Dynamism}
+covariateDyn <- sheet_Covariates |>
+  separate_longer_delim(Covariates, delim = ", ") |>
+  separate_wider_delim(Covariates, delim = "_", 
+                       names = c("Covariate", "Variation", 
+                                 "Observation", "Relation"),
+                       too_few = "align_start") |>
+  separate_wider_delim(Covariate, delim = "-",
+                       names = c("Category", "Covariate"),
+                       too_few = "align_start") |>
+  # Merge some covariate categories
+  mutate(Covariate = case_when(Covariate == "OTHER" & Category == "E" ~ "OTHER-E",
+                               Covariate == "OTHER" & Category == "S" ~ "OTHER-S",
+                               Covariate %in% c("HABT", "HABA", "LACO") ~ "Habitat",
+                               Covariate %in% c("CLWE", "DISA", "DIST") ~ "Climate",
+                               Covariate %in% c("SPAT", "GEOM", "CONN") ~ "Spatial",
+                               Covariate %in% c("ANTH", "AGRI", "PROT") ~ "Human",
+                               .default = Covariate)) |>
+  # Combine Review ID & Model ID, and calculate the number of studies and number of studies with each parameter
+  mutate(studyID = paste(`Review ID`, `Model ID`), sep = "_") |>
+  mutate(n_overall = length(unique(studyID))) |>
+  select(studyID, `Parameter type`, Covariate, Category, Variation, n_overall) |>
+  filter(!is.na(Covariate)) |>
+  filter(`Parameter type` != "Initial occupancy") %>%
+  rbind(rbind(mutate(., Covariate = Category),
+              mutate(., Covariate = "ANY", Category = "ANY"))) |>
+  mutate(n_Covariate = n(),
+         .by = Covariate) |>
+  mutate(Dynamism = case_when(Variation %in% c("SISE", "SU", "SE") ~ 1,
+                              .default = 0)) |>
+  summarise(PctDyn = (sum(Dynamism)/mean(n_Covariate))*100,
+            .by = c(Covariate, Category)) |>
+  mutate(Dyn = TRUE) %>%
+  rbind(mutate(., PctDyn = 100-PctDyn, Dyn = FALSE)) |>
+  mutate(Covariate = case_when(Covariate == "Habitat" ~ "Habitat",
+                               Covariate == "Climate" ~ "Climate",
+                               Covariate == "Spatial" ~ "Spatial",
+                               Covariate == "Human" ~ "Human",
+                               Covariate == "HYDR" ~ "Water",
+                               Covariate == "BIOT" ~ "Biotic",
+                               Covariate == "TOPO" ~ "Topography",
+                               Covariate == "PHEN" ~ "Timing",
+                               Covariate == "SEAS" ~ "Primary",
+                               Covariate == "SURV" ~ "Secondary",
+                               Covariate == "OBSE" ~ "Observation",
+                               Covariate == "SITE" ~ "Site",
+                               Covariate == "SPEC" ~ "Species",
+                               Covariate == "ANY" ~ "Any",
+                               Covariate == "E" ~ "Any\nEnv.",
+                               Covariate == "S" ~ "Any\nStruct."),
+         .default = Covariate) |>
+  filter(!is.na(Covariate)) |>
+  mutate(Covariate = fct(Covariate,
+                         levels = c("Any", "Any\nEnv.",
+                                    "Habitat", "Spatial", "Climate",
+                                    "Timing", "Human", "Topography",
+                                    "Biotic", "Water",
+                                    "Any\nStruct.", "Primary", "Observation",
+                                    "Secondary", "Site", "Species"))) |>
+  mutate(Category = case_when(Category == "ANY" ~ "Any",
+                              Category == "E" ~ "Environmental",
+                              Category == "S" ~ "Structural")) |>
+  
+  ggplot(aes(x = Covariate, y = PctDyn, fill = Dyn)) +
+  geom_col(colour = "white", 
+           linewidth = 1, width = 1) +
+  scale_fill_manual(limits = c(TRUE, FALSE), 
+                    values = c("aquamarine3", "gray50")) +
+  scale_y_continuous(expand = c(0,0)) +
+  facet_grid(cols = vars(Category), scales = "free_x", space = "free_x") +
+  labs(y = "Percent\ndynamic", x = "") +
+  theme(legend.position = "none",
+        plot.background = element_blank(),
+        panel.grid = element_blank(),
+        axis.text.x = element_text(family = "Helvetica", 
+                                   angle = 90, vjust = 0.5, hjust = 1),
+        strip.text.x = element_blank(), strip.background = element_blank())
+covariateDyn
+```
+
+#### Observation
+
+```{r Covariate_Observed}
+covariateObs <- sheet_Covariates |>
+  separate_longer_delim(Covariates, delim = ", ") |>
+  separate_wider_delim(Covariates, delim = "_", 
+                       names = c("Covariate", "Variation", 
+                                 "Observation", "Relation"),
+                       too_few = "align_start") |>
+  separate_wider_delim(Covariate, delim = "-",
+                       names = c("Category", "Covariate"),
+                       too_few = "align_start") |>
+  # Merge some covariate categories
+  mutate(Covariate = case_when(Covariate == "OTHER" & Category == "E" ~ "OTHER-E",
+                               Covariate == "OTHER" & Category == "S" ~ "OTHER-S",
+                               Covariate %in% c("HABT", "HABA", "LACO") ~ "Habitat",
+                               Covariate %in% c("CLWE", "DISA", "DIST") ~ "Climate",
+                               Covariate %in% c("SPAT", "GEOM", "CONN") ~ "Spatial",
+                               Covariate %in% c("ANTH", "AGRI", "PROT") ~ "Human",
+                               .default = Covariate)) |>
+  # Combine Review ID & Model ID, and calculate the number of studies and number of studies with each parameter
+  mutate(studyID = paste(`Review ID`, `Model ID`), sep = "_") |>
+  mutate(n_overall = length(unique(studyID))) |>
+  select(studyID, Covariate, Category, Observation, n_overall) |>
+  filter(!is.na(Covariate)) %>%
+  rbind(rbind(mutate(., Covariate = Category),
+              mutate(., Covariate = "ANY", Category = "ANY"))) |>
+  mutate(n_Covariate = n(),
+         .by = Covariate) |>
+  mutate(Observed = case_when(Observation == "D" ~ 1,
+                              .default = 0)) |>
+  summarise(PctObs = (sum(Observed)/mean(n_Covariate))*100,
+            .by = c(Covariate, Category)) |>
+  mutate(Obs = TRUE) %>%
+  rbind(mutate(., PctObs = 100-PctObs, Obs = FALSE)) |>
+  mutate(Covariate = case_when(Covariate == "Habitat" ~ "Habitat",
+                               Covariate == "Climate" ~ "Climate",
+                               Covariate == "Spatial" ~ "Spatial",
+                               Covariate == "Human" ~ "Human",
+                               Covariate == "HYDR" ~ "Water",
+                               Covariate == "BIOT" ~ "Biotic",
+                               Covariate == "TOPO" ~ "Topography",
+                               Covariate == "PHEN" ~ "Timing",
+                               Covariate == "SEAS" ~ "Primary",
+                               Covariate == "SURV" ~ "Secondary",
+                               Covariate == "OBSE" ~ "Observation",
+                               Covariate == "SITE" ~ "Site",
+                               Covariate == "SPEC" ~ "Species",
+                               Covariate == "ANY" ~ "Any",
+                               Covariate == "E" ~ "Any\nEnv.",
+                               Covariate == "S" ~ "Any\nStruct."),
+         .default = Covariate) |>
+  filter(!is.na(Covariate)) |>
+  mutate(Covariate = fct(Covariate,
+                         levels = c("Any", "Any\nEnv.",
+                                    "Habitat", "Spatial", "Climate",
+                                    "Timing", "Human", "Topography",
+                                    "Biotic", "Water",
+                                    "Any\nStruct.", "Primary", "Observation",
+                                    "Secondary", "Site", "Species"))) |>
+  mutate(Category = case_when(Category == "ANY" ~ "Any",
+                              Category == "E" ~ "Environmental",
+                              Category == "S" ~ "Structural")) |>
+  
+  ggplot(aes(x = Covariate, y = PctObs, fill = Obs)) +
+  geom_col(colour = "white", 
+           linewidth = 1, width = 1) +
+  scale_fill_manual(limits = c(TRUE, FALSE), 
+                    values = c("cadetblue3", "gray50")) +
+  scale_y_continuous(expand = c(0,0)) +
+  facet_grid(cols = vars(Category), scales = "free_x", space = "free_x") +
+  labs(y = "Percent directly\nobserved", x = "") +
+  theme(legend.position = "none",
+        plot.background = element_blank(),
+        panel.grid = element_blank(),
+        axis.text.x = element_text(family = "Helvetica", 
+                                   angle = 90, vjust = 0.5, hjust = 1),
+        strip.text.x = element_blank(), strip.background = element_blank())
+covariateObs
+
+```
+
+#### Complexity
+
+```{r Covariate_Complexity}
+covariateComplex <- sheet_Covariates |>
+  separate_longer_delim(Covariates, delim = ", ") |>
+  separate_wider_delim(Covariates, delim = "_", 
+                       names = c("Covariate", "Variation", 
+                                 "Observation", "Relation"),
+                       too_few = "align_start") |>
+  separate_wider_delim(Covariate, delim = "-",
+                       names = c("Category", "Covariate"),
+                       too_few = "align_start") |>
+  # Merge some covariate categories
+  mutate(Covariate = case_when(Covariate == "OTHER" & Category == "E" ~ "OTHER-E",
+                               Covariate == "OTHER" & Category == "S" ~ "OTHER-S",
+                               Covariate %in% c("HABT", "HABA", "LACO") ~ "Habitat",
+                               Covariate %in% c("CLWE", "DISA", "DIST") ~ "Climate",
+                               Covariate %in% c("SPAT", "GEOM", "CONN") ~ "Spatial",
+                               Covariate %in% c("ANTH", "AGRI", "PROT") ~ "Human",
+                               .default = Covariate)) |>
+  # Combine Review ID & Model ID, and calculate the number of studies and number of studies with each parameter
+  mutate(studyID = paste(`Review ID`, `Model ID`), sep = "_") |>
+  mutate(n_overall = length(unique(studyID))) |>
+  select(studyID, Covariate, Category, Relation, n_overall) |>
+  filter(!is.na(Covariate)) %>%
+  rbind(rbind(mutate(., Covariate = Category),
+              mutate(., Covariate = "ANY", Category = "ANY"))) |>
+  mutate(n_Covariate = n(),
+         .by = Covariate) |>
+  mutate(Complex = case_when(Relation %in% c("N", "I", "B") ~ 1,
+                               .default = 0)) |>
+  summarise(PctComplex = (sum(Complex)/mean(n_Covariate))*100,
+            .by = c(Covariate, Category)) |>
+  mutate(Complex = TRUE) %>%
+  rbind(mutate(., PctComplex = 100-PctComplex, Complex = FALSE)) |>
+  mutate(Covariate = case_when(Covariate == "Habitat" ~ "Habitat",
+                               Covariate == "Climate" ~ "Climate",
+                               Covariate == "Spatial" ~ "Spatial",
+                               Covariate == "Human" ~ "Human",
+                               Covariate == "HYDR" ~ "Water",
+                               Covariate == "BIOT" ~ "Biotic",
+                               Covariate == "TOPO" ~ "Topography",
+                               Covariate == "PHEN" ~ "Timing",
+                               Covariate == "SEAS" ~ "Primary",
+                               Covariate == "SURV" ~ "Secondary",
+                               Covariate == "OBSE" ~ "Observation",
+                               Covariate == "SITE" ~ "Site",
+                               Covariate == "SPEC" ~ "Species",
+                               Covariate == "ANY" ~ "Any",
+                               Covariate == "E" ~ "Any\nEnv.",
+                               Covariate == "S" ~ "Any\nStruct."),
+         .default = Covariate) |>
+  filter(!is.na(Covariate)) |>
+  mutate(Covariate = fct(Covariate,
+                         levels = c("Any", "Any\nEnv.",
+                                    "Habitat", "Spatial", "Climate",
+                                    "Timing", "Human", "Topography",
+                                    "Biotic", "Water",
+                                    "Any\nStruct.", "Primary", "Observation",
+                                    "Secondary", "Site", "Species"))) |>
+  mutate(Category = case_when(Category == "ANY" ~ "Any",
+                              Category == "E" ~ "Environmental",
+                              Category == "S" ~ "Structural")) |>
+  
+  ggplot(aes(x = Covariate, y = PctComplex, fill = Complex)) +
+  geom_col(colour = "white", 
+           linewidth = 1, width = 1) +
+  scale_fill_manual(limits = c(TRUE, FALSE), 
+                    values = c("plum3", "gray50")) +
+  scale_y_continuous(expand = c(0,0)) +
+  facet_grid(cols = vars(Category), scales = "free_x", space = "free_x") +
+  labs(y = "Percent nonlinear\nor interactive", x = "") +
+  theme(legend.position = "none",
+        plot.background = element_blank(),
+        panel.grid = element_blank(),
+        axis.text.x = element_text(family = "Helvetica", 
+                                   angle = 90, vjust = 0.5, hjust = 1),
+        strip.text.x = element_blank(), strip.background = element_blank())
+covariateComplex
+```
+
+#### Combine
+
+```{r Covariate_Patchwork}
+covariatePatchwork <- covariateFreq / covariateDyn / covariateObs / covariateComplex +
+  plot_layout(axes = "collect") &
+  theme(axis.text = element_text(family = "Helvetica"),
+        axis.title = element_text(family = "Helvetica"))
+covariatePatchwork
+
+ggsave(plot = covariatePatchwork, "Figures/CovariateSummary.png",
+```
+
 ## Objectives
 
 The objectives of each article were documented, split into 6 non-exclusive categories.
@@ -927,6 +1286,19 @@ stat_objectiveProportions <- sheet_Objectives |>
             .by = c(Objective, TotalArticles)) |>
   mutate(PropArticles = ObjArticles/TotalArticles)
 stat_objectiveProportions
+
+# Obj per study
+sheet_Objectives |>
+  mutate(TotalArticles = length(unique(`Review ID`))) |>
+  pivot_longer(c("Demonstrate methods?", "Estimate trends?", 
+                 "Identify drivers?", "Test relationships?",
+                 "Predict spatially?", "Predict temporally?"),
+               names_to = "Objective", values_to = "ObjectiveIncluded") |>
+  filter(ObjectiveIncluded == "YES") |>
+  summarise(nObj = n(),
+            .by = c(`Review ID`, TotalArticles)) |>
+  summarise(nFreq = n(),
+            .by = c(nObj))
 ```
 
 #### Objectives figure
@@ -1082,4 +1454,225 @@ plot_stackedObjectives
 ggsave(plot = plot_stackedObjectives, "Figures/ObjectiveFigure.jpeg",
        width = 12, height = 8)
 
+```
+
+## Time Series
+
+#### Number of sites
+
+```{r TimeSeries_Sites}
+timeSeries_Sites <- sheet_DataCollection |>
+  filter(`Site quantity` != "Unclear") |>
+  mutate(`Site quantity` = as.numeric(`Site quantity`)) |>
+  select(`Review ID`, SiteNumber = `Site quantity`) |>
+  left_join(select(sheet_ArticleData, c(`Review ID`, `Year Strata`, Year)), 
+            by = "Review ID") |>
+  
+  ggplot(aes(x = `Year Strata`, y = SiteNumber)) +
+  geom_boxplot(fill = "goldenrod", colour = "gray40", staplewidth = 0.4,
+               linewidth = 0.2, , outlier.size = 0.2) +
+  scale_y_log10() +
+  labs(x = "", y = "Number of sites\n(log scale)",
+       title = "Site quantity") +
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(), 
+        axis.title = element_text(size = 8, family = "Helvetica"), 
+        axis.text = element_text(size = 8, family = "Helvetica"))
+timeSeries_Sites
+```
+
+#### Number of covariates considered
+
+```{r TimeSeries_Covariates}
+timeSeries_Covariates <- sheet_Covariates |>
+  separate_longer_delim(`Model ID`, delim = ",") |>
+  separate_longer_delim(Covariates, delim = ", ") |>
+  mutate(studyID = paste(`Review ID`, `Model ID`, sep = "_")) |>
+  # Get number of core parameters
+  filter(`Parameter type` %in% c("Initial occupancy", "Occupancy",
+                                 "Colonisation", "Extinction_Persistence",
+                                 "Detection")) |>
+  mutate(n_params = length(unique(`Parameter type`)), .by = studyID) |>
+  # Remove 'none' covariates
+  filter(Covariates != "None") |>
+  # Calculate number of covariates per parameter
+  summarise(CovsPerParam = n()/(max(n_params)), .by = c(studyID, `Review ID`)) |>
+  # Models with 0 covariates equate to NA, convert these to 0s
+  mutate(CovsPerParam = case_when(is.na(CovsPerParam) ~ 0,
+                                  .default = CovsPerParam)) |>
+  left_join(select(sheet_ArticleData, c(`Review ID`, `Year Strata`, Year)), 
+            by = "Review ID") |>
+  
+  ggplot(aes(x = `Year Strata`, y = CovsPerParam)) +
+  geom_boxplot(fill = "goldenrod", colour = "gray40", staplewidth = 0.4,
+               linewidth = 0.2, outlier.size = 0.2) +
+  scale_y_log10() +
+  labs(x = "", y = "Covariates\nper parameter",
+       title = "Covariates considered") +
+  theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(), 
+        axis.title = element_text(size = 8, family = "Helvetica"), 
+        axis.text = element_text(size = 8, family = "Helvetica"))
+timeSeries_Covariates
+```
+
+#### Proportion of selection methods (Frequentist)
+
+```{r TimeSeries_Selection}
+timeSeries_Selection <- sheet_Modelling |>
+  separate_longer_delim(`Model ID`, delim = ",") |>
+  mutate(studyID = paste(`Review ID`, `Model ID`, sep = "_")) |>
+  filter(`Model class` == "Frequentist") |>
+  separate_longer_delim(`Selection method`, ", ") |>
+  mutate(Select = 1) |>
+  select(`Selection method`, `Review ID`, studyID, Select) |>
+  left_join(select(sheet_ArticleData, c(`Review ID`, `Year Strata`, Year)), 
+            by = "Review ID") |>
+  mutate(n_strata = length(unique(studyID)),
+         .by = `Year Strata`) |>
+  summarise(sumMethod = sum(Select),
+            .by = c(`Selection method`, `Year Strata`, n_strata)) |>
+  mutate(PropMethod = (sumMethod/n_strata)*100) |>
+  mutate(`Year Strata` = fct(`Year Strata`)) |>
+  filter(`Selection method` %in% c("A priori", "Sequential", 
+                                   "Candidate set", "Simple")) |>
+  complete(`Year Strata`, `Selection method`, fill = list(PropMethod = 0)) |>
+  
+  ggplot(aes(x = `Year Strata`, y = PropMethod,
+             colour = `Selection method`, group = `Selection method`)) +
+  geom_line() +
+  geom_point(size = 1) +
+  labs(x = "", y = "Percentage of models",
+       title = "Selection method (MLE*)") +
+  scale_colour_manual("",
+                      limits = c("A priori", "Candidate set", 
+                                 "Sequential", "Simple"),
+                      labels = c("A priori", "Candidate set",
+                                 "Sequential", "Simple precursors"),
+                      values = c("aquamarine4", "cadetblue3",
+                                 "plum4", "goldenrod")) +
+  guides(colour = guide_legend(nrow = 2,
+                               override.aes = list(size = 0.5,
+                                                   linewidth = 0.5))) +
+  theme(legend.position = "top",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(), 
+        axis.title = element_text(size = 8, family = "Helvetica"), 
+        axis.text = element_text(size = 8, family = "Helvetica"),
+        legend.title = element_text(size = 8, family = "Helvetica"), 
+        legend.text = element_text(size = 8, family = "Helvetica"))
+timeSeries_Selection
+```
+
+#### Goodness-of-fit and validation
+
+```{r TimeSeries_Evaluation}
+timeSeries_Validation <- sheet_Modelling |>
+  separate_longer_delim(`Model ID`, delim = ",") |>
+  mutate(studyID = paste(`Review ID`, `Model ID`, sep = "_")) |>
+  separate_longer_delim(`Performance evaluation`, ", ") |>
+  mutate(`Performance evaluation` = case_when(`Performance evaluation` %in% c("GOF", "BayesianP") ~ "GOF",
+                                              `Performance evaluation` %in% c("Validation_In", "Validation_Out") ~ "Validation",
+                                              .default = "None")) |>
+  select(`Performance evaluation`, `Review ID`, studyID) |>
+  left_join(select(sheet_ArticleData, c(`Review ID`, `Year Strata`, Year)), 
+            by = "Review ID") |>
+  mutate(n_strata = length(unique(studyID)),
+         .by = `Year Strata`) |>
+  summarise(sumEval = n(),
+            .by = c(`Performance evaluation`, `Year Strata`, n_strata)) |>
+  mutate(PropEval = (sumEval/n_strata)*100) |>
+  complete(`Year Strata`, `Performance evaluation`, fill = list(PropEval = 0)) |>
+  mutate(`Year Strata` = fct(`Year Strata`)) |>
+  filter(`Performance evaluation` != "None") |>
+  
+  ggplot(aes(x = `Year Strata`, y = PropEval, 
+             colour = `Performance evaluation`, group = `Performance evaluation`)) +
+  geom_line() +
+  geom_point(size = 1) +
+  scale_colour_manual("", 
+                      limits = c("GOF", "Validation"),
+                      labels = c("Goodness-of-fit", "Validation"),
+                      values = c("aquamarine4", "goldenrod")) +
+  labs(x = "", y = "Percentage of models",
+       title = "Model assessment") +
+  guides(colour = guide_legend(override.aes = list(size = 0.5,
+                                                   linewidth = 0.5))) +
+  theme(legend.position = "top", 
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(), 
+        axis.title = element_text(size = 8, family = "Helvetica"), 
+        axis.text = element_text(size = 8, family = "Helvetica"),
+        legend.title = element_text(size = 8, family = "Helvetica"),
+        legend.text = element_text(size = 8, family = "Helvetica"))
+timeSeries_Validation
+```
+
+#### Framework
+
+```{r TimeSeries_Framework}
+timeSeries_Framework <- sheet_Modelling |>
+  separate_longer_delim(`Model ID`, delim = ",") |>
+  mutate(studyID = paste(`Review ID`, `Model ID`, sep = "_")) |>
+  select(`Model class`, `Review ID`, studyID) |>
+  left_join(select(sheet_ArticleData, c(`Review ID`, `Year Strata`, Year)), 
+            by = "Review ID") |>
+  mutate(n_strata = length(unique(studyID)),
+         .by = `Year Strata`) |>
+  summarise(sumMethod = n(),
+            .by = c(`Model class`, `Year Strata`, n_strata)) |>
+  mutate(PropMethod = (sumMethod/n_strata)*100) |>
+  mutate(`Year Strata` = fct(`Year Strata`)) |>
+  complete(`Year Strata`, `Model class`, fill = list(PropMethod = 0)) |>
+  filter(`Model class` != "Other") |>
+  
+  ggplot(aes(x = `Year Strata`, y = PropMethod,
+             colour = `Model class`, group = `Model class`)) +
+  geom_line() +
+  geom_point(size = 1) + 
+  scale_colour_manual("", 
+                      limits = c("Frequentist", "Bayesian"),
+                      labels = c("Maximum Likelihood", "Bayesian"),
+                      values = c("aquamarine4", "goldenrod")) +
+  guides(colour = guide_legend(nrow = 2, 
+                               override.aes = list(size = 0.2,
+                                                   linewidth = 0.2))) +
+  labs(x = "", y = "Percentage of models", 
+       title = "Model framework") +
+  ylim(0,100) +
+  theme(legend.position = "top",
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank(), 
+        axis.title = element_text(size = 8, family = "Helvetica"), 
+        axis.text = element_text(size = 8, family = "Helvetica"),
+        legend.title = element_text(size = 8, family = "Helvetica"),
+        legend.text = element_text(size = 8, family = "Helvetica"))
+timeSeries_Framework
+```
+
+#### Combine plots
+
+```{r TimeSeries_Combined}
+timeSeries_Combined <- timeSeries_Sites + timeSeries_Covariates + timeSeries_Framework + timeSeries_Selection + free(timeSeries_Validation, "space", "l") +
+  plot_layout(design = "1122
+                        3344
+                        #55#") +
+  plot_annotation(tag_levels = "A") & 
+  theme(legend.position = "top",
+        axis.text.x = element_text(size = 6, family = "Helvetica", 
+                                 angle = 45, vjust = 0.5, hjust = 1),
+        axis.text.y = element_text(size = 6, family = "Helvetica"),
+        axis.title = element_text(size = 6, family = "Helvetica"),
+        legend.text = element_text(size = 6, family = "Helvetica"),
+        legend.title = element_text(size = 6, family = "Helvetica"),
+        legend.key.size = unit(.2, 'cm'),
+        legend.margin=margin(0,0,0,0),
+        legend.box.margin=margin(0,-10,-10,-10),
+        plot.tag = element_text(size = 8, family = "Helvetica"),
+        plot.title = element_text(size = 6, family = "Helvetica",
+                                  hjust = 0.5))
+timeSeries_Combined
+
+ggsave(plot = timeSeries_Combined, "Figures/TimeSeries.png",
+       width = 11, height = 14, units = "cm")
 ```
