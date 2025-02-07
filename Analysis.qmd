@@ -259,14 +259,18 @@ plot_studyAreaMap <- sheet_StudyArea |>
   st_transform(crs = "ESRI:54030") |>
   
   ggplot() +
-  geom_sf(data = countries_shp, colour = "gray90", fill = "gray80") +
-  geom_sf(shape = 21, fill = "aquamarine4", colour = "white", alpha = 0.5, size = 3.5) +
+  geom_sf(data = countries_shp, colour = "gray90", fill = "gray60", linewidth = 0.1) +
+  geom_sf(shape = 23, 
+          fill = "goldenrod2", colour = "white",
+          size = 1.5) +
   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank(),
         panel.background = element_rect(fill='transparent', color=NA),
         plot.background = element_rect(fill='transparent', color=NA),
         panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
 plot_studyAreaMap
-ggsave(plot = plot_studyAreaMap, "Figures/StudiesMap.png")
+
+ggsave("Figures/StudiesMap.eps", plot = plot_studyAreaMap,
+       width = 85, height = 50, units = "mm", bg = "transparent")
 
 # Get number of unique study areas
 stat_totalStudyAreas <- sheet_StudyArea |>
@@ -279,8 +283,8 @@ stat_totalStudyAreas
 We noted the rough extent of each study area in our review, recording it as an order of magnitude to account for some amount of measurement uncertainty. Here we render a histogram of study area size to be used as Figure 4B in the article.
 
 ```{r Study area size}
-#| fig-width: 7
-#| fig-height: 4
+#| fig-width: "6.52cm"
+#| fig-height: "3.7cm"
 
 plot_studyAreaSize <- sheet_StudyArea |>
   summarise(Articles = n(), .by = Size) |>
@@ -288,8 +292,8 @@ plot_studyAreaSize <- sheet_StudyArea |>
   
   ggplot() +
   geom_col(aes(x = Size, y = Articles),
-           fill = "aquamarine4", colour = "white",
-           width = 1, linewidth = 2) +
+           fill = "#4D7668", colour = "white",
+           width = 1, linewidth = .5) +
   labs(x = "", y = "") +
   scale_x_discrete(labels = c("< 1", "1 - 10", "10 - 10<sup>2</sup>",
                               "10<sup>2</sup> - 10<sup>3</sup>",
@@ -298,15 +302,18 @@ plot_studyAreaSize <- sheet_StudyArea |>
                               "10<sup>5</sup> - 10<sup>6</sup>",
                               "\\> 10<sup>6</sup>")) +
   theme(panel.grid = element_blank(),
-        axis.text.x = element_markdown(size = 20, angle = 90,
-                                       vjust = 0.5, hjust = 1),
-        axis.text.y = element_blank(), axis.ticks = element_blank(),
+        axis.text.x = element_markdown(size = 8, angle = 90,
+                                       vjust = 0.5, hjust = 1,
+                                       family = "Helvetica"),
+        axis.text.y = element_blank(), axis.ticks.y = element_blank(),
         panel.background = element_rect(fill='transparent', color=NA),
         plot.background = element_rect(fill='transparent', color=NA))
 plot_studyAreaSize
 
-ggsave("Figures/StudyAreaPlot.png",
-       plot = plot_studyAreaSize, width = 7, height = 4, bg='transparent')
+ggsave("Figures/StudyAreaPlot.eps",
+       plot = plot_studyAreaSize, 
+       width = 80, height = 45, units = "mm",
+       bg='transparent')
 ```
 
 ## Study taxa
@@ -370,19 +377,31 @@ plot_focalTaxa <-
   ggplot() +
   geom_col(aes(x = Articles, y = `Taxa keywords`, fill = Group),
            position = position_dodge2(reverse = TRUE), width = 0.8) +
-  scale_fill_manual("", values = c("aquamarine4", "goldenrod2", "gray70")) +
-  scale_x_continuous(expand = c(0,0)) +
+  scale_fill_manual("", 
+                    values = c("#4D7668", "goldenrod3", "gray40"),
+                    limits = c("Overall", "Threatened", "Invasive"),
+                    labels = c("Total", "Threatened", "Invasive")) +
+  scale_x_continuous(expand = c(0,0), breaks = c(0, 15, 30, 45)) +
   labs(x = "Articles", y = "") +
-  theme(panel.grid = element_blank(),
-        legend.text = element_text(size = 20), axis.text = element_text(size = 21),
-        axis.title = element_text(size = 19), axis.ticks.y = element_blank(),
+  theme(#legend.position = "top",
+        panel.grid = element_blank(),
+        legend.text = element_text(size = 8, family = "Helvetica", colour = "#585858"),
+        legend.title = element_text(size = 8, family = "Helvetica", colour = "#585858"),
+        axis.text = element_text(size = 8, family = "Helvetica", colour = "#585858"),
+        axis.title = element_text(size = 8, family = "Helvetica", colour = "#585858"), 
+        axis.ticks.y = element_blank(),
         panel.background = element_rect(fill='transparent', color = NA),
         plot.background = element_rect(fill='transparent', color = NA),
-        legend.background = element_rect(fill = 'transparent', color = NA))
+        legend.background = element_rect(fill = 'transparent'),
+        legend.key.size = unit(4, 'mm'),
+        legend.margin=margin(0,0,0,0),
+        legend.box.margin=margin(0, -5, 0, 0),
+        axis.line.x = element_line(colour = "#585858", linewidth = 0.3))
 plot_focalTaxa
 
-ggsave("Figures/TaxaPlot.png",
-       plot_focalTaxa, width = 10, height = 4, bg='transparent')
+ggsave("Figures/TaxaPlot.eps",
+       plot_focalTaxa, width = 90, height = 40, units = "mm",
+       bg = "transparent")
 ```
 
 ## Data collection
@@ -437,8 +456,9 @@ plot_siteQuantity <- sheet_DataCollection |>
   mutate(`Site quantity` = as.numeric(`Site quantity`)) |>
   ggplot() +
   geom_histogram(aes(x = `Site quantity`),
-                 binwidth = 0.25, fill = "aquamarine4", colour = "white",
-                 linewidth = 2) +
+                 bins = 12,
+                 fill = "#4D7668", colour = "white",
+                 linewidth = 0.5) +
   geom_vline(aes(xintercept = median(`Site quantity`, na.rm = TRUE)), 
              colour = "goldenrod2", linetype = 1, linewidth = 2) +
   scale_x_continuous(transform = "log10",
@@ -446,18 +466,29 @@ plot_siteQuantity <- sheet_DataCollection |>
                                 1000, 2500, 5000, 7500),
                      expand = c(0,0)) +
   scale_y_continuous(expand = c(0,0), position = "right") +
-  labs(y = "Site\nquantity", x = "") +
+  labs(y = "Number of\nsites", x = "") +
   theme(panel.grid = element_blank(),
-        panel.background = element_rect(fill='transparent', color=NA),
-        plot.background = element_rect(fill='transparent', color=NA),
-        axis.text.x = element_text(size = 23, angle = 90,
-                                   vjust = 0.5, hjust = 1),
-        axis.text.y = element_blank(), axis.ticks.y = element_blank(),
-        axis.line.x = element_line(), 
-        axis.title.y = element_text(size = 35, colour = "aquamarine4"))
+        panel.background = element_rect(fill = 'transparent',
+                                        color = NA),
+        plot.background = element_rect(fill = 'transparent', 
+                                       color = NA),
+        axis.text.x = element_text(size = 8, angle = 60,
+                                   #vjust = .5,
+                                   hjust = 1,
+                                   colour = "#585858",
+                                   family = "Helvetica"),
+        axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank(), 
+        plot.margin = margin(20,10,0,10),
+        axis.line.x = element_line(colour = "#585858",
+                                   linewidth = .1), 
+        axis.title.y = element_text(size = 10, 
+                                    colour = "#585858",
+                                   family = "Helvetica"))
 plot_siteQuantity
-ggsave(plot = plot_siteQuantity, filename = "Figures/Sites.png",
-       height = 3, width = 12)
+ggsave(plot = plot_siteQuantity, 
+       filename = "Figures/Sites.eps",
+       height = 35, width = 110, units = "mm")
 
 # Site sample size
 stat_siteQuantityN <- sheet_DataCollection |>
@@ -504,8 +535,9 @@ plot_studyDuration <-
   
   ggplot() +
   geom_histogram(aes(x = StudyMonths), 
-                 binwidth = 0.2, fill = "aquamarine4", colour = "white",
-                 linewidth = 2) +
+                 bins = 12,
+                 fill = "#4D7668", colour = "white",
+                 linewidth = 0.5) +
   geom_vline(aes(xintercept = median(StudyMonths, na.rm = TRUE)), 
              colour = "goldenrod2", linetype = 1, linewidth = 2) +
   labs(x = "", y = "Study\nduration") +
@@ -517,16 +549,27 @@ plot_studyDuration <-
                      expand = c(0,0)) +
   scale_y_continuous(expand = c(0,0), position = "right") +
   theme(panel.grid = element_blank(),
-        panel.background = element_rect(fill='transparent', color=NA),
-        plot.background = element_rect(fill='transparent', color=NA),
-        axis.text.x = element_text(size = 23, angle = 90,
-                                   vjust = 0.5, hjust = 1),
-        axis.text.y = element_blank(), axis.ticks.y = element_blank(),
-        axis.line.x = element_line(), 
-        axis.title.y = element_text(size = 35, colour = "aquamarine4"))
+        panel.background = element_rect(fill = 'transparent', 
+                                        color = NA),
+        plot.background = element_rect(fill = 'transparent',
+                                       color = NA),
+        axis.text.x = element_text(size = 8, angle = 60,
+                                   hjust = 1, 
+                                   family = "Helvetica",
+                                   colour = "#585858"),
+        axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank(),
+        axis.line.x = element_line(colour = "#585858",
+                                   linewidth = .1), 
+        axis.title.y = element_text(size = 10, 
+                                    colour = "#585858",
+                                    family = "Helvetica"),
+        plot.margin = margin(20,10,0,10))
 plot_studyDuration
-ggsave(plot = plot_studyDuration, filename = "Figures/Duration.png",
-       height = 3.5, width = 12)
+ggsave(plot = plot_studyDuration, 
+       filename = "Figures/Duration.eps",
+       height = 35, width = 110, units = "mm",
+       bg = "transparent")
 
 # Calculate sample size
 stat_studyDurationN <- sheet_DataCollection |>
