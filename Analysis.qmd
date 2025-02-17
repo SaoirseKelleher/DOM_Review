@@ -1013,8 +1013,8 @@ covariateFreq <- sheet_Covariates |>
   distinct() |>
   summarise(PctCategory = (n()/mean(n_overall))*100,
             .by = c(Covariate, Category)) |>
-  mutate(Included = TRUE) %>%
-  rbind(mutate(., PctCategory = 100-PctCategory, Included = FALSE)) |>
+  mutate(Included = "TRUE") %>%
+  rbind(mutate(., PctCategory = 100-PctCategory, Included = "FALSE")) |>
   mutate(Covariate = case_when(Covariate == "Habitat" ~ "Habitat",
                                Covariate == "Climate" ~ "Climate",
                                Covariate == "Spatial" ~ "Spatial",
@@ -1034,30 +1034,35 @@ covariateFreq <- sheet_Covariates |>
          .default = Covariate) |>
   filter(!is.na(Covariate)) |>
   mutate(Covariate = fct(Covariate,
-                         levels = c("Any", "Any\nEnv.",
+                         levels = rev(c("Any", "Any\nEnv.",
                                     "Habitat", "Spatial", "Climate",
                                     "Timing", "Human", "Topography",
                                     "Biotic", "Water",
                                     "Any\nStruct.", "Primary", "Observation",
-                                    "Secondary", "Site", "Species"))) |>
+                                    "Secondary", "Site", "Species")))) |>
   mutate(Category = case_when(Category == "ANY" ~ "Any",
                               Category == "E" ~ "Environmental",
                               Category == "S" ~ "Structural")) |>
+  mutate(Cat_Included = paste0(Category, Included)) |>
   
-  ggplot(aes(x = Covariate, y = PctCategory, fill = Included)) +
+  ggplot(aes(y = Covariate, x = PctCategory, fill = Cat_Included)) +
   geom_col(colour = "white", 
            linewidth = 1, width = 1) +
-  scale_fill_manual(limits = c(TRUE, FALSE), 
-                    values = c("goldenrod", "gray50")) +
-  scale_y_continuous(expand = c(0,0)) +
-  facet_grid(cols = vars(Category), scales = "free_x", space = "free_x") +
-  labs(y = "Percent\nof models", x = "") +
+  scale_fill_manual(limits = c("AnyTRUE", "EnvironmentalTRUE", "StructuralTRUE",
+                               "AnyFALSE", "EnvironmentalFALSE", "StructuralFALSE"), 
+                    values = c("goldenrod", "#4D7668", "plum4",
+                               "gray80", "gray80", "gray80")) +
+  scale_x_continuous(expand = c(0,0), breaks = c(25,50,75)) +
+  facet_grid(rows = vars(Category), 
+             scales = "free_y", space = "free_y", switch = "y") +
+  labs(x = "", y = "", title = "Percent of\nmodels considering:") +
   theme(legend.position = "none",
         plot.background = element_blank(),
         panel.grid = element_blank(),
-        axis.text.x = element_text(family = "Helvetica", 
-                                   angle = 90, vjust = 0.5, hjust = 1),
-        strip.text.x = element_text(family = "Helvetica"))
+        axis.text.y = element_text(family = "Helvetica"),
+                                   #angle = 90, vjust = 0.5, hjust = 1),
+        strip.text.y = element_text(family = "Helvetica"),
+        strip.placement = "outside")
 covariateFreq
 ```
 
@@ -1095,8 +1100,8 @@ covariateDyn <- sheet_Covariates |>
                               .default = 0)) |>
   summarise(PctDyn = (sum(Dynamism)/mean(n_Covariate))*100,
             .by = c(Covariate, Category)) |>
-  mutate(Dyn = TRUE) %>%
-  rbind(mutate(., PctDyn = 100-PctDyn, Dyn = FALSE)) |>
+  mutate(Dyn = "TRUE") %>%
+  rbind(mutate(., PctDyn = 100-PctDyn, Dyn = "FALSE")) |>
   mutate(Covariate = case_when(Covariate == "Habitat" ~ "Habitat",
                                Covariate == "Climate" ~ "Climate",
                                Covariate == "Spatial" ~ "Spatial",
@@ -1116,30 +1121,36 @@ covariateDyn <- sheet_Covariates |>
          .default = Covariate) |>
   filter(!is.na(Covariate)) |>
   mutate(Covariate = fct(Covariate,
-                         levels = c("Any", "Any\nEnv.",
+                         levels = rev(c("Any", "Any\nEnv.",
                                     "Habitat", "Spatial", "Climate",
                                     "Timing", "Human", "Topography",
                                     "Biotic", "Water",
                                     "Any\nStruct.", "Primary", "Observation",
-                                    "Secondary", "Site", "Species"))) |>
+                                    "Secondary", "Site", "Species")))) |>
   mutate(Category = case_when(Category == "ANY" ~ "Any",
                               Category == "E" ~ "Environmental",
                               Category == "S" ~ "Structural")) |>
+  mutate(Cat_Dyn = paste0(Category, Dyn)) |>
   
-  ggplot(aes(x = Covariate, y = PctDyn, fill = Dyn)) +
+  ggplot(aes(y = Covariate, x = PctDyn, fill = Cat_Dyn)) +
   geom_col(colour = "white", 
            linewidth = 1, width = 1) +
-  scale_fill_manual(limits = c(TRUE, FALSE), 
-                    values = c("aquamarine3", "gray50")) +
-  scale_y_continuous(expand = c(0,0)) +
-  facet_grid(cols = vars(Category), scales = "free_x", space = "free_x") +
-  labs(y = "Percent\ndynamic", x = "") +
+  scale_fill_manual(limits = c("AnyTRUE", "EnvironmentalTRUE", "StructuralTRUE",
+                               "AnyFALSE", "EnvironmentalFALSE", "StructuralFALSE"), 
+                    values = c("goldenrod", "#4D7668", "plum4",
+                               "gray80", "gray80", "gray80")) +
+  scale_x_continuous(expand = c(0,0),  breaks = c(25,50,75)) +
+  facet_grid(rows = vars(Category), scales = "free_y", 
+             space = "free_y", switch = "y") +
+  labs(x = "", y = "", title = "Average rate\ndynamic:") +
   theme(legend.position = "none",
         plot.background = element_blank(),
         panel.grid = element_blank(),
-        axis.text.x = element_text(family = "Helvetica", 
-                                   angle = 90, vjust = 0.5, hjust = 1),
-        strip.text.x = element_blank(), strip.background = element_blank())
+        axis.text.y = element_text(family = "Helvetica"), 
+                                   #angle = 90, vjust = 0.5, hjust = 1),
+        strip.text.y = element_blank(), 
+        strip.background = element_blank(),
+        strip.placement = "outside")
 covariateDyn
 ```
 
@@ -1176,8 +1187,8 @@ covariateObs <- sheet_Covariates |>
                               .default = 0)) |>
   summarise(PctObs = (sum(Observed)/mean(n_Covariate))*100,
             .by = c(Covariate, Category)) |>
-  mutate(Obs = TRUE) %>%
-  rbind(mutate(., PctObs = 100-PctObs, Obs = FALSE)) |>
+  mutate(Obs = "TRUE") %>%
+  rbind(mutate(., PctObs = 100-PctObs, Obs = "FALSE")) |>
   mutate(Covariate = case_when(Covariate == "Habitat" ~ "Habitat",
                                Covariate == "Climate" ~ "Climate",
                                Covariate == "Spatial" ~ "Spatial",
@@ -1197,30 +1208,36 @@ covariateObs <- sheet_Covariates |>
          .default = Covariate) |>
   filter(!is.na(Covariate)) |>
   mutate(Covariate = fct(Covariate,
-                         levels = c("Any", "Any\nEnv.",
+                         levels = rev(c("Any", "Any\nEnv.",
                                     "Habitat", "Spatial", "Climate",
                                     "Timing", "Human", "Topography",
                                     "Biotic", "Water",
                                     "Any\nStruct.", "Primary", "Observation",
-                                    "Secondary", "Site", "Species"))) |>
+                                    "Secondary", "Site", "Species")))) |>
   mutate(Category = case_when(Category == "ANY" ~ "Any",
                               Category == "E" ~ "Environmental",
                               Category == "S" ~ "Structural")) |>
+  mutate(Cat_Obs = paste0(Category, Obs)) |>
   
-  ggplot(aes(x = Covariate, y = PctObs, fill = Obs)) +
+  ggplot(aes(y = Covariate, x = PctObs, fill = Cat_Obs)) +
   geom_col(colour = "white", 
            linewidth = 1, width = 1) +
-  scale_fill_manual(limits = c(TRUE, FALSE), 
-                    values = c("cadetblue3", "gray50")) +
-  scale_y_continuous(expand = c(0,0)) +
-  facet_grid(cols = vars(Category), scales = "free_x", space = "free_x") +
-  labs(y = "Percent directly\nobserved", x = "") +
+  scale_fill_manual(limits = c("AnyTRUE", "EnvironmentalTRUE", "StructuralTRUE",
+                               "AnyFALSE", "EnvironmentalFALSE", "StructuralFALSE"), 
+                    values = c("goldenrod", "#4D7668", "plum4",
+                               "gray80", "gray80", "gray80")) +
+  scale_x_continuous(expand = c(0,0),  breaks = c(25,50,75)) +
+  facet_grid(rows = vars(Category), scales = "free_y", 
+             space = "free_y", switch = "y") +
+  labs(x = "", y = "", title = "Average rate\ndirectly observed:") + 
   theme(legend.position = "none",
         plot.background = element_blank(),
         panel.grid = element_blank(),
-        axis.text.x = element_text(family = "Helvetica", 
-                                   angle = 90, vjust = 0.5, hjust = 1),
-        strip.text.x = element_blank(), strip.background = element_blank())
+        axis.text.y = element_text(family = "Helvetica"), 
+                                   #angle = 90, vjust = 0.5, hjust = 1),
+        strip.text.y = element_blank(), 
+        strip.background = element_blank(),
+        strip.placement = "outside")
 covariateObs
 
 ```
@@ -1258,8 +1275,8 @@ covariateComplex <- sheet_Covariates |>
                                .default = 0)) |>
   summarise(PctComplex = (sum(Complex)/mean(n_Covariate))*100,
             .by = c(Covariate, Category)) |>
-  mutate(Complex = TRUE) %>%
-  rbind(mutate(., PctComplex = 100-PctComplex, Complex = FALSE)) |>
+  mutate(Complex = "TRUE") %>%
+  rbind(mutate(., PctComplex = 100-PctComplex, Complex = "FALSE")) |>
   mutate(Covariate = case_when(Covariate == "Habitat" ~ "Habitat",
                                Covariate == "Climate" ~ "Climate",
                                Covariate == "Spatial" ~ "Spatial",
@@ -1279,43 +1296,53 @@ covariateComplex <- sheet_Covariates |>
          .default = Covariate) |>
   filter(!is.na(Covariate)) |>
   mutate(Covariate = fct(Covariate,
-                         levels = c("Any", "Any\nEnv.",
+                         levels = rev(c("Any", "Any\nEnv.",
                                     "Habitat", "Spatial", "Climate",
                                     "Timing", "Human", "Topography",
                                     "Biotic", "Water",
                                     "Any\nStruct.", "Primary", "Observation",
-                                    "Secondary", "Site", "Species"))) |>
+                                    "Secondary", "Site", "Species")))) |>
   mutate(Category = case_when(Category == "ANY" ~ "Any",
                               Category == "E" ~ "Environmental",
                               Category == "S" ~ "Structural")) |>
+  mutate(Cat_Complex = paste0(Category, Complex)) |>
   
-  ggplot(aes(x = Covariate, y = PctComplex, fill = Complex)) +
+  ggplot(aes(y = Covariate, x = PctComplex, fill = Cat_Complex)) +
   geom_col(colour = "white", 
            linewidth = 1, width = 1) +
-  scale_fill_manual(limits = c(TRUE, FALSE), 
-                    values = c("plum3", "gray50")) +
-  scale_y_continuous(expand = c(0,0)) +
-  facet_grid(cols = vars(Category), scales = "free_x", space = "free_x") +
-  labs(y = "Percent nonlinear\nor interactive", x = "") +
+  scale_fill_manual(limits = c("AnyTRUE", "EnvironmentalTRUE", "StructuralTRUE",
+                               "AnyFALSE", "EnvironmentalFALSE", "StructuralFALSE"), 
+                    values = c("goldenrod", "#4D7668", "plum4",
+                               "gray80", "gray80", "gray80")) +
+  scale_x_continuous(expand = c(0,0), breaks = c(25,50,75)) +
+  facet_grid(rows = vars(Category), scales = "free_y",
+             space = "free_y", switch = "y") +
+  labs(x = "", y = "", title = "Average rate non-linear\nor interactive:") +
   theme(legend.position = "none",
         plot.background = element_blank(),
         panel.grid = element_blank(),
-        axis.text.x = element_text(family = "Helvetica", 
-                                   angle = 90, vjust = 0.5, hjust = 1),
-        strip.text.x = element_blank(), strip.background = element_blank())
+        axis.text.y = element_text(family = "Helvetica"), 
+                                   #angle = 90, vjust = 0.5, hjust = 1),
+        strip.text.y = element_blank(), 
+        strip.background = element_blank(),
+        strip.placement = "outside")
 covariateComplex
 ```
 
 #### Combine
 
 ```{r Covariate_Patchwork}
-covariatePatchwork <- covariateFreq / covariateDyn / covariateObs / covariateComplex +
-  plot_layout(axes = "collect") &
-  theme(axis.text = element_text(family = "Helvetica"),
-        axis.title = element_text(family = "Helvetica"))
+covariatePatchwork <- covariateFreq + covariateDyn + covariateObs + covariateComplex +
+  plot_layout(ncol = 4, axes = "collect") &
+  theme(axis.text = element_text(size = 8, family = "Helvetica", colour = "#585858",
+                                 face = "italic"),
+        axis.title = element_text(size = 8, family = "Helvetica", colour = "#585858"),
+        plot.title = element_text(size = 8, family = "Helvetica", 
+                                  colour = "#585858", hjust = 0.5)) 
 covariatePatchwork
 
-ggsave(plot = covariatePatchwork, "Figures/CovariateSummary.png")
+ggsave(plot = covariatePatchwork, "Figures/CovariateSummary.png",
+       width = 1961, height = 1600, units = "px")
 ```
 
 ## Objectives
