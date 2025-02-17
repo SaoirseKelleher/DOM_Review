@@ -166,22 +166,31 @@ plot_reviewCoverage <-
                     limits = c("YES", "EstRemaining"),
                     labels = c("Included articles", 
                                "Estimated qualifying articles"),
-                    values = c("aquamarine4", "gray65")) +
+                    values = c("#4D7668", "gray50")) +
   scale_y_continuous(expand = c(0,0), limits = c(0, 65)) +
+  scale_x_continuous(#limits = seq(2004, 2023, 1),
+                     breaks = seq(2004, 2023, 4),
+                     labels = seq(2004, 2023, 4)) +
   labs(x = "", y = "Number of articles") +
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
-        legend.position = "bottom", 
-        axis.text = element_text(size = 12),
-        axis.text.x = element_blank(), 
-        axis.ticks.x = element_blank(),
-        axis.title = element_text(size = 12), 
-        legend.text = element_text(size = 12),
-        strip.text.x = element_text(size = 12)) +
-  facet_grid(cols = vars(Strata), scales = "free_x", switch = "x")
+        panel.grid.minor.y = element_blank(),
+        legend.margin=margin(0,0,0,0),
+        legend.box.margin=margin(-10,-10,-5,-10),
+        legend.position = "top", 
+        legend.key.size = unit(10, 'points'),
+        legend.direction = "vertical",
+        axis.text.y = element_text(size = 8, family = "helvetica", colour = "#585858"),
+        axis.text.x = element_text(size = 8, family = "helvetica", 
+                                   colour = "#585858", angle = 60,
+                                   vjust = 1, hjust = 1), 
+        axis.title = element_text(size = 8, family = "helvetica", colour = "#585858"), 
+        legend.text = element_text(size = 8, family = "helvetica", colour = "#585858"),
+        strip.text.x = element_text(size = 8, family = "helvetica", colour = "#585858"))
+#+ facet_grid(cols = vars(Strata), scales = "free_x", switch = "x")
 plot_reviewCoverage
-ggsave(plot = plot_reviewCoverage, "Figures/CoveragePlot.jpeg",
-       width = 8, height = 4)
+ggsave(plot = plot_reviewCoverage, "Figures/CoveragePlot.png",
+       width = 945, height = 700, units = "px")
 ```
 
 ## Authorship
@@ -198,7 +207,7 @@ sheet_Objectives |>
   summarise(nPer = n(),
             .by = `Review ID`) |>
   summarise(AffilCount = n(),
-            .by = nPer) (92-34)/92
+            .by = nPer)
 
 sheet_ArticleData |>
   separate_longer_delim(`Countries of affiliation`, delim = ", ") |>
@@ -632,35 +641,35 @@ plot_covariateQuantity <- sheet_Covariates |>
                              .default = FALSE)) |>
   
   ggplot(aes(x = Category, y = Covariates)) +
-  geom_jitter(aes(colour = Category, shape = Outlier), 
-              alpha = 0.3, size = 2.5,
-              width = 0.25, height = 0) +
   geom_boxplot(aes(fill = Category), 
-               outliers = FALSE, alpha = 0.3, colour = "gray60") +
+               outliers = TRUE, linewidth = .3, staplewidth = 0.33,
+               colour = "gray25") +
   scale_fill_manual("", labels = c("Environmental covariates", "Structural covariates"),
-                    values = c("aquamarine4", "plum4")) +
+                    values = c("#4D7668", "plum4")) +
   scale_colour_manual("", labels = c("Environmental covariates", 
                                      "Structural covariates"),
-                      values = c("aquamarine4", "plum4")) +
-  scale_shape_manual("", labels = c("",""), 
-                     limits = c(TRUE, FALSE), values = c(17, 16)) +
+                      values = c("#4D7668", "plum4")) +
   scale_y_continuous(breaks = c(0, 5, 10, 15),
                      labels = c("0", "5", "10", "15+")) +
-  labs(x = "", y = "Number of covariates considered") +
+  labs(x = "", y = "Number of covariates\nconsidered") +
   facet_grid(cols = vars(Parameter), switch = "x") +
   guides(shape = "none") +
-  theme(legend.position = "bottom", 
+  theme(legend.position = "top",
+        legend.box.margin = margin(-5,-10,-10,-10),
+        legend.key.size = unit(12.5, 'points'),
         axis.text.x = element_blank(), axis.ticks.x = element_blank(),
         panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(), 
-        strip.text = element_text(size = 12, family = "Helvetica"), 
-        axis.title.y = element_text(size = 13, family = "Helvetica"), 
-        axis.text = element_text(size = 12, family = "Helvetica"),
-        legend.text = element_text(size = 12, family = "Helvetica"))
+        panel.grid.minor.y = element_blank(),
+        #panel.background = element_rect(fill = "gray80"),
+        strip.text = element_text(size = 7.5, family = "Helvetica", colour = "#585858"), 
+        axis.title.y = element_text(size = 8, family = "Helvetica", colour = "#585858"), 
+        axis.text = element_text(size = 8, family = "Helvetica", colour = "#585858"),
+        legend.text = element_text(size = 8, family = "Helvetica", colour = "#585858"))
 
 plot_covariateQuantity
-ggsave(plot = plot_covariateQuantity, filename = "Figures/CovParamPlot.jpeg",
-       width = 8, height = 4)
+ggsave(plot = plot_covariateQuantity, filename = "Figures/CovParamPlot.png",
+       width = 1476, height = 700, units = "px")
 ```
 
 #### Covariates table
@@ -1306,7 +1315,7 @@ covariatePatchwork <- covariateFreq / covariateDyn / covariateObs / covariateCom
         axis.title = element_text(family = "Helvetica"))
 covariatePatchwork
 
-ggsave(plot = covariatePatchwork, "Figures/CovariateSummary.png",
+ggsave(plot = covariatePatchwork, "Figures/CovariateSummary.png")
 ```
 
 ## Objectives
