@@ -1,47 +1,149 @@
-{\rtf1\ansi\ansicpg1252\cocoartf2761
-\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fswiss\fcharset0 Helvetica-Bold;}
+{\rtf1\ansi\ansicpg1252\cocoartf2821
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fswiss\fcharset0 Helvetica-Bold;\f2\fswiss\fcharset0 Helvetica-Oblique;
+}
 {\colortbl;\red255\green255\blue255;}
 {\*\expandedcolortbl;;}
-{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{hyphen\}}{\leveltext\leveltemplateid2\'01\uc0\u8259 ;}{\levelnumbers;}\fi-360\li1440\lin1440 }{\listname ;}\listid1}}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{hyphen\}}{\leveltext\leveltemplateid1\'01\uc0\u8259 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{hyphen\}}{\leveltext\leveltemplateid2\'01\uc0\u8259 ;}{\levelnumbers;}\fi-360\li1440\lin1440 }{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{hyphen\}}{\leveltext\leveltemplateid3\'01\uc0\u8259 ;}{\levelnumbers;}\fi-360\li2160\lin2160 }{\listname ;}\listid1}}
 {\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}}
-\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\paperw11900\paperh16840\margl1440\margr1440\vieww13260\viewh10020\viewkind0
 \pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
 
-\f0\fs24 \cf0 This folder contains the supplementary material for \'93Twenty years of dynamic occupancy models: a review of applications and look to the future.\'94 A basic description of each file is given below.\
+\f0\fs24 \cf0 This folder contains the supplementary material for \'93Twenty years of dynamic occupancy models: a review of applications and look to the future.\'94 This material includes the queries used to solicit papers for the review, the code used to randomly select a sample of articles, the spreadsheet with details collected for each reviewed article, and the code used to calculate statistics and render figures for the article. We also include the .qmd file used to generate \'91Supplement 1,\'92 which is hosted as a pdf with the published article.\
 \
-Code:\
-
-\f1\b 	Supplement.Rproj: 
-\f0\b0 R Project to allow running QMD files without adjusting paths.\
-
-\f1\b 	Randomisation.qmd: 
-\f0\b0 Takes Web of Science queries and randomly assigns a rank to each.\
-	
-\f1\b Analysis.qmd: 
-\f0\b0 Calculates key stats and figures used in the published review.\
+A basic description of each file included is given below:\
 \
-Data:\
-	
-\f1\b Randomisation.xlsx: 
-\f0\b0 Edited version of Randomisation.qmd\'92s output, with an added column describing whether each article qualified for inclusion.\
-	
-\f1\b Review_Spreadsheet.xlsx: 
-\f0\b0 Data collected on the articles which qualified for inclusion.\
-	
-\f1\b Queries/: 
-\f0\b0 Contains the queries downloaded from Web of Science.\
+Supplementary/\
+\pard\tx220\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li720\fi-720\pardirnatural\partightenfactor0
+\ls1\ilvl0\cf0 {\listtext	\uc0\u8259 	}
+\f1\b Supplement.RProj: 
+\f0\b0 R Project to permit running code with relative paths.\
+{\listtext	\uc0\u8259 	}
+\f1\b _quarto.yml: 
+\f0\b0 YML file needed for quarto documents to render correctly.\
+{\listtext	\uc0\u8259 	}Data/\
 \pard\tx940\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li1440\fi-1440\pardirnatural\partightenfactor0
-\ls1\ilvl1
-\f1\b \cf0 {\listtext	\uc0\u8259 	}Mackenzie_A.xlsx & Mackenzie_B.xlsx:
-\f0\b0  Articles citing Mackenzie 2003, split due to WOS download limits. Accessed July 26 2024.\
+\ls1\ilvl1\cf0 {\listtext	\uc0\u8259 	}
+\f1\b Randomisation.xlsx: 
+\f0\b0 Edited version of Randomisation.qmd\'92s output, with an added column indicating whether each article qualified for inclusion.\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\ls1\ilvl1\cf0 {\listtext	\uc0\u8259 	}
+\f1\b Review_Spreadsheet.xlsx: 
+\f0\b0 Data collected on included articles. Includes metadata for each field.\
+{\listtext	\uc0\u8259 	}Queries/:
+\f1\b  
+\f0\b0 \
+\pard\tx1660\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li2160\fi-2160\pardirnatural\partightenfactor0
+\ls1\ilvl2
+\f1\b \cf0 {\listtext	\uc0\u8259 	}Mackenzie_A.xlsx:
+\f0\b0  Articles citing Mackenzie 2003 (Part 2). Accessed July 26 2024.
+\f1\b \
+{\listtext	\uc0\u8259 	}Mackenzie_B.xlsx:
+\f0\b0  Articles citing Mackenzie 2003 (Part 2). Accessed July 26 2024.\
 {\listtext	\uc0\u8259 	}
 \f1\b Keywords.xlsx:
 \f0\b0  Articles matching keyword search string. Accessed July 29 2024.\
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
-\cf0 	
-\f1\b Spatial/:
-\f0\b0  Folder containing spatial data needed for the map in Figure 4. \
-
-\f1\b 	Figures/: 
-\f0\b0 Folder containing figures rendered by \'91Analysis.qmd\'92\
+\pard\tx940\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li1440\fi-1440\pardirnatural\partightenfactor0
+\ls1\ilvl1\cf0 {\listtext	\uc0\u8259 	}Spatial/: \
+\pard\tx1660\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li2160\fi-2160\pardirnatural\partightenfactor0
+\ls1\ilvl2
+\f1\b \cf0 {\listtext	\uc0\u8259 	}World_Countries.shp: 
+\f0\b0 Shapefiles required for the map included in Figure 3a.\
+\pard\tx220\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li720\fi-720\pardirnatural\partightenfactor0
+\ls1\ilvl0\cf0 {\listtext	\uc0\u8259 	}Code/\
+\pard\tx940\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li1440\fi-1440\pardirnatural\partightenfactor0
+\ls1\ilvl1\cf0 {\listtext	\uc0\u8259 	}
+\f1\b Randomisation.qmd: 
+\f0\b0 Takes the list of articles queried by Web of Science and randomly assigns a rank to each.\
+\pard\tx220\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li720\fi-720\pardirnatural\partightenfactor0
+\ls1\ilvl1
+\f1\b \cf0 {\listtext	\uc0\u8259 	}Analysis.qmd: 
+\f0\b0 Calculates key stats and figures used in the published review.\
+\ls1\ilvl1
+\f1\b {\listtext	\uc0\u8259 	}Supplement.qmd
+\f0\b0 : Renders a pdf version of \'92Supplement 1\'92, which contains details on review methods as well as additional stats and figures not included in the text.\
+\pard\tx220\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li720\fi-720\pardirnatural\partightenfactor0
+\ls1\ilvl0\cf0 {\listtext	\uc0\u8259 	}Outputs/\
+\pard\tx940\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li1440\fi-1440\pardirnatural\partightenfactor0
+\ls1\ilvl1\cf0 {\listtext	\uc0\u8259 	}Documents/
+\f1\b \
+\pard\tx1660\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li2160\fi-2160\pardirnatural\partightenfactor0
+\ls1\ilvl2
+\f0\b0 \cf0 {\listtext	\uc0\u8259 	}
+\f1\b Randomisation.html: 
+\f0\b0 Rendered html produced by 
+\f2\i Randomisation.qmd
+\f1\i0\b \
+\ls1\ilvl2
+\f0\b0 {\listtext	\uc0\u8259 	}
+\f1\b Analysis.html:
+\f0\b0  Rendered html produced by 
+\f2\i Analysis.qmd
+\f1\i0\b \
+{\listtext	\uc0\u8259 	}Supplement.html: 
+\f0\b0 Rendered html produced by 
+\f2\i Supplement.qmd
+\f0\i0 .\
+\pard\tx940\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li1440\fi-1440\pardirnatural\partightenfactor0
+\ls1\ilvl1\cf0 {\listtext	\uc0\u8259 	}Figures/\
+\pard\tx1660\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li2160\fi-2160\pardirnatural\partightenfactor0
+\ls1\ilvl2\cf0 {\listtext	\uc0\u8259 	}
+\f1\b 1_CoveragePlot.png: 
+\f0\b0 Published version of Figure 1, created by 
+\f2\i Analysis.qmd
+\f0\i0 \
+\pard\tx1660\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li2160\fi-2160\pardirnatural\partightenfactor0
+\ls1\ilvl2
+\f1\b \cf0 {\listtext	\uc0\u8259 	}2_Objectives.png: 
+\f0\b0 Published version of Figure 2, created by 
+\f2\i Analysis.qmd.
+\f0\i0 \
+\ls1\ilvl2
+\f1\b {\listtext	\uc0\u8259 	}3a_StudyMap.eps: 
+\f0\b0 Panel a of Figure 3, created by 
+\f2\i Analysis.qmd.
+\f0\i0 \
+{\listtext	\uc0\u8259 	}
+\f1\b 3b_StudyArea.eps: 
+\f0\b0 Panel b of Figure 3, created by 
+\f2\i Analysis.qmd.
+\f0\i0 \
+{\listtext	\uc0\u8259 	}
+\f1\b 3c_Taxa.eps: 
+\f0\b0 Panel c of Figure 3, created by 
+\f2\i Analysis.qmd.
+\f0\i0 \
+{\listtext	\uc0\u8259 	}
+\f1\b 3e_Duration.eps: 
+\f0\b0 Part of panel e of Figure 3, created by 
+\f2\i Analysis.qmd.
+\f0\i0 \
+{\listtext	\uc0\u8259 	}
+\f1\b 3e_Sites.eps: 
+\f0\b0 Part of panel e of Figure 3, created by 
+\f2\i Analysis.qmd.
+\f0\i0 \
+{\listtext	\uc0\u8259 	}
+\f1\b 3_StudyContexts.svg: 
+\f0\b0 Final editable version of Figure 3, assembled in Affinity Design.\
+{\listtext	\uc0\u8259 	}
+\f1\b 3_StudyContexts.png: 
+\f0\b0 Published version of Figure 3, exported from 
+\f2\i 3_StudyContexts.svg.\
+\pard\tx1660\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\li2160\fi-2160\pardirnatural\partightenfactor0
+\ls1\ilvl2
+\f0\i0 \cf0 {\listtext	\uc0\u8259 	}
+\f1\b 4_CovariateSummary.png: 
+\f0\b0 Published version of Figure 4, created by 
+\f2\i Analysis.qmd.\
+\ls1\ilvl2
+\f0\i0 {\listtext	\uc0\u8259 	}
+\f1\b 5_CovariateCount.png: 
+\f0\b0 Published version of Figure 5, created by 
+\f2\i Analysis.qmd.\
+\ls1\ilvl2
+\f0\i0 {\listtext	\uc0\u8259 	}
+\f1\b 6_TimeSeries.png: 
+\f0\b0 Published version of Figure 6, created by 
+\f2\i Analysis.qmd.
+\f0\i0 \
 }

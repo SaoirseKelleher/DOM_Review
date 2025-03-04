@@ -1,0 +1,99 @@
+---
+title: "Supporting information"
+date: February 28 2025
+abstract: "Supporting information for the article \"Twenty years of dynamic occupancy models: a review of applications and look to the future.\" This is divided into two sections: \"Review methods\", with additional details on how articles were processed, and \"Additional information\", with further figures and analyses which were not included in the published article. Session information from the R session used to run this document is provided at the end."
+abstract-title: "Summary"
+format:
+  html:
+    number-sections: true
+    number-depth: 3
+    theme: minty
+embed-resources: true
+---
+
+```{r Packages_and_data}
+#| include: false
+
+# Packages
+library(tidyverse)
+library(readxl)
+
+# Data from review spreadsheet pages
+sheet_ArticleData <- read_xlsx("Data/Review_Spreadsheet.xlsx",
+                               sheet = "Article Data")
+sheet_Objectives <- read_xlsx("Data/Review_Spreadsheet.xlsx",
+                              sheet = "Objectives") 
+sheet_FocalTaxa <- read_xlsx("Data/Review_Spreadsheet.xlsx",
+                             sheet = "Focal Taxa") 
+sheet_StudyArea <- read_xlsx("Data/Review_Spreadsheet.xlsx",
+                             sheet = "Study Area")
+sheet_DataCollection <- read_xlsx("Data/Review_Spreadsheet.xlsx",
+                                  sheet = "Data Collection")
+sheet_Covariates <- read_xlsx("Data/Review_Spreadsheet.xlsx",
+                              sheet = "Covariates")
+sheet_Modelling <- read_xlsx("Data/Review_Spreadsheet.xlsx",
+                             sheet = "Modelling")
+```
+
+# Review methods
+
+## Search queries
+
+## Studies, datasets, and workflows
+
+## Defining 'taxa'
+
+## Covariates and parameters
+
+# Additional information
+
+## Authorship
+
+### By country
+
+### By objective
+
+## Study locations and taxa
+
+### By country
+
+### Full taxa list
+
+## Data collection
+
+### Sampling method
+
+### Site count by publication year
+
+### Site count by study area scale
+
+### Primary occasion count by secondary occasion count
+
+### Primary occasion count by site count
+
+### Dataset size (primary occasion count \* site count)
+
+### Dataset size (primary occasion count \* secondary occasion count \* site count)
+
+## Covariates
+
+### Covariates table
+
+### Covariate count by year
+
+### Covariate count by site count
+
+### Covariate count by primary occasion count
+
+### Covariate count by study area scale
+
+### Covariate count by dataset size (primary occasion count \* site count)
+
+### Covariate count by objective
+
+# Session information
+
+```{r Session_Info}
+#| echo: false
+sessionInfo()
+```

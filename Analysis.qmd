@@ -180,16 +180,15 @@ plot_reviewCoverage <-
         legend.position = "top", 
         legend.key.size = unit(10, 'points'),
         legend.direction = "vertical",
-        axis.text.y = element_text(size = 8, family = "helvetica", colour = "#585858"),
-        axis.text.x = element_text(size = 8, family = "helvetica", 
+        axis.text.y = element_text(size = 10, family = "helvetica", colour = "#585858"),
+        axis.text.x = element_text(size = 10, family = "helvetica", 
                                    colour = "#585858", angle = 60,
                                    vjust = 1, hjust = 1), 
-        axis.title = element_text(size = 8, family = "helvetica", colour = "#585858"), 
-        legend.text = element_text(size = 8, family = "helvetica", colour = "#585858"),
-        strip.text.x = element_text(size = 8, family = "helvetica", colour = "#585858"))
-#+ facet_grid(cols = vars(Strata), scales = "free_x", switch = "x")
+        axis.title = element_text(size = 10, family = "helvetica", colour = "#585858"), 
+        legend.text = element_text(size = 10, family = "helvetica", colour = "#585858"),
+        strip.text.x = element_text(size = 10, family = "helvetica", colour = "#585858"))
 plot_reviewCoverage
-ggsave(plot = plot_reviewCoverage, "Figures/CoveragePlot.png",
+ggsave(plot = plot_reviewCoverage, "Figures/1_CoveragePlot.png",
        width = 945, height = 700, units = "px")
 ```
 
@@ -278,7 +277,7 @@ plot_studyAreaMap <- sheet_StudyArea |>
         panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
 plot_studyAreaMap
 
-ggsave("Figures/StudiesMap.eps", plot = plot_studyAreaMap,
+ggsave("Figures/3a_StudyMap.eps", plot = plot_studyAreaMap,
        width = 85, height = 50, units = "mm", bg = "transparent")
 
 # Get number of unique study areas
@@ -313,13 +312,13 @@ plot_studyAreaSize <- sheet_StudyArea |>
   theme(panel.grid = element_blank(),
         axis.text.x = element_markdown(size = 8, angle = 90,
                                        vjust = 0.5, hjust = 1,
-                                       family = "Helvetica"),
+                                       family = "Helvetica", colour = "#585858"),
         axis.text.y = element_blank(), axis.ticks.y = element_blank(),
         panel.background = element_rect(fill='transparent', color=NA),
         plot.background = element_rect(fill='transparent', color=NA))
 plot_studyAreaSize
 
-ggsave("Figures/StudyAreaPlot.eps",
+ggsave("Figures/3b_StudyArea.eps",
        plot = plot_studyAreaSize, 
        width = 80, height = 45, units = "mm",
        bg='transparent')
@@ -408,8 +407,8 @@ plot_focalTaxa <-
         axis.line.x = element_line(colour = "#585858", linewidth = 0.3))
 plot_focalTaxa
 
-ggsave("Figures/TaxaPlot.eps",
-       plot_focalTaxa, width = 90, height = 40, units = "mm",
+ggsave("Figures/3c_Taxa.eps",
+       plot_focalTaxa, width = 95, height = 40, units = "mm",
        bg = "transparent")
 ```
 
@@ -496,7 +495,7 @@ plot_siteQuantity <- sheet_DataCollection |>
                                    family = "Helvetica"))
 plot_siteQuantity
 ggsave(plot = plot_siteQuantity, 
-       filename = "Figures/Sites.eps",
+       filename = "Figures/3e_Sites.eps",
        height = 35, width = 110, units = "mm")
 
 # Site sample size
@@ -576,30 +575,29 @@ plot_studyDuration <-
         plot.margin = margin(20,10,0,10))
 plot_studyDuration
 ggsave(plot = plot_studyDuration, 
-       filename = "Figures/Duration.eps",
+       filename = "Figures/3e_Duration.eps",
        height = 35, width = 110, units = "mm",
        bg = "transparent")
 
 # Calculate sample size
-stat_studyDurationN <- sheet_DataCollection |>
+stat_studyDuration <- sheet_DataCollection |>
   filter(`Start month` != "Unclear" & `End month` != "Unclear") |>
   nrow()
-stat_studyDurationN
+stat_studyDuration
 ```
 
-We combine the study duration figure and the site quantity figure using `patchwork`.
+#### Primary occasions
 
-```{r combine sites and duration}
-#| fig-width: 12
-#| fig-height: 7.5
+```{r Primary occasions}
+stat_medianPrimary <- sheet_DataCollection |>
+  pull(`Primary occasions`) |>
+  median()
+stat_medianPrimary
 
-plot_combinedStudyScale <- plot_siteQuantity / plot_spacer() / plot_studyDuration
-plot_combinedStudyScale <- plot_combinedStudyScale +
-  theme(panel.background = element_rect(fill='transparent', color = NA),
-        plot.background = element_rect(fill='transparent', color = NA))
-plot_combinedStudyScale
-ggsave(plot = plot_combinedStudyScale, filename = "Figures/StudyScale.png",
-       height = 7, width = 12, bg='transparent')
+stat_primaryRange <- sheet_DataCollection |>
+  pull(`Primary occasions`) |>
+  range()
+stat_primaryRange
 ```
 
 ## Covariates
@@ -611,6 +609,8 @@ For each article we recorded *all* covariates considered across all modelled par
 We render a plot to be used as Figure 5 in the article, presenting the number of covariates considered for each main parameter in each study.
 
 ```{r Covariate quantity figure}
+
+
 plot_covariateQuantity <- sheet_Covariates |> 
   separate_longer_delim(Covariates, delim = ", ") |>
   separate_wider_delim(Covariates, delim = "_", 
@@ -630,9 +630,10 @@ plot_covariateQuantity <- sheet_Covariates |>
   filter(Category != "None") |>
   mutate(`Parameter type` = case_when(`Parameter type` == "Extinction_Persistence" ~ "Extinction",
                                       `Parameter type` == "Occupancy" ~ "Occupancy*",
+                                      `Parameter type` == "Initial occupancy" ~ "Initial\noccupancy",
                                       .default = `Parameter type`)) |>
   mutate(Parameter = fct(`Parameter type`, 
-                         levels = c("Initial occupancy", "Occupancy*",
+                         levels = c("Initial\noccupancy", "Occupancy*",
                                     "Colonisation", "Extinction",
                                     "Detection"))) |>
   mutate(Covariates = case_when(Covariates >= 15 ~ 15,
@@ -662,13 +663,13 @@ plot_covariateQuantity <- sheet_Covariates |>
         panel.grid.minor.x = element_blank(), 
         panel.grid.minor.y = element_blank(),
         #panel.background = element_rect(fill = "gray80"),
-        strip.text = element_text(size = 7.5, family = "Helvetica", colour = "#585858"), 
-        axis.title.y = element_text(size = 8, family = "Helvetica", colour = "#585858"), 
-        axis.text = element_text(size = 8, family = "Helvetica", colour = "#585858"),
-        legend.text = element_text(size = 8, family = "Helvetica", colour = "#585858"))
+        strip.text = element_text(size = 10, family = "Helvetica", colour = "#585858"), 
+        axis.title.y = element_text(size = 10, family = "Helvetica", colour = "#585858"), 
+        axis.text = element_text(size = 10, family = "Helvetica", colour = "#585858"),
+        legend.text = element_text(size = 10, family = "Helvetica", colour = "#585858"))
 
 plot_covariateQuantity
-ggsave(plot = plot_covariateQuantity, filename = "Figures/CovParamPlot.png",
+ggsave(plot = plot_covariateQuantity, filename = "Figures/5_CovariateCount.png",
        width = 1476, height = 700, units = "px")
 ```
 
@@ -895,7 +896,7 @@ table_covariateSummary <- covariates_table |>
   rbind(overall_row) |>
   mutate(across(where(is.numeric), ~ round(.x, 2)))
 
-write_csv(table_covariateSummary, "Figures/CovariateTable.csv")
+write_csv(table_covariateSummary, "Figures/S1_CovariateTable.csv")
 ```
 
 ## Modelling
@@ -978,7 +979,7 @@ modelling_summary <- rbind(modelling_byClass, modelling_overall) |>
   set_names(c("Frequentist", "Bayesian", "All models", "Variable")) |>
   filter(Variable != "Model class")
 
-write_csv(modelling_summary, "Figures/ModellingSummary.csv")
+write_csv(modelling_summary, "Figures/T2_ModellingSummary.csv")
 ```
 
 ## Covariate summaries
@@ -1317,7 +1318,7 @@ covariateComplex <- sheet_Covariates |>
   scale_x_continuous(expand = c(0,0), breaks = c(25,50,75)) +
   facet_grid(rows = vars(Category), scales = "free_y",
              space = "free_y", switch = "y") +
-  labs(x = "", y = "", title = "Average rate non-linear\nor interactive:") +
+  labs(x = "", y = "", title = "Average rate\nnon-linear or interactive:") +
   theme(legend.position = "none",
         plot.background = element_blank(),
         panel.grid = element_blank(),
@@ -1334,15 +1335,17 @@ covariateComplex
 ```{r Covariate_Patchwork}
 covariatePatchwork <- covariateFreq + covariateDyn + covariateObs + covariateComplex +
   plot_layout(ncol = 4, axes = "collect") &
+  #plot_annotation(tag_levels = 'a', tag_prefix = '(', tag_suffix = ")") &
   theme(axis.text = element_text(size = 8, family = "Helvetica", colour = "#585858",
                                  face = "italic"),
         axis.title = element_text(size = 8, family = "Helvetica", colour = "#585858"),
         plot.title = element_text(size = 8, family = "Helvetica", 
-                                  colour = "#585858", hjust = 0.5)) 
+                                  colour = "#585858", hjust = 0.5),
+        plot.tag = element_text(size = 9, family = "Helvetica", colour = "#585858")) 
 covariatePatchwork
 
-ggsave(plot = covariatePatchwork, "Figures/CovariateSummary.png",
-       width = 1961, height = 1600, units = "px")
+#ggsave(plot = covariatePatchwork, "Figures/4_CovariateSummary.png",
+#       width = 1961, height = 1600, units = "px")
 ```
 
 ## Objectives
@@ -1422,117 +1425,27 @@ plot_objectiveTrend <- sheet_Objectives |>
            position = "dodge", colour = "white") + 
   scale_fill_manual("",
                     values = c("plum4", "cadetblue3", "aquamarine3",
-                               "aquamarine4", "goldenrod2", "goldenrod3")) +
+                               "#4D7668", "goldenrod", "goldenrod4")) +
   scale_y_continuous(breaks = c(0, 20, 40, 60, 80),
                      limits = c(0, 80),
                      labels = c("0%", "20%", "40%", "60%", "80%")) +
   labs(y = "Percentage of studies\nwith objective", x = "") +
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(),
-        legend.text = element_text(size = 15),
-        axis.text = element_text(size = 15), axis.title = element_text(size = 15),
-        legend.position = "bottom", strip.background = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        legend.text = element_text(size = 9, family = "helvetica", colour = "#585858"),
+        axis.text = element_text(size = 9, family = "helvetica", colour = "#585858"), 
+        axis.title = element_text(size = 9, family = "helvetica", colour = "#585858"),
+        legend.box.margin = margin(-5,-10,-10,-10),
+        legend.key.size = unit(12.5, 'points'),
+        legend.position = "top", 
+        strip.background = element_blank(),
         strip.text = element_blank()) +
   facet_grid(cols = vars(Strata),
              scales = "free_x", space = "free_x", drop = TRUE)
 plot_objectiveTrend
-ggsave(plot = plot_objectiveTrend, "Figures/ObjectiveTrend.jpeg",
-       width = 8, height = 4)
-```
-
-We render a second figure for the average number of covariates used in articles approaching each objective
-
-```{r Covariates per objective}
-#| fig-width: 8
-#| fig-height: 4
-
-covsPerParam <- sheet_Covariates |>
-  mutate(studyID = paste(`Review ID`, `Model ID`, sep = "_")) |>
-  separate_longer_delim(Covariates, delim = ", ") |>
-  filter(`Parameter type` %in% c("Initial occupancy", "Occupancy",
-                                 "Colonisation", "Extinction_Persistence",
-                                 "Detection")) |>
-  mutate(n_params = length(unique(`Parameter type`)),
-         .by = c(studyID, `Review ID`)) |>
-  filter(Covariates != "None") |>
-  summarise(CovsPerParam = n()/max(n_params), 
-            .by = c(studyID, `Review ID`))
-
-plot_objectiveCovariates <- sheet_Objectives |>
-  pivot_longer(c("Demonstrate methods?", "Estimate trends?", 
-                 "Identify drivers?", "Test relationships?",
-                 "Predict spatially?", "Predict temporally?"),
-               names_to = "Objective", values_to = "ObjectiveIncluded") |>
-  mutate(Objective = str_replace(Objective, "\\?", "")) |>
-  filter(ObjectiveIncluded == "YES") %>%
-  rbind(., mutate(., Objective = "Any Objective")) |>
-  select(`Review ID`, Objective) |>
-  distinct() |>
-  left_join(covsPerParam, by = join_by(`Review ID`), relationship = "many-to-many") |>
-  mutate(CovsPerParam = case_when(is.na(CovsPerParam) ~ 0,
-                                  .default = CovsPerParam)) |>
-  mutate(Objective = factor(Objective, levels = c("Any Objective", 
-                                                  "Demonstrate methods",
-                                                  "Estimate trends", 
-                                                  "Identify drivers", 
-                                                  "Test relationships",
-                                                  "Predict spatially",
-                                                  "Predict temporally"))) |>
-  mutate(Objective = fct_relabel(Objective, 
-                                 ~ str_replace(.x, " ", "\n"))) |>
-  mutate(facet = case_when(Objective == "Any\nObjective" ~ "left",
-                           .default = "right")) |>
-  mutate(CovsPerParam = case_when(CovsPerParam > 15 ~ 15,
-                                  .default = CovsPerParam)) |>
-  mutate(Outlier = case_when(CovsPerParam == 15 ~ TRUE,
-                             .default = FALSE)) |>
-  
-  ggplot(aes(x = Objective, y = CovsPerParam, 
-             fill = Objective, colour = Objective)) +
-  geom_boxplot(colour = "gray50", alpha = 0.6, outliers = FALSE) +
-  geom_jitter(aes(shape = Outlier), alpha = 0.4, width = 0.3, size = 2.5) +
-  scale_y_continuous(breaks = c(0, 5, 10, 15),
-                     labels = c("0", "5", "10", "15+")) +
-  scale_fill_manual(limits = c("Any\nObjective", "Demonstrate\nmethods", 
-                               "Estimate\ntrends", "Identify\ndrivers", 
-                               "Test\nrelationships", "Predict\nspatially",
-                               "Predict\ntemporally"),
-                    values = c("gray60", "plum4", "cadetblue3", "aquamarine3",
-                               "aquamarine4", "goldenrod2", "goldenrod3")) +
-  scale_colour_manual(limits = c("Any\nObjective", "Demonstrate\nmethods", 
-                                 "Estimate\ntrends", "Identify\ndrivers", 
-                                 "Test\nrelationships", "Predict\nspatially",
-                                 "Predict\ntemporally"),
-                      values = c("gray60", "plum4", "cadetblue3", "aquamarine3",
-                                 "aquamarine4", "goldenrod2", "goldenrod3")) +
-  scale_shape_manual(limits = c(TRUE, FALSE),
-                     values = c(17, 16)) +
-  labs(x = "", y = "Number of covariates\nconsidered per parameter") +
-  facet_grid(cols = vars(facet), scales = "free_x", space = "free_x") +
-  guides(shape = "none") +
-  theme(legend.position = "none",
-        panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank(),
-        legend.text = element_text(size = 15), axis.text = element_text(size = 13),
-        axis.title = element_text(size = 15), strip.background = element_blank(),
-        strip.text = element_blank()) 
-plot_objectiveCovariates
-ggsave(plot = plot_objectiveCovariates, "Figures/ObjectiveCovariates.jpeg",
-       width = 8, height = 4)
-```
-
-Combine the objective plots
-
-```{r combine objective plots}
-#| fig-width: 12
-#| fig-height: 8
-
-plot_stackedObjectives <- plot_objectiveTrend / plot_objectiveCovariates +
-   plot_annotation(tag_levels = 'A')
-plot_stackedObjectives
-
-ggsave(plot = plot_stackedObjectives, "Figures/ObjectiveFigure.jpeg",
-       width = 12, height = 8)
-
+ggsave(plot = plot_objectiveTrend, "Figures/2_Objectives.png",
+       width = 1476, height = 700, units = "px")
 ```
 
 ## Time Series
@@ -1548,11 +1461,12 @@ timeSeries_Sites <- sheet_DataCollection |>
             by = "Review ID") |>
   
   ggplot(aes(x = `Year Strata`, y = SiteNumber)) +
-  geom_boxplot(fill = "goldenrod", colour = "gray40", staplewidth = 0.4,
-               linewidth = 0.2, , outlier.size = 0.2) +
-  scale_y_log10() +
-  labs(x = "", y = "Number of sites\n(log scale)",
-       title = "Site quantity") +
+  geom_boxplot(fill = "#4D7668", 
+               linewidth = .3, staplewidth = 0.33,
+               colour = "gray25") +
+  scale_y_log10(breaks = c(10,100,1000,10000), limits = c(10,10000)) +
+  labs(x = "", y = "Number of sites\n(log)",
+       title = "") +
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(), 
         axis.title = element_text(size = 8, family = "Helvetica"), 
@@ -1583,11 +1497,11 @@ timeSeries_Covariates <- sheet_Covariates |>
             by = "Review ID") |>
   
   ggplot(aes(x = `Year Strata`, y = CovsPerParam)) +
-  geom_boxplot(fill = "goldenrod", colour = "gray40", staplewidth = 0.4,
-               linewidth = 0.2, outlier.size = 0.2) +
+  geom_boxplot(fill = "#4D7668", linewidth = .3, staplewidth = 0.33,
+               colour = "gray25") +
   scale_y_log10() +
-  labs(x = "", y = "Covariates\nper parameter",
-       title = "Covariates considered") +
+  labs(x = "", y = "Covariates per\nparameter (log)",
+       title = "") +
   theme(panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(), 
         axis.title = element_text(size = 8, family = "Helvetica"), 
@@ -1621,18 +1535,18 @@ timeSeries_Selection <- sheet_Modelling |>
              colour = `Selection method`, group = `Selection method`)) +
   geom_line() +
   geom_point(size = 1) +
-  labs(x = "", y = "Percentage of models",
-       title = "Selection method (MLE*)") +
+  labs(x = "", y = "Percentage of\nmodels",
+       title = "") +
   scale_colour_manual("",
                       limits = c("A priori", "Candidate set", 
                                  "Sequential", "Simple"),
                       labels = c("A priori", "Candidate set",
                                  "Sequential", "Simple precursors"),
-                      values = c("aquamarine4", "cadetblue3",
+                      values = c("#4D7668", "cadetblue3",
                                  "plum4", "goldenrod")) +
   guides(colour = guide_legend(nrow = 2,
-                               override.aes = list(size = 0.5,
-                                                   linewidth = 0.5))) +
+                               override.aes = list(size = 1,
+                                                   linewidth = 1))) +
   theme(legend.position = "top",
         panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(), 
@@ -1672,11 +1586,11 @@ timeSeries_Validation <- sheet_Modelling |>
   scale_colour_manual("", 
                       limits = c("GOF", "Validation"),
                       labels = c("Goodness-of-fit", "Validation"),
-                      values = c("aquamarine4", "goldenrod")) +
-  labs(x = "", y = "Percentage of models",
-       title = "Model assessment") +
-  guides(colour = guide_legend(override.aes = list(size = 0.5,
-                                                   linewidth = 0.5))) +
+                      values = c("#4D7668", "goldenrod")) +
+  labs(x = "", y = "Percentage of\nmodels",
+       title = "") +
+  guides(colour = guide_legend(override.aes = list(size = 1,
+                                                   linewidth = 1))) +
   theme(legend.position = "top", 
         panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank(), 
@@ -1712,12 +1626,12 @@ timeSeries_Framework <- sheet_Modelling |>
   scale_colour_manual("", 
                       limits = c("Frequentist", "Bayesian"),
                       labels = c("Maximum Likelihood", "Bayesian"),
-                      values = c("aquamarine4", "goldenrod")) +
+                      values = c("#4D7668", "goldenrod")) +
   guides(colour = guide_legend(nrow = 2, 
-                               override.aes = list(size = 0.2,
-                                                   linewidth = 0.2))) +
-  labs(x = "", y = "Percentage of models", 
-       title = "Model framework") +
+                               override.aes = list(size = 1,
+                                                   linewidth = 1))) +
+  labs(x = "", y = "Percentage of\nmodels", 
+       title = "") +
   ylim(0,100) +
   theme(legend.position = "top",
         panel.grid.major.x = element_blank(),
@@ -1736,22 +1650,28 @@ timeSeries_Combined <- timeSeries_Sites + timeSeries_Covariates + timeSeries_Fra
   plot_layout(design = "1122
                         3344
                         #55#") +
-  plot_annotation(tag_levels = "A") & 
+  plot_annotation(tag_levels = list(c("(a) Number of sites",
+                                      "(b) Number of covariates considered",
+                                      "(c) Modelling framework",
+                                      "(d) Covariate selection method (MLE*)",
+                                      "(e) Model assessment"))) &
   theme(legend.position = "top",
-        axis.text.x = element_text(size = 6, family = "Helvetica", 
-                                 angle = 45, vjust = 0.5, hjust = 1),
-        axis.text.y = element_text(size = 6, family = "Helvetica"),
-        axis.title = element_text(size = 6, family = "Helvetica"),
-        legend.text = element_text(size = 6, family = "Helvetica"),
-        legend.title = element_text(size = 6, family = "Helvetica"),
+        panel.grid.minor.y = element_blank(),
+        axis.text.x = element_text(size = 10, family = "Helvetica", colour = "#585858",
+                                 angle = 45, vjust = 1, hjust = 1),
+        axis.text.y = element_text(size = 10, family = "Helvetica", colour = "#585858"),
+        axis.title = element_text(size = 10, family = "Helvetica", colour = "#585858"),
+        legend.text = element_text(size = 10, family = "Helvetica", colour = "#585858"),
+        legend.title = element_text(size = 10, family = "Helvetica", colour = "#585858"),
         legend.key.size = unit(.2, 'cm'),
         legend.margin=margin(0,0,0,0),
-        legend.box.margin=margin(0,-10,-10,-10),
-        plot.tag = element_text(size = 8, family = "Helvetica"),
-        plot.title = element_text(size = 6, family = "Helvetica",
+        legend.box.margin=margin(0,-10,-5,-10),
+        plot.tag = element_text(size = 10, family = "Helvetica", colour = "#585858"),
+        plot.tag.location = "plot",
+        plot.title = element_text(size = 10, family = "Helvetica", colour = "#585858",
                                   hjust = 0.5))
 timeSeries_Combined
 
-ggsave(plot = timeSeries_Combined, "Figures/TimeSeries.png",
-       width = 11, height = 14, units = "cm")
+ggsave(plot = timeSeries_Combined, "Figures/6_TimeSeries.png",
+       width = 1961, height = 2200, units = "px")
 ```
