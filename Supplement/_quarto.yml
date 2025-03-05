@@ -1,3 +1,4 @@
 project:
   type: default
   execute-dir: project
+  output-dir: Outputs/
